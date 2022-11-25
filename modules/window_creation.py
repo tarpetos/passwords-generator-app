@@ -55,23 +55,20 @@ def make_window():
     copy_btn = Button(
         frame,
         text='Copy password',
-        command=lambda: [
-            copy_password(result_password_entry),
-        ],
+        command=lambda: copy_password(result_password_entry),
         padding=10
     )
 
     clear_btn = Button(
         frame,
         text='Clear all',
-        command=lambda: [
+        command=lambda:
             clear_entries(
                 password_usage_entry,
                 password_length_entry,
                 repeatable_entry,
                 result_password_entry
             ),
-        ],
         padding=10,
     )
 
@@ -87,14 +84,13 @@ def make_window():
     change_bg_btn = Button(
         frame,
         text=u'\u263C',
-        command=lambda: [
+        command=lambda:
             change_background.change_background_color(
                 root,
                 frame,
                 labels_dict,
                 change_bg_btn
-            )
-        ],
+            ),
         padding=10
     )
 
@@ -108,24 +104,14 @@ def make_window():
     english_lang = Button(
         frame,
         text='EN',
-        command=lambda: [
-            english_language_main_window_data(
-                labels_dict,
-                buttons_dict
-            ),
-        ],
+        command=lambda: english_language_main_window_data(labels_dict, buttons_dict),
         padding=10
     )
 
     ukrainian_lang = Button(
         frame,
         text='UA',
-        command=lambda: [
-            ukrainian_language_main_window_data(
-                labels_dict,
-                buttons_dict
-            ),
-        ],
+        command=lambda: ukrainian_language_main_window_data(labels_dict, buttons_dict),
         padding=10
     )
 

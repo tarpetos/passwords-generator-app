@@ -90,7 +90,7 @@ def check_password_length_input(user_input):
     if not user_input.isdigit():
         invalid_password_type_message(lang_state)
         return False
-    elif int(user_input) > 384 or int(user_input) < 0:
+    elif int(user_input) > 384 or int(user_input) <= 0:
         invalid_password_value_message(lang_state)
         return False
     else:
@@ -174,11 +174,3 @@ def clear_entries(password_usage_entry, password_length_entry, repeatable_entry,
     result_password_entry.delete(0, END)
 
     clear_all_fields_message(lang_state)
-
-
-def main_wind_lang_change(labels_dict, buttons_dict, list_of_labels, list_of_buttons):
-    for label_number, label in enumerate(labels_dict):
-        labels_dict[label].config(text=list_of_labels[label_number])
-
-    for btn_number, btn in enumerate(buttons_dict):
-        buttons_dict[btn].config(text=list_of_buttons[btn_number])
