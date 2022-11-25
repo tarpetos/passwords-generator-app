@@ -1,0 +1,6 @@
+.idea
+venv/
+**/__pycache__/
+passwords/
+build/
+test.py
