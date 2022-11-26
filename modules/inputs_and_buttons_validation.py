@@ -5,21 +5,35 @@ from tkinter.constants import END
 from random import choices, sample
 
 from modules.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
-    invalid_password_value_message, \
-    invalid_value_if_no_repeatable_characters_message, \
-    invalid_value_for_repeatable_or_not_message
+     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, \
+     invalid_value_for_repeatable_or_not_message
 from modules.create_directory_and_txt import create_directory, create_txt
 from modules.store_user_passwords import StoreUserPasswords
 from modules.messagebox_with_lang_change import nothing_to_copy_message, copy_successful_message, \
      ask_write_to_database_message, successful_write_to_database_message, \
      unexpected_database_error_message, clear_all_fields_message
 
-
 lang_state = True
 
 
-def english_language_main_window_data(labels_dict, buttons_dict):
+def label_lang_change(labels_dict, list_of_labels):
+    for label_number, label in enumerate(labels_dict):
+        labels_dict[label].config(text=list_of_labels[label_number])
+
+
+def btn_lang_change(buttons_dict, list_of_buttons):
+    for btn_number, btn in enumerate(buttons_dict):
+        buttons_dict[btn].config(text=list_of_buttons[btn_number])
+
+
+def radiobtn_lang_change(radiobtns_dict, list_of_radiobtns):
+    for btn_number, btn in enumerate(radiobtns_dict):
+        radiobtns_dict[btn].config(text=list_of_radiobtns[btn_number])
+
+
+def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
     global lang_state
+    lang_state = True
     english_list_of_text_for_labels = [
         'For what this password should be?:',
         'Enter password length:',
@@ -34,13 +48,23 @@ def english_language_main_window_data(labels_dict, buttons_dict):
         'Clear all',
     ]
 
-    main_wind_lang_change(labels_dict, buttons_dict, english_list_of_text_for_labels,
-                          english_list_of_text_for_buttons)
-    lang_state = True
+    english_list_of_text_for_radiobtns = [
+        'All symbols',
+        'Only letters',
+        'Only digits',
+        'Letters & digits',
+        'Letters & signs',
+        'Digits & signs',
+    ]
+
+    label_lang_change(labels_dict, english_list_of_text_for_labels)
+    btn_lang_change(buttons_dict, english_list_of_text_for_buttons)
+    radiobtn_lang_change(radiobtn_dict, english_list_of_text_for_radiobtns)
 
 
-def ukrainian_language_main_window_data(labels_dict, buttons_dict):
+def ukrainian_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
     global lang_state
+    lang_state = False
     ukrain_list_of_text_for_labels = [
         'Яке призначення цього пароля?:',
         'Введіть, якої довжини має бути пароль:',
@@ -55,10 +79,18 @@ def ukrainian_language_main_window_data(labels_dict, buttons_dict):
         'Очистити всі поля',
     ]
 
-    main_wind_lang_change(labels_dict, buttons_dict, ukrain_list_of_text_for_labels,
-                          ukrain_list_of_text_for_buttons)
+    ukrain_list_of_text_for_radiobtns = [
+        'Усі символи',
+        'Тільки букви',
+        'Тільки цифри',
+        'Букви і цифри',
+        'Букви і знаки',
+        'Цифри і знаки',
+    ]
 
-    lang_state = False
+    label_lang_change(labels_dict, ukrain_list_of_text_for_labels)
+    btn_lang_change(buttons_dict, ukrain_list_of_text_for_buttons)
+    radiobtn_lang_change(radiobtn_dict, ukrain_list_of_text_for_radiobtns)
 
 
 def check_for_repeatable_charachters(password_alphabet, password_length, check_if_repeatable_allowed):
@@ -131,8 +163,23 @@ def write_to_database(password_usage, result_password, password_length):
         unexpected_database_error_message(lang_state)
 
 
-def generate_password(password_usage_entry, password_length_entry, repeatable_entry, result_password_entry):
-    password_alphabet = digits + ascii_letters + punctuation
+def get_radiobtn_option(var):
+    if var.get() == 1:
+        return digits + ascii_letters + punctuation
+    elif var.get() == 2:
+        return ascii_letters
+    elif var.get() == 3:
+        return digits
+    elif var.get() == 4:
+        return digits + ascii_letters
+    elif var.get() == 5:
+        return ascii_letters + punctuation
+    elif var.get() == 6:
+        return digits + punctuation
+
+
+def generate_password(password_usage_entry, password_length_entry, repeatable_entry, result_password_entry, var):
+    password_alphabet = get_radiobtn_option(var)
 
     password_usage = password_usage_entry.get()
     if not check_password_usage_input(password_usage):
