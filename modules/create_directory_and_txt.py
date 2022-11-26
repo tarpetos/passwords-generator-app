@@ -23,5 +23,3 @@ def create_txt():
             'Наприклад, https://inloop.github.io/sqlite-viewer/ або https://sqliteonline.com/ .\n'
             'Якщо вищенаведені веб-сайти не працюють, вам потрібно знайти будь-який інший або інсталювати SQLite.\n\n'
         )
-
-    db_manual_txt.close()
