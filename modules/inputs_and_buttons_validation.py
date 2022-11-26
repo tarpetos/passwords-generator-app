@@ -18,8 +18,19 @@ from modules.messagebox_with_lang_change import nothing_to_copy_message, copy_su
 lang_state = True
 
 
+def label_lang_change(labels_dict, list_of_labels):
+    for label_number, label in enumerate(labels_dict):
+        labels_dict[label].config(text=list_of_labels[label_number])
+
+
+def btn_lang_change(buttons_dict, list_of_buttons):
+    for btn_number, btn in enumerate(buttons_dict):
+        buttons_dict[btn].config(text=list_of_buttons[btn_number])
+
+
 def english_language_main_window_data(labels_dict, buttons_dict):
     global lang_state
+    lang_state = True
     english_list_of_text_for_labels = [
         'For what this password should be?:',
         'Enter password length:',
@@ -34,13 +45,13 @@ def english_language_main_window_data(labels_dict, buttons_dict):
         'Clear all',
     ]
 
-    main_wind_lang_change(labels_dict, buttons_dict, english_list_of_text_for_labels,
-                          english_list_of_text_for_buttons)
-    lang_state = True
+    label_lang_change(labels_dict, english_list_of_text_for_labels)
+    btn_lang_change(buttons_dict, english_list_of_text_for_buttons)
 
 
 def ukrainian_language_main_window_data(labels_dict, buttons_dict):
     global lang_state
+    lang_state = False
     ukrain_list_of_text_for_labels = [
         'Яке призначення цього пароля?:',
         'Введіть, якої довжини має бути пароль:',
@@ -55,10 +66,8 @@ def ukrainian_language_main_window_data(labels_dict, buttons_dict):
         'Очистити всі поля',
     ]
 
-    main_wind_lang_change(labels_dict, buttons_dict, ukrain_list_of_text_for_labels,
-                          ukrain_list_of_text_for_buttons)
-
-    lang_state = False
+    label_lang_change(labels_dict, ukrain_list_of_text_for_labels)
+    btn_lang_change(buttons_dict, ukrain_list_of_text_for_buttons)
 
 
 def check_for_repeatable_charachters(password_alphabet, password_length, check_if_repeatable_allowed):
