@@ -51,13 +51,42 @@ def invalid_value_for_repeatable_or_not_message(lang_state_check):
         )
 
 
+def empty_result_input_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showerror(
+            'Field is unfilled',
+            'No password in result field!!!\nGenerate or type it and then write to database.'
+        )
+    else:
+        messagebox.showerror(
+            'Незаповнене поле',
+            'Пароль відсутній!!!\n'
+            'Згенеруйте або введіть його і тоді запишіть до бази даних.'
+        )
+
+
 def ask_write_to_database_message(lang_state_check):
     if lang_state_check:
-        user_choice = messagebox.askyesno('Writing to database...',
-                                          'Would you like to write this data to database?')
+        user_choice = messagebox.askyesno('Writing to database...', 'Would you like to write this data to database?')
     else:
-        user_choice = messagebox.askyesno('Запис до бази даних...',
-                                          'Ви хочете записати дані до бази даних?')
+        user_choice = messagebox.askyesno('Запис до бази даних...', 'Ви хочете записати дані до бази даних?')
+
+    return user_choice
+
+
+def ask_if_record_exist_message(lang_state_check):
+    if lang_state_check:
+        user_choice = messagebox.askyesno(
+            'Accept or decline writing...',
+            'A record with such description already exists.\n'
+            'Are you sure you want to change the password associated with this record?'
+        )
+    else:
+        user_choice = messagebox.askyesno(
+            'Прийняти або відхилити записування...',
+            'Запис з таким описом вже існує.\n'
+            'Ви впевнені, що хочете змінити пароль, який відноситься до цього запису?'
+        )
 
     return user_choice
 

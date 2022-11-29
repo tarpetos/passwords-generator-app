@@ -5,7 +5,7 @@ from tkinter.ttk import Label, Entry, Button, Radiobutton
 from modules.change_background_color import ChangeAppBackgroundTheme
 from modules.change_radiobtn_text_position import change_text_pos
 from modules.inputs_and_buttons_validation import generate_password, copy_password, clear_entries, \
-    english_language_main_window_data, ukrainian_language_main_window_data
+    english_language_main_window_data, ukrainian_language_main_window_data, write_to_database
 
 
 def make_window():
@@ -33,7 +33,8 @@ def make_window():
     all_symbols = Radiobutton(frame, text='All symbols', variable=radiobutton_choice_option, value=1, takefocus=0)
     only_letters = Radiobutton(frame, text='Only letters', variable=radiobutton_choice_option, value=2, takefocus=0)
     only_digits = Radiobutton(frame, text='Only digits', variable=radiobutton_choice_option, value=3, takefocus=0)
-    letters_digits = Radiobutton(frame, text='Letters & digits', variable=radiobutton_choice_option, value=4, takefocus=0)
+    letters_digits = Radiobutton(frame, text='Letters & digits', variable=radiobutton_choice_option, value=4,
+                                 takefocus=0)
     letters_signs = Radiobutton(frame, text='Letters & signs', variable=radiobutton_choice_option, value=5, takefocus=0)
     digits_signs = Radiobutton(frame, text='Digits & signs', variable=radiobutton_choice_option, value=6, takefocus=0)
 
@@ -63,7 +64,8 @@ def make_window():
         frame,
         text='Copy password',
         command=lambda: copy_password(result_password_entry),
-        padding=10
+        padding=10,
+        width=29
     )
 
     clear_btn = Button(
@@ -77,6 +79,19 @@ def make_window():
             result_password_entry
         ),
         padding=10,
+        width=28
+    )
+
+    write_to_db_btn = Button(
+        frame,
+        text='Write to database',
+        command=lambda: write_to_database(
+            password_usage_entry.get(),
+            password_length_entry.get(),
+            result_password_entry.get()
+        ),
+        padding=10,
+        width=29
     )
 
     quit_btn = Button(
@@ -111,9 +126,10 @@ def make_window():
 
     buttons_dict = {
         'generate_btn': generate_btn,
-        'quit_btn': quit_btn,
         'copy_btn': copy_btn,
-        'clear_btn': clear_btn
+        'clear_btn': clear_btn,
+        'write_to_db_btn': write_to_db_btn,
+        'quit_btn': quit_btn,
     }
 
     english_lang = Button(
@@ -140,8 +156,8 @@ def make_window():
     repeatable_entry.grid(row=2, column=1, pady=10)
 
     generate_btn.grid(row=3, column=0, sticky='we', padx=(0, 2), pady=20)
-    ukrainian_lang.grid(row=3, column=1, sticky='w', padx=(2, 0))
-    change_bg_btn.grid(row=3, column=1, padx=(2, 0))
+    ukrainian_lang.grid(row=3, column=1, sticky='w', padx=(1, 0))
+    change_bg_btn.grid(row=3, column=1, padx=(3, 2))
     english_lang.grid(row=3, column=1, sticky='e')
 
     all_symbols.grid(row=4, column=0, sticky='w')
@@ -154,8 +170,10 @@ def make_window():
     result_password_label.grid(row=5, column=0, pady=(30, 0), padx=10, columnspan=2)
     result_password_entry.grid(row=6, column=0, sticky='nesw', pady=10, columnspan=2)
 
-    copy_btn.grid(row=7, column=0, sticky='we', pady=20, padx=(0, 2))
-    clear_btn.grid(row=7, column=1, sticky='we', pady=20, padx=(2, 0))
+    copy_btn.grid(row=7, column=0, columnspan=2, sticky='w', pady=20)
+    clear_btn.grid(row=7, column=0, columnspan=2, pady=20)
+    write_to_db_btn.grid(row=7, column=0, columnspan=2, sticky='e', pady=20)
+
     quit_btn.grid(row=8, column=0, sticky='we', padx=150, columnspan=2)
 
     frame.pack(side=TOP, padx=10, pady=40)

@@ -5,13 +5,14 @@ from tkinter.constants import END
 from random import choices, sample
 
 from modules.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
-     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, \
-     invalid_value_for_repeatable_or_not_message
+    invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, \
+    invalid_value_for_repeatable_or_not_message
 from modules.create_directory_and_txt import create_directory, create_txt
+from modules.search_for_description_in_database import check_if_description_existing
 from modules.store_user_passwords import StoreUserPasswords
 from modules.messagebox_with_lang_change import nothing_to_copy_message, copy_successful_message, \
-     ask_write_to_database_message, successful_write_to_database_message, \
-     unexpected_database_error_message, clear_all_fields_message
+     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
+     unexpected_database_error_message, clear_all_fields_message, empty_result_input_message
 
 lang_state = True
 
@@ -43,9 +44,10 @@ def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
 
     english_list_of_text_for_buttons = [
         'Generate',
-        'Quit',
         'Copy password',
         'Clear all',
+        'Write to database',
+        'Quit',
     ]
 
     english_list_of_text_for_radiobtns = [
@@ -74,9 +76,10 @@ def ukrainian_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict
 
     ukrain_list_of_text_for_buttons = [
         'Згенерувати пароль',
-        'Вихід з програми',
         'Скопіювати пароль',
         'Очистити всі поля',
+        'Запис до бази даних',
+        'Вихід з програми',
     ]
 
     ukrain_list_of_text_for_radiobtns = [
@@ -101,13 +104,11 @@ def check_for_repeatable_charachters(password_alphabet, password_length, check_i
 
 
 def check_if_repeatable_characters_is_present(result_password):
-    for character in result_password:
+    for count_character, character in enumerate(result_password, 1):
         if result_password.count(character) > 1:
             return True
-        else:
-            pass
-
-        return False
+        elif count_character == len(result_password):
+            return False
 
 
 def check_password_usage_input(user_input):
@@ -141,7 +142,32 @@ def check_repeatable_input(user_input, password_length_entry, password_length, p
         return False
 
 
-def write_to_database(password_usage, result_password, password_length):
+def check_password_result_input(result_password):
+    if result_password == '':
+        empty_result_input_message(lang_state)
+        return False
+    else:
+        return True
+
+
+def follow_user_if_record_repeats(description_store, password_usage):
+    if check_if_description_existing(description_store, password_usage):
+        user_choice = ask_if_record_exist_message(lang_state)
+        return user_choice
+    else:
+        return -1
+
+
+def write_to_database(password_usage, password_length, result_password):
+    if not check_password_usage_input(password_usage):
+        return
+
+    if not check_password_length_input(password_length):
+        return
+
+    if not check_password_result_input(result_password):
+        return
+
     user_choice = ask_write_to_database_message(lang_state)
 
     try:
@@ -149,14 +175,27 @@ def write_to_database(password_usage, result_password, password_length):
             create_directory()
             create_txt()
 
-            write_data = StoreUserPasswords()
-            write_data.insert_to_tb(
-                password_usage,
-                result_password,
-                password_length,
-                check_if_repeatable_characters_is_present(result_password)
-            )
-            successful_write_to_database_message(lang_state)
+            change_data = StoreUserPasswords()
+            yes_no_choice = follow_user_if_record_repeats(change_data, (f'{password_usage}',))
+
+            if yes_no_choice == -1:
+                change_data.insert_to_tb(
+                    password_usage,
+                    result_password,
+                    password_length,
+                    check_if_repeatable_characters_is_present(result_password)
+                )
+                successful_write_to_database_message(lang_state)
+            elif yes_no_choice:
+                change_data.update_existing_password(
+                    result_password,
+                    password_length,
+                    check_if_repeatable_characters_is_present(result_password),
+                    password_usage
+                )
+                successful_write_to_database_message(lang_state)
+            else:
+                pass
         else:
             pass
     except sqlite3.OperationalError:
@@ -201,8 +240,6 @@ def generate_password(password_usage_entry, password_length_entry, repeatable_en
     result_password_entry.delete(0, END)
     result = check_for_repeatable_charachters(password_alphabet, int(password_length), check_if_repeatable_allowed)
     result_password_entry.insert(0, result)
-
-    write_to_database(password_usage, result, password_length)
 
 
 def copy_password(result_password_entry):
