@@ -5,8 +5,10 @@ def ivalid_password_usage_message(lang_state_check):
     if lang_state_check:
         messagebox.showerror('Invalid input', 'Length of password usage field have to be in range from 1 to 384!')
     else:
-        messagebox.showerror('Некоректний ввід',
-                             'Кількість символів в полі призначення має знаходитись в межах від 1 до 384!')
+        messagebox.showerror(
+            'Некоректний ввід',
+            'Кількість символів в полі призначення має знаходитись в межах від 1 до 384!'
+        )
 
 
 def invalid_password_type_message(lang_state_check):

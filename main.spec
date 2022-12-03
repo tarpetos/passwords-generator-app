@@ -28,7 +28,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='Password Generator v0.5',
+    name='Password Generator v0.6',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

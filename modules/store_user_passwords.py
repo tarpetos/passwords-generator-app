@@ -30,16 +30,6 @@ class StoreUserPasswords:
 
         self.con.commit()
 
-    def select_descriptions(self) -> list:
-        self.cur.execute(
-            "SELECT password_usage FROM passwords "
-            "ORDER BY id"
-        )
-
-        password_list = self.cur.fetchall()
-
-        return password_list
-
     def update_existing_password(self, password, password_length, password_has_repeatable, password_usage):
         self.cur.execute(
             "UPDATE passwords "
@@ -49,3 +39,23 @@ class StoreUserPasswords:
         )
 
         self.con.commit()
+
+    def select_descriptions(self) -> list:
+        self.cur.execute(
+            "SELECT password_usage FROM passwords "
+            "ORDER BY id"
+        )
+
+        password_usage_list = self.cur.fetchall()
+
+        return password_usage_list
+
+    def select_full_table(self) -> list:
+        self.cur.execute(
+            "SELECT * FROM passwords "
+            "ORDER BY id"
+        )
+
+        password_data_list = self.cur.fetchall()
+
+        return password_data_list
