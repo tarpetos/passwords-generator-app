@@ -23,6 +23,7 @@ from modules.messagebox_with_lang_change import nothing_to_copy_message, empty_r
     unexpected_database_error_message, clear_all_fields_message, copy_successful_message
 
 lang_state = True
+lang_table_page_state = True
 HALF_VARCHAR = 384
 
 
@@ -37,8 +38,8 @@ def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
 
 
 def english_language_table_window_data(buttons_dict):
-    global lang_state
-    lang_state = True
+    global lang_table_page_state
+    lang_table_page_state = True
     btn_lang_change(buttons_dict, english_list_of_text_for_table_buttons)
 
 
@@ -53,8 +54,8 @@ def ukrainian_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict
 
 
 def ukrainian_language_table_window_data(buttons_dict):
-    global lang_state
-    lang_state = False
+    global lang_table_page_state
+    lang_table_page_state = False
     btn_lang_change(buttons_dict, ukrain_list_of_text_for_table_buttons)
 
 
@@ -64,7 +65,18 @@ def get_data_from_database_table() -> list:
     get_list_of_data = StoreUserPasswords()
     full_list_of_data = get_list_of_data.select_full_table()
 
-    full_list_of_data.insert(0, english_tuple_of_columns_names)
+    full_list_of_data = check_columns_names(full_list_of_data)
+    return full_list_of_data
+
+
+def check_columns_names(full_list_of_data):
+    global lang_table_page_state
+    if lang_table_page_state:
+        full_list_of_data.insert(0, english_tuple_of_columns_names)
+        lang_table_page_state = True
+    else:
+        full_list_of_data.insert(0, ukrain_tuple_of_columns_names)
+        lang_table_page_state = False
 
     return full_list_of_data
 

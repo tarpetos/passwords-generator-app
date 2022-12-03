@@ -23,7 +23,7 @@ class CreateTable:
                 self.input_table_cell = Text(
                     self.inner_frame,
                     width=14,
-                    height=2,
+                    height=1,
                     wrap=NONE,
                     fg='black',
                     borderwidth=1.5,

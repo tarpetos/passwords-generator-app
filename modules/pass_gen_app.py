@@ -323,7 +323,10 @@ class TablePage(tkinter.Frame):
         english_lang = Button(
             table_page_frame,
             text='EN',
-            command=lambda: english_language_table_window_data(table_buttons_dict),
+            command=lambda: [
+                english_language_table_window_data(table_buttons_dict),
+                all_data_from_table.get_data_from_table()
+            ],
             padding=10,
             width=31,
         )
@@ -331,7 +334,10 @@ class TablePage(tkinter.Frame):
         ukrainian_lang = Button(
             table_page_frame,
             text='UA',
-            command=lambda: ukrainian_language_table_window_data(table_buttons_dict),
+            command=lambda: [
+                ukrainian_language_table_window_data(table_buttons_dict),
+                all_data_from_table.get_data_from_table()
+            ],
             padding=10,
             width=32,
         )
