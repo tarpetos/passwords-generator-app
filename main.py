@@ -1,8 +1,8 @@
-from modules.window_creation import make_window
+from modules.window_creation import run_app
 
 
 def main():
-    make_window()
+    run_app()
 
 
 if __name__ == '__main__':
