@@ -1,9 +1,9 @@
 import sqlite3
 
 
-class StoreUserPasswords:
+class PasswordStore:
     def __init__(self):
-        self.con = sqlite3.connect('passwords\\your_passwords_database')
+        self.con = sqlite3.connect('passwords/your_passwords_database')
         self.cur = self.con.cursor()
         self.create_table()
 
@@ -30,15 +30,16 @@ class StoreUserPasswords:
 
         self.con.commit()
 
-    def select_descriptions(self) -> list:
+
+    def update_password_data_by_id(self, password_usage, password, password_length, password_has_repeatable, table_id):
         self.cur.execute(
-            "SELECT password_usage FROM passwords "
-            "ORDER BY id"
+            "UPDATE passwords "
+            "SET password_usage = ?, password = ?, password_length = ?, password_has_repeatable = ? "
+            "WHERE id = ?",
+            (password_usage, password, password_length, password_has_repeatable, table_id)
         )
 
-        password_list = self.cur.fetchall()
-
-        return password_list
+        self.con.commit()
 
     def update_existing_password(self, password, password_length, password_has_repeatable, password_usage):
         self.cur.execute(
@@ -46,6 +47,57 @@ class StoreUserPasswords:
             "SET password = ?, password_length = ?, password_has_repeatable = ? "
             "WHERE password_usage = ?",
             (password, password_length, password_has_repeatable, password_usage)
+        )
+
+        self.con.commit()
+
+    def select_descriptions(self) -> list:
+        self.cur.execute(
+            "SELECT password_usage FROM passwords "
+            "ORDER BY id"
+        )
+
+        password_usage_list = self.cur.fetchall()
+
+        return password_usage_list
+
+    def select_descriptions_password(self) -> list:
+        self.cur.execute(
+            "SELECT password_usage, password FROM passwords "
+            "ORDER BY id"
+        )
+
+        password_main_data_list = self.cur.fetchall()
+
+        return password_main_data_list
+
+
+    def select_full_table(self) -> list:
+        self.cur.execute(
+            "SELECT * FROM passwords "
+            "ORDER BY id"
+        )
+
+        password_data_list = self.cur.fetchall()
+
+        return password_data_list
+
+
+    def select_id(self) -> list:
+        self.cur.execute(
+            "SELECT id FROM passwords "
+            "ORDER BY id"
+        )
+
+        id_data_list = self.cur.fetchall()
+
+        return id_data_list
+
+
+    def delete_by_id(self, table_id):
+        self.cur.execute(
+            "DELETE FROM passwords "
+            "WHERE id = ?", (table_id,)
         )
 
         self.con.commit()
