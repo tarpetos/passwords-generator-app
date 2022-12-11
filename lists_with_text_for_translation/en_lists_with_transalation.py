@@ -16,7 +16,9 @@ english_list_of_text_for_buttons = [
 
 english_list_of_text_for_table_buttons = [
     '<<<< Back',
-    'Reload table',
+    'Reload',
+    'Update',
+    'Delete',
     'Quit',
 ]
 

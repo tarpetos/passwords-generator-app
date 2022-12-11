@@ -3,14 +3,14 @@ from tkinter.constants import TOP, LEFT
 from tkinter import ttk
 from tkinter.ttk import Label, Entry, Button, Radiobutton
 
-from modules.change_background_color import ChangeAppBackgroundTheme
+from modules.change_background_color import AppBackgroundTheme
 from modules.change_radiobtn_text_position import change_text_pos
-from modules.create_sql_table import CreateTable
+from modules.create_sql_table import TableInterface
 from modules.inputs_and_buttons_validation import generate_password, copy_password, clear_entries, \
     english_language_main_window_data, ukrainian_language_main_window_data, write_to_database, \
-    english_language_table_window_data, ukrainian_language_table_window_data
+    english_language_table_window_data, ukrainian_language_table_window_data, remove_record_from_table
 
-change_background = ChangeAppBackgroundTheme()
+change_background = AppBackgroundTheme()
 
 
 class PasswordGeneratorApp(tkinter.Tk):
@@ -153,11 +153,12 @@ class MainPage(tkinter.Frame):
         write_to_db_btn = Button(
             main_frame,
             text='Write to database',
-            command=lambda: write_to_database(
-                password_usage_entry.get(),
-                password_length_entry.get(),
-                result_password_entry.get()
-            ),
+            command=lambda:
+                write_to_database(
+                    password_usage_entry.get(),
+                    password_length_entry.get(),
+                    result_password_entry.get()
+                ),
             padding=10,
             width=28
         )
@@ -273,29 +274,47 @@ class TablePage(tkinter.Frame):
         table_page_frame = tkinter.Frame(full_frame)
 
         table_frame = tkinter.Frame(table_page_frame)
-        all_data_from_table = CreateTable(table_frame)
+        all_data_from_table = TableInterface(table_frame)
         all_data_from_table.get_data_from_table()
 
         return_to_main_btn = Button(
             table_page_frame,
             text='<<<< Back',
-            width=32,
             padding=10,
             command=lambda: controller.show_frame(MainPage)
         )
 
         reload_table_btn = Button(
             table_page_frame,
-            text='Reload table',
-            width=31,
+            text='Reload',
             padding=10,
-            command=lambda: all_data_from_table.get_data_from_table()
+            command=lambda: [
+                all_data_from_table.get_data_from_table(),
+            ]
+        )
+
+        update_table_btn = Button(
+            table_page_frame,
+            text='Update',
+            padding=10,
+            command=lambda: [
+                all_data_from_table.update_data_using_table_interface()
+            ]
+        )
+
+        delete_record_btn = Button(
+            table_page_frame,
+            text='Delete',
+            padding=10,
+            command=lambda: [
+                remove_record_from_table(app),
+                all_data_from_table.get_data_from_table()
+            ]
         )
 
         quit_btn = Button(
             table_page_frame,
             text='Quit',
-            width=32,
             padding=10,
             command=lambda: app.destroy(),
         )
@@ -303,6 +322,8 @@ class TablePage(tkinter.Frame):
         table_buttons_dict = {
             'return_to_main_btn': return_to_main_btn,
             'reload_table_btn': reload_table_btn,
+            'update_table_btn': update_table_btn,
+            'delete_record_btn': delete_record_btn,
             'table_quit_btn': quit_btn,
         }
 
@@ -317,7 +338,6 @@ class TablePage(tkinter.Frame):
                 ),
             ],
             padding=10,
-            width=32,
         )
 
         english_lang = Button(
@@ -328,7 +348,6 @@ class TablePage(tkinter.Frame):
                 all_data_from_table.get_data_from_table()
             ],
             padding=10,
-            width=31,
         )
 
         ukrainian_lang = Button(
@@ -339,18 +358,19 @@ class TablePage(tkinter.Frame):
                 all_data_from_table.get_data_from_table()
             ],
             padding=10,
-            width=32,
         )
 
-        ukrainian_lang.grid(row=0, column=0, columnspan=2, sticky='w', pady=(15, 3))
-        change_bg_btn.grid(row=0, column=0, columnspan=2, padx=(6, 0), pady=(15, 3))
-        english_lang.grid(row=0, column=0, columnspan=2, sticky='e', pady=(15, 3))
-        table_frame.grid(row=1, columnspan=2, sticky='nswe', pady=(0, 3))
-        return_to_main_btn.grid(row=2, column=0, columnspan=2, sticky='w')
-        reload_table_btn.grid(row=2, column=0, columnspan=2, padx=(1, 0))
-        quit_btn.grid(row=2, column=0, columnspan=2, sticky='e')
+        ukrainian_lang.grid(row=0, column=0, columnspan=2, sticky='we', pady=(12, 0), padx=(0, 2))
+        change_bg_btn.grid(row=0, column=2, sticky='we', pady=(12, 0), padx=(1, 1))
+        english_lang.grid(row=0, column=3, columnspan=2, sticky='we', pady=(12, 0), padx=(2, 0))
+        table_frame.grid(row=1, column=0, columnspan=5, sticky='nswe', pady=5)
+        return_to_main_btn.grid(row=2, column=0, sticky='we', padx=(0, 2))
+        reload_table_btn.grid(row=2, column=1, sticky='we', padx=(1, 2))
+        update_table_btn.grid(row=2, column=2, sticky='we', padx=(1, 1))
+        delete_record_btn.grid(row=2, column=3, sticky='we', padx=(2, 1))
+        quit_btn.grid(row=2, column=4, sticky='we', padx=(2, 0))
         table_page_frame.pack(side=LEFT)
         full_frame.pack(side=TOP)
-
+    
 
 app = PasswordGeneratorApp()

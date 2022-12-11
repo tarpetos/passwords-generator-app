@@ -16,8 +16,10 @@ ukrain_list_of_text_for_buttons = [
 
 ukrain_list_of_text_for_table_buttons = [
     '<<<< Назад',
-    'Оновити таблицю',
-    'Вихід з програми',
+    'Оновити',
+    'Змінити',
+    'Видалити',
+    'Вихід',
 ]
 
 ukrain_list_of_text_for_radiobtns = [

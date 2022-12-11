@@ -1,5 +1,6 @@
 import sqlite3
 import pyperclip
+
 from string import digits, ascii_letters, punctuation
 from tkinter.constants import END
 from random import choices, sample
@@ -14,10 +15,11 @@ from modules.change_window_config import label_lang_change, change_en_buttons_wi
     btn_lang_change, change_uk_buttons_width
 from modules.create_directory_and_txt import create_directory, create_txt
 from modules.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
-    invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, \
-    invalid_value_for_repeatable_or_not_message
+    invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
+    invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
+    duplicate_usage_error_message, no_update_warning_message, successful_update_message
 from modules.search_for_description_in_database import check_if_description_existing
-from modules.store_user_passwords import StoreUserPasswords
+from modules.store_user_passwords import PasswordStore
 from modules.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
     unexpected_database_error_message, clear_all_fields_message, copy_successful_message
@@ -25,6 +27,10 @@ from modules.messagebox_with_lang_change import nothing_to_copy_message, empty_r
 lang_state = True
 lang_table_page_state = True
 HALF_VARCHAR = 384
+
+create_directory()
+# create_txt()
+database_user_data = PasswordStore()
 
 
 def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
@@ -60,16 +66,13 @@ def ukrainian_language_table_window_data(buttons_dict):
 
 
 def get_data_from_database_table() -> list:
-    create_directory()
-    create_txt()
-    get_list_of_data = StoreUserPasswords()
-    full_list_of_data = get_list_of_data.select_full_table()
-
+    full_list_of_data = database_user_data.select_full_table()
     full_list_of_data = check_columns_names(full_list_of_data)
+
     return full_list_of_data
 
 
-def check_columns_names(full_list_of_data):
+def check_columns_names(full_list_of_data) -> list:
     global lang_table_page_state
     if lang_table_page_state:
         full_list_of_data.insert(0, english_tuple_of_columns_names)
@@ -157,11 +160,10 @@ def write_to_database(password_usage, password_length, result_password):
 
     try:
         if user_choice:
-            change_data = StoreUserPasswords()
-            yes_no_choice = follow_user_if_record_repeats(change_data, (f'{password_usage}',))
+            yes_no_choice = follow_user_if_record_repeats(database_user_data, (f'{password_usage}',))
 
             if yes_no_choice == -1:
-                change_data.insert_to_tb(
+                database_user_data.insert_to_tb(
                     password_usage,
                     result_password,
                     password_length,
@@ -169,7 +171,7 @@ def write_to_database(password_usage, password_length, result_password):
                 )
                 successful_write_to_database_message(lang_state)
             elif yes_no_choice:
-                change_data.update_existing_password(
+                database_user_data.update_existing_password(
                     result_password,
                     password_length,
                     check_if_repeatable_characters_is_present(result_password),
@@ -239,3 +241,43 @@ def clear_entries(password_usage_entry, password_length_entry, repeatable_entry,
     repeatable_entry.delete(0, END)
     result_password_entry.delete(0, END)
     # clear_all_fields_message(lang_state) # uncomment this if you want to see a message after clearing the fields
+
+
+def open_tuples_in_lst() -> list:
+    get_all_id = database_user_data.select_id()
+
+    without_tuples_lst = []
+
+    first_tuple_index_value = 0
+    for id_value in get_all_id:
+        without_tuples_lst.append(id_value[first_tuple_index_value])
+
+    return without_tuples_lst
+
+def remove_record_from_table(application_window):
+    id_list = open_tuples_in_lst()
+
+    chosen_id = input_dialog_message(lang_table_page_state, application_window)
+    while True:
+        if not chosen_id:
+            return
+
+        if chosen_id not in id_list:
+            input_dialog_error_message(lang_table_page_state)
+            chosen_id = input_dialog_message(lang_table_page_state, application_window)
+        else:
+            database_user_data.delete_by_id(chosen_id)
+            break
+
+
+def update_record_in_table() -> bool:
+    return ask_to_update_record_message(lang_table_page_state)
+
+def duplicate_usage_in_table():
+    return duplicate_usage_error_message(lang_table_page_state)
+
+def nothing_to_update_in_table():
+    return no_update_warning_message(lang_table_page_state)
+
+def successful_update_in_table():
+    return successful_update_message(lang_table_page_state)

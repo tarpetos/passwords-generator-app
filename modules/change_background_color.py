@@ -32,7 +32,7 @@ def set_color_to_radiobtn(radiobtn_dict, opposite_color, current_color):
         radiobtn_key.config(style='Wild.TRadiobutton')
 
 
-class ChangeAppBackgroundTheme:
+class AppBackgroundTheme:
     def __init__(self):
         self.bg_color = BackgroundTheme.LIGHT
         self.bg_table_color = BackgroundTheme.LIGHT
