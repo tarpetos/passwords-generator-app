@@ -274,10 +274,10 @@ def update_record_in_table() -> bool:
     return ask_to_update_record_message(lang_table_page_state)
 
 def duplicate_usage_in_table():
-    return duplicate_usage_error_message(lang_table_page_state)
+    duplicate_usage_error_message(lang_table_page_state)
 
 def nothing_to_update_in_table():
-    return no_update_warning_message(lang_table_page_state)
+    no_update_warning_message(lang_table_page_state)
 
 def successful_update_in_table():
-    return successful_update_message(lang_table_page_state)
+    successful_update_message(lang_table_page_state)
