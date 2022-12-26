@@ -4,10 +4,10 @@ from tkinter.constants import END, NONE, WORD, TOP
 
 from tkscrolledframe import ScrolledFrame
 
-from modules.inputs_and_buttons_validation import get_data_from_database_table, \
-    check_if_repeatable_characters_is_present, update_record_in_table, successful_update_in_table, \
-    duplicate_usage_in_table, nothing_to_update_in_table
-from modules.store_user_passwords import PasswordStore
+from create_app.inputs_and_buttons_validation import get_data_from_database_table, \
+    check_if_repeatable_characters_is_present, update_record_in_table, duplicate_usage_in_table, \
+    nothing_to_update_in_table, successful_update_in_table
+from create_app.store_user_passwords import PasswordStore
 
 get_data = PasswordStore()
 

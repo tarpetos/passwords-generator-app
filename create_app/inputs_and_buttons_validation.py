@@ -5,31 +5,30 @@ from string import digits, ascii_letters, punctuation
 from tkinter.constants import END
 from random import choices, sample
 
-from lists_with_text_for_translation.en_lists_with_transalation import english_list_of_text_for_labels, \
+from additional_modules.create_directory_and_txt import create_directory
+from additional_modules.search_for_description_in_database import check_if_description_existing
+from app_translation.en_lists_with_transalation import english_list_of_text_for_labels, \
     english_list_of_text_for_buttons, english_list_of_text_for_radiobtns, english_list_of_text_for_table_buttons, \
     english_tuple_of_columns_names
-from lists_with_text_for_translation.uk_lists_with_translation import ukrain_list_of_text_for_labels, \
+from app_translation.uk_lists_with_translation import ukrain_list_of_text_for_labels, \
     ukrain_list_of_text_for_radiobtns, ukrain_list_of_text_for_buttons, ukrain_list_of_text_for_table_buttons, \
     ukrain_tuple_of_columns_names
-from modules.change_window_config import label_lang_change, change_en_buttons_width, radiobtn_lang_change, \
+from change_interface_look.change_window_config import label_lang_change, change_en_buttons_width, radiobtn_lang_change, \
     btn_lang_change, change_uk_buttons_width
-from modules.create_directory_and_txt import create_directory, create_txt
-from modules.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
+from app_translation.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
     invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
     duplicate_usage_error_message, no_update_warning_message, successful_update_message
-from modules.search_for_description_in_database import check_if_description_existing
-from modules.store_user_passwords import PasswordStore
-from modules.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
+from app_translation.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
-    unexpected_database_error_message, clear_all_fields_message, copy_successful_message
+    unexpected_database_error_message
+from create_app.store_user_passwords import PasswordStore
 
 lang_state = True
 lang_table_page_state = True
 HALF_VARCHAR = 384
 
 create_directory()
-# create_txt()
 database_user_data = PasswordStore()
 
 

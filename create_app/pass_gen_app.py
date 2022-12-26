@@ -3,12 +3,12 @@ from tkinter.constants import TOP, LEFT
 from tkinter import ttk
 from tkinter.ttk import Label, Entry, Button, Radiobutton
 
-from modules.change_background_color import AppBackgroundTheme
-from modules.change_radiobtn_text_position import change_text_pos
-from modules.create_sql_table import TableInterface
-from modules.inputs_and_buttons_validation import generate_password, copy_password, clear_entries, \
-    english_language_main_window_data, ukrainian_language_main_window_data, write_to_database, \
-    english_language_table_window_data, ukrainian_language_table_window_data, remove_record_from_table
+from change_interface_look.change_background_color import AppBackgroundTheme
+from change_interface_look.change_radiobtn_text_position import change_text_pos
+from create_app.create_sql_table import TableInterface
+from create_app.inputs_and_buttons_validation import generate_password, copy_password, write_to_database, clear_entries, \
+    english_language_main_window_data, ukrainian_language_main_window_data, remove_record_from_table, \
+    english_language_table_window_data, ukrainian_language_table_window_data
 
 change_background = AppBackgroundTheme()
 

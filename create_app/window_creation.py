@@ -1,4 +1,4 @@
-from modules.pass_gen_app import app
+from create_app.pass_gen_app import app
 
 
 def run_app():
