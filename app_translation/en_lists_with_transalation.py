@@ -15,6 +15,7 @@ english_list_of_text_for_buttons = [
 ]
 
 english_list_of_text_for_table_buttons = [
+    'Synchronize password data',
     '<<<< Back',
     'Reload',
     'Update',

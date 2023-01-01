@@ -4,10 +4,12 @@ from tkinter.constants import END, NONE, WORD, TOP
 
 from tkscrolledframe import ScrolledFrame
 
-from create_app.inputs_and_buttons_validation import get_data_from_database_table, \
+from additional_modules.encryption_decryption import decrypt, encrypt
+from create_app.inputs_and_buttons_processing import get_data_from_database_table, \
     check_if_repeatable_characters_is_present, update_record_in_table, duplicate_usage_in_table, \
     nothing_to_update_in_table, successful_update_in_table
 from create_app.store_user_passwords import PasswordStore
+
 
 get_data = PasswordStore()
 
@@ -41,7 +43,13 @@ class TableInterface:
                     font=('Arial', 9, 'bold'),
                 )
                 self.input_table_cell.grid(row=tuple_row_element, column=tuple_column_elemnt)
-                self.input_table_cell.insert(END, full_list_of_data[tuple_row_element][tuple_column_elemnt])
+
+                iserted_data_to_cell = full_list_of_data[tuple_row_element][tuple_column_elemnt]
+                if tuple_column_elemnt == 2 and tuple_row_element != 0:
+                    decryped_password = decrypt(iserted_data_to_cell)
+                    self.input_table_cell.insert(END, decryped_password)
+                else:
+                    self.input_table_cell.insert(END, iserted_data_to_cell)
                 self.add_special_text_config(tuple_row_element, tuple_column_elemnt)
 
                 if (1 <= tuple_column_elemnt <= 2) and tuple_row_element != 0:
@@ -68,7 +76,6 @@ class TableInterface:
             self.input_table_cell.config(background='yellow', state='disabled')
 
     def update_data_using_table_interface(self):
-
         update_id = get_data.select_id()
         data_for_compare = get_data.select_descriptions_password()
         data_list_from_user = self.text_cells_list
@@ -82,17 +89,18 @@ class TableInterface:
                 table_id_for_update = update_id[num_elem_in_list][0]
                 password_usage_cell_element = data_list_from_user[num_elem_in_list][0].get('1.0', 'end-1c')
                 password_cell_element = data_list_from_user[num_elem_in_list][1].get('1.0', 'end-1c')
+                encrypted_password = encrypt(password_cell_element)
                 compare_with_usage = data_for_compare[num_elem_in_list][0]
                 compare_with_password = data_for_compare[num_elem_in_list][1]
 
-                if compare_with_usage == password_usage_cell_element and compare_with_password == password_cell_element:
+                if compare_with_usage == password_usage_cell_element and compare_with_password == encrypted_password:
                     continue
                 else:
                     if not search_for_update_flag and update_record_in_table():
                         search_for_update_flag = True
                         get_data.update_password_data_by_id(
                             password_usage_cell_element,
-                            password_cell_element,
+                            encrypted_password,
                             len(password_cell_element),
                             check_if_repeatable_characters_is_present(password_cell_element),
                             table_id_for_update,
@@ -101,7 +109,7 @@ class TableInterface:
                     elif search_for_update_flag:
                         get_data.update_password_data_by_id(
                             password_usage_cell_element,
-                            password_cell_element,
+                            encrypted_password,
                             len(password_cell_element),
                             check_if_repeatable_characters_is_present(password_cell_element),
                             table_id_for_update,

@@ -1,4 +1,4 @@
-from create_app.pass_gen_app import app
+from create_app.gui_app_config import app
 
 
 def run_app():

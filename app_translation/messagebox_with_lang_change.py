@@ -1,6 +1,5 @@
-from tkinter import *
+from additional_modules.custom_input_dialogs import askinteger, askstring
 from tkinter import messagebox
-from tkinter.simpledialog import Dialog
 
 
 def ivalid_password_usage_message(lang_state_check):
@@ -71,9 +70,15 @@ def empty_result_input_message(lang_state_check):
 
 def ask_write_to_database_message(lang_state_check):
     if lang_state_check:
-        user_choice = messagebox.askyesno('Writing to database...', 'Would you like to write this data to database?')
+        user_choice = messagebox.askyesno(
+            'Writing to database...',
+            'Would you like to write this data to database?'
+        )
     else:
-        user_choice = messagebox.askyesno('Запис до бази даних...', 'Ви хочете записати дані до бази даних?')
+        user_choice = messagebox.askyesno(
+            'Запис до бази даних...',
+            'Ви хочете записати дані до бази даних?'
+        )
 
     return user_choice
 
@@ -131,69 +136,15 @@ def clear_all_fields_message(lang_state_check):
 
 
 def input_dialog_message(lang_state_check, application_window):
-    class _CustomDialog(Dialog):
-        def __init__(self, title, prompt, initialvalue=None, parent=None):
-            self.prompt = prompt
-
-            self.initialvalue = initialvalue
-
-            Dialog.__init__(self, parent, title)
-
-        def destroy(self):
-            self.entry = None
-            Dialog.destroy(self)
-
-        def body(self, master):
-
-            w = Label(master, text=self.prompt, justify=LEFT)
-            w.grid(row=0, padx=5, sticky=W)
-
-            self.entry = Entry(master, name="entry")
-            self.entry.grid(row=1, padx=5, sticky=W + E)
-
-            if self.initialvalue is not None:
-                self.entry.insert(0, self.initialvalue)
-                self.entry.select_range(0, END)
-
-            return self.entry
-
-        def validate(self):
-            try:
-                result = self.getresult()
-            except ValueError:
-                if lang_state_check:
-                    messagebox.showwarning(
-                        "Invalid input",
-                        "Not an integer! Try again.",
-                        parent=self
-                    )
-                else:
-                    messagebox.showwarning(
-                        "Некоректний ввід",
-                        "Введено не ціле число! Спробуйте ще раз.",
-                        parent=self
-                    )
-                return 0
-
-            self.result = result
-
-            return 1
-
-    class _QueryInteger(_CustomDialog):
-        def getresult(self):
-            return self.getint(self.entry.get())
-
-    def askinteger(title, prompt, **kw):
-        d = _QueryInteger(title, prompt, **kw)
-        return d.result
-
     if lang_state_check:
         user_input_choice = askinteger(
-            'ID input', 'Enter the ID of the record you want to delete...', parent=application_window
+            'ID input', 'Enter the ID of the record you want to delete...',
+            parent=application_window, lang_state=lang_state_check
         )
     else:
         user_input_choice = askinteger(
-            'Ввід ID', 'Введіть ID запису, який ви хочете видалити...', parent=application_window
+            'Ввід ID', 'Введіть ID запису, який ви хочете видалити...',
+            parent=application_window, lang_state=lang_state_check
         )
 
     return user_input_choice
@@ -255,7 +206,7 @@ def successful_update_message(lang_state_check):
     if lang_state_check:
         messagebox.showinfo(
             'Table update',
-            'You have changed the data in the table! Changes saved successfully.\n'
+            'You have changed the data in the table!\nChanges saved successfully.\n'
             'Reload the table to reflect the changes.'
         )
     else:
@@ -263,4 +214,147 @@ def successful_update_message(lang_state_check):
             'Зміна таблиці',
             'Ви змінили дані в таблиці! Зміни записано успішно.\n'
             'Оновіть таблицю для відображення змін.'
+        )
+
+
+def ask_to_sync_message(lang_state_check):
+    if lang_state_check:
+        user_choice = messagebox.askyesno(
+            'Database synchronization',
+            'Are you sure you want to synchronize the passwords of this application with the passwords of the Telegram bot?'
+        )
+    else:
+        user_choice = messagebox.askyesno(
+            'Синхронізація бази даних',
+            'Ви впевнені, що хочете синхронізувати паролі цього додатка з паролями Telegram-бота?'
+        )
+
+    return user_choice
+
+def token_input_message(lang_state_check, application_window):
+    if lang_state_check:
+        user_choice = askstring(
+            'Token input', 'Enter the token assigned to you by the bot\n(use /token command in Telegram)...\n',
+            parent=application_window, lang_state=lang_state_check
+        )
+    else:
+        user_choice = askstring(
+            'Ввід токену',
+            'Введіть токен, який присвоїв вам бот\n(використовуйте команду /token у Telegram)...\n',
+            parent=application_window, lang_state=lang_state_check
+        )
+
+    return user_choice
+
+
+def input_token_error_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showwarning('Invalid input', 'The token is entered incorrectly or does not exist! '
+                                                'Check the correctness of the input or generate it in the bot.')
+    else:
+        messagebox.showwarning('Некоректний ввід', 'Токен введений невірно або його не існує! '
+                                                   'Перевірте правильність вводу або згенеруйте його в боті.')
+
+
+def data_is_identical_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showinfo('Data is up-to-date', 'Data in the bot database and the local database are identical.')
+    else:
+        messagebox.showinfo('Дані актуальні', 'Дані в базі даних бота та локальній базі ідентичні.')
+
+
+def error_sync_message(lang_state_check):
+    if lang_state_check:
+         messagebox.showerror(
+            'Operational error',
+            'Unexpected error during synchronization.\nCanceling the process...'
+        )
+    else:
+         messagebox.showinfo(
+            'Помилка операції',
+            'Неочікувана помилка під час синхронізації. Відміна процесу...'
+        )
+
+
+def successful_sync_message(lang_state_check):
+    if lang_state_check:
+         messagebox.showinfo(
+            'Operation successful!',
+            'Passwords have been successfully synchronized. Press "Reload" to see changes.'
+        )
+    else:
+         messagebox.showinfo(
+            'Операція успішна!',
+            'Паролі успішно синхронізовано. Натисніть "Оновити", щоб побачити зміни.'
+        )
+
+
+def connection_error_message(lang_state_check):
+    if lang_state_check:
+         messagebox.showerror(
+            'Connection error',
+            'Synchronization is not possible due to lack of Internet connection.'
+        )
+    else:
+         messagebox.showerror(
+            'Помилка з’єднання',
+            'Синхронізація неможлива, через відсутність Інтернет з’єднання.'
+        )
+
+
+def connection_timeout_message(lang_state_check):
+    if lang_state_check:
+         messagebox.showerror(
+            'Connection timeout',
+            'Synchronization is not possible because the waiting time is too long.'
+        )
+    else:
+         messagebox.showerror(
+            'Закінчення часу очікування',
+            'Синхронізація неможлива, через занадто довгий час очікування.'
+        )
+
+
+def ask_to_save_token_message(lang_state_check):
+    if lang_state_check:
+        user_choice = messagebox.askyesno(
+            'Save token', 'Would you like to save this token for future synchronizations?'
+        )
+    else:
+        user_choice = messagebox.askyesno(
+            'Збереження токену', 'Ви хочете зберегти цей токен для наступних синхронізацій?'
+        )
+
+    return user_choice
+
+
+def choose_between_duplicates_message(lang_state_check, application_window):
+    if lang_state_check:
+        user_choice = askstring(
+            'Duplicate password description found',
+            'Enter "Remote" to keep remote passwords, or enter "Local" to keep local passwords.\n',
+            parent=application_window, lang_state=lang_state_check
+        )
+    else:
+        user_choice = askstring(
+            'Знайдено дубльований опис пароля',
+            'Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
+            parent=application_window, lang_state=lang_state_check
+        )
+
+    return user_choice
+
+
+def show_warn_by_regex_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showwarning(
+            'Invalid input',
+            'You can enter only the word "Server" to save passwords from the server, '
+            'or "Local" to save local passwords. It is forbidden to enter any other words.'
+        )
+    else:
+        messagebox.showwarning(
+            'Некоректний ввід',
+            'Ви можете ввести тільки слово "Сервер", щоб зберегти паролі з сервера, '
+            'або "Локально", щоб зберегти локальні паролі. Інші будь-які слова вводити заборонено.',
         )

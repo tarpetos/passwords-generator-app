@@ -1,3 +1,4 @@
+import re
 import sqlite3
 import pyperclip
 
@@ -5,20 +6,26 @@ from string import digits, ascii_letters, punctuation
 from tkinter.constants import END
 from random import choices, sample
 
-from additional_modules.create_directory_and_txt import create_directory
+import requests
+
+from additional_modules.create_directory_files import create_directory
+from additional_modules.encryption_decryption import encrypt, decrypt
 from additional_modules.search_for_description_in_database import check_if_description_existing
+from additional_modules.sync_table import RemoteDB
 from app_translation.en_lists_with_transalation import english_list_of_text_for_labels, \
     english_list_of_text_for_buttons, english_list_of_text_for_radiobtns, english_list_of_text_for_table_buttons, \
     english_tuple_of_columns_names
 from app_translation.uk_lists_with_translation import ukrain_list_of_text_for_labels, \
     ukrain_list_of_text_for_radiobtns, ukrain_list_of_text_for_buttons, ukrain_list_of_text_for_table_buttons, \
     ukrain_tuple_of_columns_names
-from change_interface_look.change_window_config import label_lang_change, change_en_buttons_width, radiobtn_lang_change, \
-    btn_lang_change, change_uk_buttons_width
+from change_interface_look.change_window_config import label_lang_change, radiobtn_lang_change, btn_lang_change
 from app_translation.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
     invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
-    duplicate_usage_error_message, no_update_warning_message, successful_update_message
+    duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
+    successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
+    token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
+    choose_between_duplicates_message, show_warn_by_regex_message
 from app_translation.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
     unexpected_database_error_message
@@ -31,14 +38,13 @@ HALF_VARCHAR = 384
 create_directory()
 database_user_data = PasswordStore()
 
-
 def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
     global lang_state
     lang_state = True
 
     label_lang_change(labels_dict, english_list_of_text_for_labels)
     btn_lang_change(buttons_dict, english_list_of_text_for_buttons)
-    change_en_buttons_width(buttons_dict)
+    # change_en_buttons_width(buttons_dict)
     radiobtn_lang_change(radiobtn_dict, english_list_of_text_for_radiobtns)
 
 
@@ -54,7 +60,7 @@ def ukrainian_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict
 
     label_lang_change(labels_dict, ukrain_list_of_text_for_labels)
     btn_lang_change(buttons_dict, ukrain_list_of_text_for_buttons)
-    change_uk_buttons_width(buttons_dict)
+    # change_uk_buttons_width(buttons_dict)
     radiobtn_lang_change(radiobtn_dict, ukrain_list_of_text_for_radiobtns)
 
 
@@ -145,11 +151,8 @@ def follow_user_if_record_repeats(description_store, password_usage) -> bool or 
         return -1
 
 
-def write_to_database(password_usage, password_length, result_password):
+def write_to_database(password_usage, result_password):
     if not check_password_usage_input(password_usage):
-        return
-
-    if not check_password_length_input(password_length):
         return
 
     if not check_password_result_input(result_password):
@@ -160,19 +163,19 @@ def write_to_database(password_usage, password_length, result_password):
     try:
         if user_choice:
             yes_no_choice = follow_user_if_record_repeats(database_user_data, (f'{password_usage}',))
-
+            encryped_password = encrypt(result_password)
             if yes_no_choice == -1:
-                database_user_data.insert_to_tb(
+                database_user_data.insert_into_tb(
                     password_usage,
-                    result_password,
-                    password_length,
+                    encryped_password,
+                    len(result_password),
                     check_if_repeatable_characters_is_present(result_password)
                 )
                 successful_write_to_database_message(lang_state)
             elif yes_no_choice:
                 database_user_data.update_existing_password(
-                    result_password,
-                    password_length,
+                    encryped_password,
+                    len(result_password),
                     check_if_repeatable_characters_is_present(result_password),
                     password_usage
                 )
@@ -185,9 +188,18 @@ def write_to_database(password_usage, password_length, result_password):
         unexpected_database_error_message(lang_state)
 
 
+def exclude_invalid_symblols_for_markup() -> str:
+    excluded_symbols = '<>&"'
+    allowed_symbols = ''.join([char for char in punctuation if char not in excluded_symbols])
+
+    return allowed_symbols
+
+
 def get_radiobtn_option(var) -> str:
+    fixed_punctuation = exclude_invalid_symblols_for_markup()
+
     if var.get() == 1:
-        return digits + ascii_letters + punctuation
+        return digits + ascii_letters + fixed_punctuation
     elif var.get() == 2:
         return ascii_letters
     elif var.get() == 3:
@@ -195,9 +207,9 @@ def get_radiobtn_option(var) -> str:
     elif var.get() == 4:
         return digits + ascii_letters
     elif var.get() == 5:
-        return ascii_letters + punctuation
+        return ascii_letters + fixed_punctuation
     elif var.get() == 6:
-        return digits + punctuation
+        return digits + fixed_punctuation
 
 
 def generate_password(password_usage_entry, password_length_entry, repeatable_entry, result_password_entry, var):
@@ -253,6 +265,7 @@ def open_tuples_in_lst() -> list:
 
     return without_tuples_lst
 
+
 def remove_record_from_table(application_window):
     id_list = open_tuples_in_lst()
 
@@ -272,11 +285,135 @@ def remove_record_from_table(application_window):
 def update_record_in_table() -> bool:
     return ask_to_update_record_message(lang_table_page_state)
 
+
 def duplicate_usage_in_table():
     duplicate_usage_error_message(lang_table_page_state)
+
 
 def nothing_to_update_in_table():
     no_update_warning_message(lang_table_page_state)
 
+
 def successful_update_in_table():
     successful_update_message(lang_table_page_state)
+
+
+def sync_db_data(application_window):
+    if not check_internet_connection():
+        connection_error_message(lang_table_page_state)
+        return
+
+    remote_connection = RemoteDB()
+    ask_to_sync = ask_to_sync_message(lang_table_page_state)
+
+    if ask_to_sync:
+        full_list_of_tokens = remote_connection.select_all_tokens()
+        saved_data = database_user_data.select_from_save_tb()
+
+        user_token = check_for_token(application_window, saved_data)
+        if not user_token:
+            return
+
+        while True:
+            if user_token in full_list_of_tokens:
+                user_id = check_for_id(remote_connection, saved_data, user_token)
+                save_token(saved_data, user_id, user_token)
+
+                table_name = f'pass_gen_table_{user_id}'
+                local_full_table = database_user_data.select_without_id()
+                remote_full_table = remote_connection.select_pass_gen_table_without_id(table_name)
+
+                lst_union = set(local_full_table) | set(remote_full_table)
+
+                if sorted(local_full_table) == sorted(lst_union):
+                    data_is_identical_message(lang_table_page_state)
+                    return
+                else:
+                    temp_lst = local_full_table + remote_full_table
+                    if check_if_has_duplicates_desc(temp_lst):
+                        while True:
+                            save_pass = choose_between_duplicates_message(lang_table_page_state, application_window)
+
+                            if save_pass == '' or save_pass:
+                                local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
+                                remote_choice_pattern = re.compile('^(remote|сервер)$', re.IGNORECASE)
+                                if re.match(local_choice_pattern, save_pass):
+                                    local_full_table = correct_lst_unite(local_full_table, remote_full_table)
+                                    sync_tables_loop(remote_connection, table_name, local_full_table)
+                                    successful_sync_message(lang_table_page_state)
+                                    print('local')
+                                    return
+                                elif re.match(remote_choice_pattern, save_pass):
+                                    remote_full_table = correct_lst_unite(remote_full_table, local_full_table)
+                                    sync_tables_loop(remote_connection, table_name, remote_full_table)
+                                    successful_sync_message(lang_table_page_state)
+                                    print('remote')
+                                    return
+                                else:
+                                    show_warn_by_regex_message(lang_table_page_state)
+                                    print('invalid')
+                            else:
+                                print('else')
+                                return
+                    else:
+                        sync_tables_loop(remote_connection, table_name, temp_lst)
+                        return
+            else:
+                input_token_error_message(lang_table_page_state)
+                user_token = token_input_message(lang_table_page_state, application_window)
+
+
+def check_internet_connection():
+    try:
+        requests.get("http://google.com", timeout=3)
+        return True
+    except requests.ConnectionError:
+        return False
+
+
+def check_for_token(app, saved_token):
+    if saved_token:
+        user_token = decrypt(saved_token[2])
+    else:
+        user_token = token_input_message(lang_table_page_state, app)
+
+    return user_token
+
+
+def check_for_id(remote_connection, saved_token, user_token):
+    if saved_token:
+        user_id = decrypt(saved_token[1])
+    else:
+        user_id = remote_connection.select_id_by_token(encrypt(user_token))
+
+    return user_id
+
+
+def save_token(token_to_save, user_id, user_token):
+    if not token_to_save and ask_to_save_token_message(lang_table_page_state):
+        database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
+
+
+def check_if_has_duplicates_desc(lst):
+    seen = set()
+    for item in lst:
+        if item[0] in seen:
+            return True
+        else:
+            seen.add(item[0])
+
+    return False
+
+
+def sync_tables_loop(remote_connection, table, lst):
+    for tuple_row in lst:
+        database_user_data.insert_update_into_tb(*tuple_row)
+        remote_connection.insert_update_password_data(table, *tuple_row)
+
+
+def correct_lst_unite(lst1, lst2):
+    lst1.extend(
+        [tuple_row for tuple_row in lst2 if tuple_row[0] not in [descr[0] for descr in lst1]]
+    )
+
+    return lst1

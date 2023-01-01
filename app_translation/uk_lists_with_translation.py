@@ -15,6 +15,7 @@ ukrain_list_of_text_for_buttons = [
 ]
 
 ukrain_list_of_text_for_table_buttons = [
+    'Синхронізувати дані паролів',
     '<<<< Назад',
     'Оновити',
     'Змінити',
