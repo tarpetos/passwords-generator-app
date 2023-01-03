@@ -1,16 +1,15 @@
+import mysql.connector
+import requests
 import re
 import sqlite3
 import tkinter
-from tkinter.ttk import Label
-
-import mysql.connector.errors
 import pyperclip
 
 from string import digits, ascii_letters, punctuation
 from tkinter.constants import END
 from random import choices, sample
+from tkinter.ttk import Label
 
-import requests
 
 from additional_modules.create_directory_files import create_directory
 from additional_modules.encryption_decryption import encrypt, decrypt
@@ -401,13 +400,16 @@ def result_of_connection(application_window) -> RemoteDB | None:
     load_screen = app_loading_screen(application_window)
     remote_connection = control_mysql_connection()
     if remote_connection == -1:
+        load_screen.destroy()
         return
 
     if not check_internet_connection():
+        load_screen.destroy()
         connection_error_message(lang_table_page_state)
         return
 
     load_screen.destroy()
+
     return remote_connection
 
 
@@ -419,6 +421,9 @@ def control_mysql_connection() -> RemoteDB | int:
         connection_timeout_message(lang_table_page_state)
         return -1
     except mysql.connector.errors.DatabaseError:
+        error_sync_message(lang_table_page_state)
+        return -1
+    except mysql.connector.errors.InterfaceError:
         error_sync_message(lang_table_page_state)
         return -1
 
