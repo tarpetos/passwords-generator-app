@@ -15,10 +15,11 @@ english_list_of_text_for_buttons = [
 ]
 
 english_list_of_text_for_table_buttons = [
-    'Synchronize password data',
+    'Synchronization',
+    'Change token',
     '<<<< Back',
     'Reload',
-    'Update',
+    'Update record',
     'Delete',
     'Quit',
 ]

@@ -2,7 +2,8 @@ import base64
 
 
 def encrypt(data):
-    return base64.b85encode(data.encode('UTF-16')).decode()
+    if data is not None:
+        return base64.b85encode(data.encode('UTF-16')).decode()
 
 
 def decrypt(data):

@@ -20,13 +20,18 @@ class PasswordStore:
             )
             '''
         )
+        self.con.commit()
+
+
+    def drop_table(self):
+        self.cur.execute('DROP TABLE IF EXISTS passwords')
+        self.con.commit()
 
 
     def create_token_id_table(self):
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS id_token (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
                 saved_id INTEGER NOT NULL,
                 saved_token VARCHAR(384) NOT NULL
             )
@@ -67,6 +72,11 @@ class PasswordStore:
             (user_id, user_token)
         )
 
+        self.con.commit()
+
+
+    def truncate_saved_token(self):
+        self.cur.execute('DELETE FROM id_token')
         self.con.commit()
 
 

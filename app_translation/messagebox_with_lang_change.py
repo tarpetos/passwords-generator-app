@@ -135,6 +135,13 @@ def clear_all_fields_message(lang_state_check):
         messagebox.showinfo('Очищення', 'Дані з всіх полів були очищені успішно!')
 
 
+def empty_table_warn(lang_state_check):
+    if lang_state_check:
+        messagebox.showwarning('Empty table', 'There are no records in the local table!')
+    else:
+        messagebox.showwarning('таблиця пуста', 'У локальній таблиці немає записів!')
+
+
 def input_dialog_message(lang_state_check, application_window):
     if lang_state_check:
         user_input_choice = askinteger(
@@ -155,6 +162,20 @@ def input_dialog_error_message(lang_state_check):
         messagebox.showwarning('Invalid input', 'No ID with such value in the table! Try again.')
     else:
         messagebox.showwarning('Некоректний ввід', 'ID таким значенням відсутній у таблиці. Спробуйте ще раз.')
+
+
+def remake_table_message(lang_state_check):
+    if lang_state_check:
+        user_choice = messagebox.askokcancel(
+            'Reset table', 'Are you sure you want to regenerate the table (all local data will be lost)?'
+        )
+    else:
+        user_choice = messagebox.askokcancel(
+            'Скидання таблиці', 'Ви впевнені, що хочете перегенерувати таблицю (усі локальні дані буде втрачено)?'
+        )
+
+    print(user_choice)
+    return user_choice
 
 
 def ask_to_update_record_message(lang_state_check):
@@ -249,11 +270,28 @@ def token_input_message(lang_state_check, application_window):
 
 def input_token_error_message(lang_state_check):
     if lang_state_check:
-        messagebox.showwarning('Invalid input', 'The token is entered incorrectly or does not exist! '
-                                                'Check the correctness of the input or generate it in the bot.')
+        messagebox.showwarning(
+            'Invalid input',
+            'Token is entered incorrectly or does not exist! Check the correctness of the input or generate it in bot.'
+        )
     else:
-        messagebox.showwarning('Некоректний ввід', 'Токен введений невірно або його не існує! '
-                                                   'Перевірте правильність вводу або згенеруйте його в боті.')
+        messagebox.showwarning(
+            'Некоректний ввід',
+            'Токен введений невірно або його не існує! Перевірте правильність вводу або згенеруйте його в боті.'
+        )
+
+
+def token_server_changed_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showwarning(
+            'Token was changed',
+            'You have changed the token. Enter a new token.'
+        )
+    else:
+        messagebox.showwarning(
+            'Токен було змінено',
+            'Ви змінили токен. Введіть новий токен.'
+        )
 
 
 def data_is_identical_message(lang_state_check):
@@ -270,7 +308,7 @@ def error_sync_message(lang_state_check):
             'Unexpected error during synchronization.\nCanceling the process...'
         )
     else:
-         messagebox.showinfo(
+         messagebox.showerror(
             'Помилка операції',
             'Неочікувана помилка під час синхронізації. Відміна процесу...'
         )
@@ -325,6 +363,7 @@ def ask_to_save_token_message(lang_state_check):
             'Збереження токену', 'Ви хочете зберегти цей токен для наступних синхронізацій?'
         )
 
+
     return user_choice
 
 
@@ -357,4 +396,45 @@ def show_warn_by_regex_message(lang_state_check):
             'Некоректний ввід',
             'Ви можете ввести тільки слово "Сервер", щоб зберегти паролі з сервера, '
             'або "Локально", щоб зберегти локальні паролі. Інші будь-які слова вводити заборонено.',
+        )
+
+
+def ask_to_save_new_token(lang_state_check):
+    if lang_state_check:
+        user_choice = messagebox.askyesno(
+            'New token',
+            'Save this new token for future synchronizations?'
+        )
+    else:
+        user_choice = messagebox.askyesno(
+            'Новий токен',
+            'Зберегти цей новий токен для наступних синхронізацій?'
+        )
+
+    return user_choice
+
+
+def successfuly_changed_token_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showinfo(
+            'Token changed',
+            'Token was successfuly changed and saved!'
+        )
+    else:
+         messagebox.showinfo(
+            'Токен змінено',
+            'Токен було успішно змінено і збережено!'
+        )
+
+
+def was_not_changed_token_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showinfo(
+            'Token not changed',
+            'Token was not changed. Try again to set and save new token.'
+        )
+    else:
+         messagebox.showinfo(
+            'Токен не змінено',
+            'Токен не було змінено. Спробуйте ще раз, щоб змінити і зберегти новий токен.'
         )

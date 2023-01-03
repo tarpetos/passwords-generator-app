@@ -1,5 +1,9 @@
 import re
 import sqlite3
+import tkinter
+from tkinter.ttk import Label
+
+import mysql.connector.errors
 import pyperclip
 
 from string import digits, ascii_letters, punctuation
@@ -11,7 +15,6 @@ import requests
 from additional_modules.create_directory_files import create_directory
 from additional_modules.encryption_decryption import encrypt, decrypt
 from additional_modules.search_for_description_in_database import check_if_description_existing
-from additional_modules.sync_table import RemoteDB
 from app_translation.en_lists_with_transalation import english_list_of_text_for_labels, \
     english_list_of_text_for_buttons, english_list_of_text_for_radiobtns, english_list_of_text_for_table_buttons, \
     english_tuple_of_columns_names
@@ -25,11 +28,14 @@ from app_translation.messagebox_with_lang_change import ivalid_password_usage_me
     duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
     successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
     token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
-    choose_between_duplicates_message, show_warn_by_regex_message
+    choose_between_duplicates_message, show_warn_by_regex_message, token_server_changed_message, remake_table_message, \
+    empty_table_warn, ask_to_save_new_token, successfuly_changed_token_message, was_not_changed_token_message
 from app_translation.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
     unexpected_database_error_message
+from change_interface_look.wait_flowbox_style import round_rectangle, load_screen_position_size
 from create_app.store_user_passwords import PasswordStore
+from create_app.sync_table import RemoteDB
 
 lang_state = True
 lang_table_page_state = True
@@ -267,9 +273,19 @@ def open_tuples_in_lst() -> list:
 
 
 def remove_record_from_table(application_window):
-    id_list = open_tuples_in_lst()
+    if database_user_data.select_full_table() is None:
+        empty_table_warn(lang_table_page_state)
+        return
 
+    id_list = open_tuples_in_lst()
     chosen_id = input_dialog_message(lang_table_page_state, application_window)
+
+    if chosen_id == -1:
+        if remake_table_message(lang_table_page_state):
+            database_user_data.drop_table()
+            database_user_data.create_table()
+        return
+
     while True:
         if not chosen_id:
             return
@@ -299,11 +315,10 @@ def successful_update_in_table():
 
 
 def sync_db_data(application_window):
-    if not check_internet_connection():
-        connection_error_message(lang_table_page_state)
+    remote_connection = result_of_connection(application_window)
+    if remote_connection is None:
         return
 
-    remote_connection = RemoteDB()
     ask_to_sync = ask_to_sync_message(lang_table_page_state)
 
     if ask_to_sync:
@@ -311,13 +326,16 @@ def sync_db_data(application_window):
         saved_data = database_user_data.select_from_save_tb()
 
         user_token = check_for_token(application_window, saved_data)
-        if not user_token:
+        user_id = check_for_id(remote_connection, saved_data, user_token)
+
+        print(user_token)
+        if user_token is None:
             return
 
         while True:
             if user_token in full_list_of_tokens:
                 user_id = check_for_id(remote_connection, saved_data, user_token)
-                save_token(saved_data, user_id, user_token)
+                save_token(saved_data, user_id, user_token, full_list_of_tokens)
 
                 table_name = f'pass_gen_table_{user_id}'
                 local_full_table = database_user_data.select_without_id()
@@ -338,34 +356,76 @@ def sync_db_data(application_window):
                                 local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
                                 remote_choice_pattern = re.compile('^(remote|сервер)$', re.IGNORECASE)
                                 if re.match(local_choice_pattern, save_pass):
+                                    load_screen = app_loading_screen(application_window)
                                     local_full_table = correct_lst_unite(local_full_table, remote_full_table)
                                     sync_tables_loop(remote_connection, table_name, local_full_table)
                                     successful_sync_message(lang_table_page_state)
                                     print('local')
+                                    load_screen.destroy()
                                     return
                                 elif re.match(remote_choice_pattern, save_pass):
+                                    load_screen = app_loading_screen(application_window)
                                     remote_full_table = correct_lst_unite(remote_full_table, local_full_table)
                                     sync_tables_loop(remote_connection, table_name, remote_full_table)
                                     successful_sync_message(lang_table_page_state)
                                     print('remote')
+                                    load_screen.destroy()
                                     return
                                 else:
+                                    load_screen = app_loading_screen(application_window)
                                     show_warn_by_regex_message(lang_table_page_state)
                                     print('invalid')
+                                    load_screen.destroy()
                             else:
                                 print('else')
                                 return
                     else:
                         sync_tables_loop(remote_connection, table_name, temp_lst)
+                        successful_sync_message(lang_table_page_state)
                         return
             else:
-                input_token_error_message(lang_table_page_state)
-                user_token = token_input_message(lang_table_page_state, application_window)
+                if saved_data:
+                    token_server_changed_message(lang_table_page_state)
+                    database_user_data.truncate_saved_token()
+                    user_token = token_input_message(lang_table_page_state, application_window)
+                    save_token(saved_data, user_id, user_token, full_list_of_tokens)
+                else:
+                    input_token_error_message(lang_table_page_state)
+                    user_token = token_input_message(lang_table_page_state, application_window)
+
+                if user_token is None:
+                    return
+
+
+def result_of_connection(application_window) -> RemoteDB | None:
+    load_screen = app_loading_screen(application_window)
+    remote_connection = control_mysql_connection()
+    if remote_connection == -1:
+        return
+
+    if not check_internet_connection():
+        connection_error_message(lang_table_page_state)
+        return
+
+    load_screen.destroy()
+    return remote_connection
+
+
+def control_mysql_connection() -> RemoteDB | int:
+    try:
+        remote_mysql_obj = RemoteDB()
+        return remote_mysql_obj
+    except mysql.connector.errors.OperationalError:
+        connection_timeout_message(lang_table_page_state)
+        return -1
+    except mysql.connector.errors.DatabaseError:
+        error_sync_message(lang_table_page_state)
+        return -1
 
 
 def check_internet_connection():
     try:
-        requests.get("http://google.com", timeout=3)
+        requests.get("http://google.com", timeout=5)
         return True
     except requests.ConnectionError:
         return False
@@ -373,7 +433,7 @@ def check_internet_connection():
 
 def check_for_token(app, saved_token):
     if saved_token:
-        user_token = decrypt(saved_token[2])
+        user_token = decrypt(saved_token[1])
     else:
         user_token = token_input_message(lang_table_page_state, app)
 
@@ -382,16 +442,18 @@ def check_for_token(app, saved_token):
 
 def check_for_id(remote_connection, saved_token, user_token):
     if saved_token:
-        user_id = decrypt(saved_token[1])
+        user_id = decrypt(saved_token[0])
     else:
         user_id = remote_connection.select_id_by_token(encrypt(user_token))
 
     return user_id
 
 
-def save_token(token_to_save, user_id, user_token):
-    if not token_to_save and ask_to_save_token_message(lang_table_page_state):
-        database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
+def save_token(token_to_save, user_id, user_token, full_list_of_tokens):
+    if not token_to_save and user_token in full_list_of_tokens:
+        user_choice = ask_to_save_token_message(lang_table_page_state)
+        if user_choice:
+            database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
 
 
 def check_if_has_duplicates_desc(lst):
@@ -417,3 +479,59 @@ def correct_lst_unite(lst1, lst2):
     )
 
     return lst1
+
+
+def change_local_token(application_window):
+    remote_connection = result_of_connection(application_window)
+
+    if remote_connection is None:
+        return
+
+
+    full_list_of_tokens = remote_connection.select_all_tokens()
+
+    while True:
+        user_token = token_input_message(lang_table_page_state, application_window)
+
+        if user_token is None:
+            break
+
+        user_id = remote_connection.select_id_by_token(encrypt(user_token))
+
+        if user_token in full_list_of_tokens:
+            if ask_to_save_new_token(lang_table_page_state):
+                database_user_data.truncate_saved_token()
+                database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
+                successfuly_changed_token_message(lang_table_page_state)
+            else:
+                was_not_changed_token_message(lang_table_page_state)
+            break
+        else:
+            input_token_error_message(lang_table_page_state)
+
+
+def app_loading_screen(main_window):
+    loading_screen = tkinter.Tk()
+    loading_screen.overrideredirect(True)
+    loading_screen.eval('tk::PlaceWindow . center')
+    loading_screen.title('Loading')
+    loading_screen.geometry('375x100')
+    loading_screen.config(background='grey')
+    loading_screen.attributes('-transparentcolor', 'grey')
+
+    canvas = tkinter.Canvas(loading_screen, bg='grey', highlightthickness=0)
+    canvas.pack(fill='both', expand=True)
+
+    round_rectangle(0, 0, 375, 100, canvas, radius=70)
+
+    load_screen_position_size(main_window, loading_screen)
+
+    my_label = Label(
+        canvas, text='Please wait...' if lang_table_page_state else 'Очікуйте, будь ласка...',
+        font=('Arial bold', 24), foreground='white', background='black'
+    )
+    my_label.pack(pady=30)
+
+    loading_screen.update()
+
+    return loading_screen

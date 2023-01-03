@@ -27,7 +27,6 @@ class RemoteDB:
         all_tokens_tuple_lst = self.cur.fetchall()
         all_tokens_lst = [decrypt(token_tuple[0]) for token_tuple in all_tokens_tuple_lst]
 
-        print(all_tokens_lst)
         return all_tokens_lst
 
 

@@ -35,6 +35,7 @@ def set_color_to_radiobtn(radiobtn_dict, opposite_color, current_color):
         'TRadiobutton',
         background=opposite_color,
         foreground=current_color,
+        font=('Arial', 8, 'bold')
     )
 
     for radiobtn_key in radiobtn_dict.items().mapping.values():
@@ -46,23 +47,12 @@ class AppBackgroundTheme:
         self.bg_color = BackgroundTheme.LIGHT
         self.bg_table_color = BackgroundTheme.LIGHT
 
-    def change_background_color(self, app, frame, labels_dict, btn, radiobtn_dict):
+    def change_background_color(self, labels_dict, btn, radiobtn_dict):
         opposite_color = get_opposite_color(self.bg_color)
         bg_current_color_code = self.bg_color.value
         bg_opposite_color_code = opposite_color.value
-        # app.config(background=bg_opposite_color_code)
-        # frame.config(background=bg_opposite_color_code)
         set_color_to_labels(labels_dict, bg_opposite_color_code, bg_current_color_code)
         set_color_to_radiobtn(radiobtn_dict, bg_opposite_color_code, bg_current_color_code)
         btn.config(text=get_btn_content(opposite_color))
         change_buttons_border_color(opposite_color, bg_opposite_color_code)
         self.bg_color = opposite_color
-
-    # def change_table_page_background_color(self, app, table_page_frame, btn):
-    #     opposite_color = get_opposite_color(self.bg_table_color)
-    #     bg_opposite_color_code = opposite_color.value
-    #     # app.config(background=bg_opposite_color_code)
-    #     # table_page_frame.config(background=bg_opposite_color_code)
-    #     btn.config(text=get_btn_content(opposite_color))
-    #     change_buttons_border_color(opposite_color, bg_opposite_color_code)
-    #     self.bg_table_color = opposite_color

@@ -1,5 +1,5 @@
 import tkinter
-from tkinter.constants import TOP, LEFT
+from tkinter.constants import TOP
 from tkinter import ttk
 from tkinter.ttk import Label, Entry, Button, Radiobutton, Frame
 
@@ -8,7 +8,7 @@ from change_interface_look.change_radiobtn_text_position import change_text_pos
 from create_app.create_sql_table import TableInterface
 from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, clear_entries, \
     english_language_main_window_data, ukrainian_language_main_window_data, remove_record_from_table, \
-    english_language_table_window_data, ukrainian_language_table_window_data, sync_db_data
+    english_language_table_window_data, ukrainian_language_table_window_data, sync_db_data, change_local_token
 
 change_background = AppBackgroundTheme()
 
@@ -38,9 +38,6 @@ class PasswordGeneratorApp(tkinter.Tk):
 
         frame_style = ttk.Style()
         frame_style.configure('TFrame', background='black')
-
-        scrollbar_frame_style = ttk.Style()
-        scrollbar_frame_style.configure('ScrolledFrame', background='black')
 
         button_style = ttk.Style()
         button_style.configure(
@@ -211,8 +208,6 @@ class MainPage(Frame):
             text=u'\u263C',
             command=lambda: [
                 change_background.change_background_color(
-                    self,
-                    main_frame,
                     labels_dict,
                     change_bg_btn,
                     radiobtn_dict,
@@ -299,24 +294,43 @@ class MainPage(Frame):
 class TablePage(Frame):
     def __init__(self, parent, controller):
         Frame.__init__(self, parent)
-
         full_frame = Frame(self)
 
-        table_page_frame = Frame(full_frame)
-
-        table_frame = Frame(table_page_frame)
+        table_frame = Frame(full_frame)
         all_data_from_table = TableInterface(table_frame)
         all_data_from_table.get_data_from_table()
 
+        upper_frame = Frame(full_frame)
+        synchronize_data_btn = Button(
+            upper_frame,
+            text='Synchronization',
+            command=lambda: [
+                sync_db_data(app),
+            ],
+            padding=8,
+            # style='BG.TButton'
+        )
+
+        change_token_btn = Button(
+            upper_frame,
+            text='Change token',
+            command=lambda: [
+                change_local_token(app),
+            ],
+            padding=8,
+            # style='BG.TButton'
+        )
+
+        bottom_frame = Frame(full_frame)
         return_to_main_btn = Button(
-            table_page_frame,
+            bottom_frame,
             text='<<<< Back',
             padding=8,
             command=lambda: controller.show_frame(MainPage)
         )
 
         reload_table_btn = Button(
-            table_page_frame,
+            bottom_frame,
             text='Reload',
             padding=8,
             command=lambda: [
@@ -325,8 +339,8 @@ class TablePage(Frame):
         )
 
         update_table_btn = Button(
-            table_page_frame,
-            text='Update',
+            bottom_frame,
+            text='Update record',
             padding=8,
             command=lambda: [
                 all_data_from_table.update_data_using_table_interface()
@@ -334,7 +348,7 @@ class TablePage(Frame):
         )
 
         delete_record_btn = Button(
-            table_page_frame,
+            bottom_frame,
             text='Delete',
             padding=8,
             command=lambda: [
@@ -343,18 +357,8 @@ class TablePage(Frame):
             ]
         )
 
-        synchronize_data = Button(
-            table_page_frame,
-            text='Synchronize password data',
-            command=lambda: [
-                sync_db_data(app),
-            ],
-            padding=8,
-            # style='BG.TButton'
-        )
-
         quit_btn = Button(
-            table_page_frame,
+            bottom_frame,
             text='Quit',
             padding=8,
             command=lambda: app.destroy(),
@@ -362,7 +366,8 @@ class TablePage(Frame):
 
 
         table_buttons_dict = {
-            'synchronize_data': synchronize_data,
+            'synchronize_data': synchronize_data_btn,
+            'change_token': change_token_btn,
             'return_to_main_btn': return_to_main_btn,
             'reload_table_btn': reload_table_btn,
             'update_table_btn': update_table_btn,
@@ -370,10 +375,8 @@ class TablePage(Frame):
             'table_quit_btn': quit_btn,
         }
 
-        # change_bg_btn.invoke()
-
-        english_lang = Button(
-            table_page_frame,
+        english_lang_btn = Button(
+            upper_frame,
             text='EN',
             command=lambda: [
                 english_language_table_window_data(table_buttons_dict),
@@ -382,27 +385,32 @@ class TablePage(Frame):
             padding=8,
         )
 
-        ukrainian_lang = Button(
-            table_page_frame,
+        ukrainian_lang_btn = Button(
+            upper_frame,
             text='UA',
             command=lambda: [
                 ukrainian_language_table_window_data(table_buttons_dict),
                 all_data_from_table.get_data_from_table()
             ],
-            padding=8,
+            padding=8
         )
 
-        ukrainian_lang.grid(row=0, column=0, sticky='we', padx=(0, 2))
-        synchronize_data.grid(row=0, column=1, columnspan=3, sticky='we', padx=(2, 2))
-        english_lang.grid(row=0, column=4, columnspan=2, sticky='we', padx=(2, 0))
-        table_frame.grid(row=1, column=0, columnspan=5, sticky='nswe', pady=5)
-        return_to_main_btn.grid(row=2, column=0, sticky='we', padx=(0, 2))
-        reload_table_btn.grid(row=2, column=1, sticky='we', padx=(2, 2))
-        update_table_btn.grid(row=2, column=2, sticky='we', padx=(2, 2))
-        delete_record_btn.grid(row=2, column=3, sticky='we', padx=(2, 2))
-        quit_btn.grid(row=2, column=4, sticky='we', padx=(2, 0))
-        table_page_frame.pack(side=LEFT)
-        full_frame.pack(side=TOP, pady=15)
-    
+        ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        synchronize_data_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        change_token_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        english_lang_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
+        upper_frame.pack(fill='both', expand=True)
+
+        table_frame.pack(fill='both', expand=True, pady=5)
+
+        return_to_main_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        reload_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        update_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        delete_record_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        quit_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
+        bottom_frame.pack(fill='both', expand=True)
+
+        full_frame.pack(side='top', pady=15)
+
 
 app = PasswordGeneratorApp()
