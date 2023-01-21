@@ -5,6 +5,7 @@ from tkinter.constants import END, NONE, WORD, TOP
 from tkscrolledframe import ScrolledFrame
 
 from additional_modules.encryption_decryption import decrypt, encrypt
+from app_translation.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_value_message
 from create_app.inputs_and_buttons_processing import get_data_from_database_table, \
     check_if_repeatable_characters_is_present, update_record_in_table, duplicate_usage_in_table, \
     nothing_to_update_in_table, successful_update_in_table
@@ -26,7 +27,7 @@ class TableInterface:
         self.inner_frame = self.full_frame.display_widget(Frame)
         self.text_cells_list = []
 
-    def get_data_from_table(self):
+    def get_data_from_db(self):
         self.remake_inner_frame()
         full_list_of_data = get_data_from_database_table()
         self.text_cells_list = []
@@ -60,7 +61,6 @@ class TableInterface:
 
         return self.text_cells_list
 
-
     def remake_inner_frame(self):
         self.full_frame.erase()
         self.inner_frame = self.full_frame.display_widget(Frame)
@@ -75,7 +75,7 @@ class TableInterface:
         if (column_elemnt != 1 and column_elemnt != 2) and row_element != 0:
             self.input_table_cell.config(background='yellow', state='disabled')
 
-    def update_data_using_table_interface(self):
+    def update_data_using_table_interface(self, lang_state):
         update_id = get_data.select_id()
         data_for_compare = get_data.select_descriptions_password()
         data_list_from_user = self.text_cells_list
@@ -92,6 +92,13 @@ class TableInterface:
                 encrypted_password = encrypt(password_cell_element)
                 compare_with_usage = data_for_compare[num_elem_in_list][0]
                 compare_with_password = data_for_compare[num_elem_in_list][1]
+
+                if password_usage_cell_element == '':
+                    ivalid_password_usage_message(lang_state)
+                    return
+                elif password_cell_element == '':
+                    invalid_password_value_message(lang_state)
+                    return
 
                 if compare_with_usage == password_usage_cell_element and compare_with_password == encrypted_password:
                     continue

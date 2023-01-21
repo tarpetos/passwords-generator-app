@@ -1,8 +1,15 @@
+import os
 import sqlite3
+
+
+def create_directory():
+    if not os.path.exists('passwords'):
+        os.mkdir('passwords')
 
 class PasswordStore:
     def __init__(self):
-        self.con = sqlite3.connect('passwords/your_passwords_database')
+        create_directory()
+        self.con = sqlite3.connect('passwords/data')
         self.cur = self.con.cursor()
         self.create_table()
         self.create_token_id_table()
@@ -136,6 +143,20 @@ class PasswordStore:
         password_main_data_list = self.cur.fetchall()
 
         return password_main_data_list
+
+
+    def select_search_data_by_desc(self, search_query) -> tuple:
+        self.cur.execute(
+            '''
+            SELECT id, password_usage, password FROM passwords
+            WHERE password_usage = ?
+            ORDER BY id
+            ''', (search_query,)
+        )
+
+        main_data_list = self.cur.fetchone()
+
+        return main_data_list
 
 
     def select_full_table(self) -> list:

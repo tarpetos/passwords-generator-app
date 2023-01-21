@@ -8,7 +8,8 @@ from change_interface_look.change_radiobtn_text_position import change_text_pos
 from create_app.create_sql_table import TableInterface
 from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, clear_entries, \
     english_language_main_window_data, ukrainian_language_main_window_data, remove_record_from_table, \
-    english_language_table_window_data, ukrainian_language_table_window_data, sync_db_data, change_local_token
+    english_language_table_window_data, ukrainian_language_table_window_data, sync_db_data, change_local_token, \
+    database_search, update_columns_via_app_interface
 
 change_background = AppBackgroundTheme()
 
@@ -298,7 +299,7 @@ class TablePage(Frame):
 
         table_frame = Frame(full_frame)
         all_data_from_table = TableInterface(table_frame)
-        all_data_from_table.get_data_from_table()
+        all_data_from_table.get_data_from_db()
 
         upper_frame = Frame(full_frame)
         synchronize_data_btn = Button(
@@ -308,7 +309,6 @@ class TablePage(Frame):
                 sync_db_data(app),
             ],
             padding=8,
-            # style='BG.TButton'
         )
 
         change_token_btn = Button(
@@ -318,7 +318,6 @@ class TablePage(Frame):
                 change_local_token(app),
             ],
             padding=8,
-            # style='BG.TButton'
         )
 
         bottom_frame = Frame(full_frame)
@@ -334,7 +333,7 @@ class TablePage(Frame):
             text='Reload',
             padding=8,
             command=lambda: [
-                all_data_from_table.get_data_from_table(),
+                all_data_from_table.get_data_from_db(),
             ]
         )
 
@@ -343,7 +342,7 @@ class TablePage(Frame):
             text='Update record',
             padding=8,
             command=lambda: [
-                all_data_from_table.update_data_using_table_interface()
+                update_columns_via_app_interface(all_data_from_table)
             ]
         )
 
@@ -353,7 +352,7 @@ class TablePage(Frame):
             padding=8,
             command=lambda: [
                 remove_record_from_table(app),
-                all_data_from_table.get_data_from_table()
+                all_data_from_table.get_data_from_db()
             ]
         )
 
@@ -363,7 +362,6 @@ class TablePage(Frame):
             padding=8,
             command=lambda: app.destroy(),
         )
-
 
         table_buttons_dict = {
             'synchronize_data': synchronize_data_btn,
@@ -380,7 +378,7 @@ class TablePage(Frame):
             text='EN',
             command=lambda: [
                 english_language_table_window_data(table_buttons_dict),
-                all_data_from_table.get_data_from_table()
+                all_data_from_table.get_data_from_db()
             ],
             padding=8,
         )
@@ -390,7 +388,7 @@ class TablePage(Frame):
             text='UA',
             command=lambda: [
                 ukrainian_language_table_window_data(table_buttons_dict),
-                all_data_from_table.get_data_from_table()
+                all_data_from_table.get_data_from_db()
             ],
             padding=8
         )
@@ -414,3 +412,5 @@ class TablePage(Frame):
 
 
 app = PasswordGeneratorApp()
+app.bind_all('<Control-f>', database_search)
+app.bind_all('<Control-F>', database_search)

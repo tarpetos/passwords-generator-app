@@ -36,3 +36,4 @@ english_list_of_text_for_radiobtns = [
 english_tuple_of_columns_names = (
     'ID', 'DESCRIPTION', 'PASSWORD', 'PASSWORD LENGTH', '1 / 0 —\nHAS / HAS NOT REPETITIVE'
 )
+

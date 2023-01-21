@@ -438,3 +438,46 @@ def was_not_changed_token_message(lang_state_check):
             'Токен не змінено',
             'Токен не було змінено. Спробуйте ще раз, щоб змінити і зберегти новий токен.'
         )
+
+
+def search_query_input_message(lang_state_check):
+    if lang_state_check:
+        user_choice = askstring(
+            'Search',
+            'Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
+            lang_state=lang_state_check
+        )
+    else:
+        user_choice = askstring(
+            'Пошук',
+            'Введіть пошуковий запит (опис пароля, який хочете знайти).\nПошук є регістро незалежним.\n',
+            lang_state=lang_state_check
+        )
+
+    return user_choice
+
+
+def invalid_search_query_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showwarning(
+            'Invalid search query',
+            'Search query cannot be empty space or has more than 384 symbols in it! Try again.'
+        )
+    else:
+        messagebox.showwarning(
+            'Некоректний пошуковий запит',
+            'Пошуковий запит не можу бути пустим місцем або мати більше ніж 384 символи! Спробуйте ще раз.',
+        )
+
+
+def no_mathes_for_search_message(lang_state_check, search_query):
+    if lang_state_check:
+        messagebox.showinfo(
+            'No matches',
+            f'No mathes for query:\n{search_query}'
+        )
+    else:
+        messagebox.showinfo(
+            'Відсутні збіги',
+            f'Збіги відустні на запит:\n{search_query}',
+        )
