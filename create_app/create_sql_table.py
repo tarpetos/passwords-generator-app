@@ -5,7 +5,7 @@ from tkinter.constants import END, NONE, WORD, TOP
 from tkscrolledframe import ScrolledFrame
 
 from additional_modules.encryption_decryption import decrypt, encrypt
-from app_translation.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_value_message
+from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_value_message
 from create_app.inputs_and_buttons_processing import get_data_from_database_table, \
     check_if_repeatable_characters_is_present, update_record_in_table, duplicate_usage_in_table, \
     nothing_to_update_in_table, successful_update_in_table
@@ -18,7 +18,7 @@ get_data = PasswordStore()
 class TableInterface:
     def __init__(self, root):
         self.input_table_cell = None
-        self.full_frame = ScrolledFrame(root, width=640, height=410)
+        self.full_frame = ScrolledFrame(root, width=800, height=430)
         self.full_frame.pack(side=TOP)
 
         self.full_frame.bind_arrow_keys(root)
@@ -33,7 +33,7 @@ class TableInterface:
         self.text_cells_list = []
         for tuple_row_element in range(len(full_list_of_data)):
             text_cells_rows = []
-            for tuple_column_elemnt in range(len(full_list_of_data[tuple_row_element])):
+            for tuple_column_element in range(len(full_list_of_data[tuple_row_element])):
                 self.input_table_cell = Text(
                     self.inner_frame,
                     width=14,
@@ -43,17 +43,17 @@ class TableInterface:
                     borderwidth=1.5,
                     font=('Arial', 9, 'bold'),
                 )
-                self.input_table_cell.grid(row=tuple_row_element, column=tuple_column_elemnt)
+                self.input_table_cell.grid(row=tuple_row_element, column=tuple_column_element)
 
-                iserted_data_to_cell = full_list_of_data[tuple_row_element][tuple_column_elemnt]
-                if tuple_column_elemnt == 2 and tuple_row_element != 0:
-                    decryped_password = decrypt(iserted_data_to_cell)
-                    self.input_table_cell.insert(END, decryped_password)
+                inserted_data_to_cell = full_list_of_data[tuple_row_element][tuple_column_element]
+                if tuple_column_element == 2 and tuple_row_element != 0:
+                    decrypted_password = decrypt(inserted_data_to_cell)
+                    self.input_table_cell.insert(END, decrypted_password)
                 else:
-                    self.input_table_cell.insert(END, iserted_data_to_cell)
-                self.add_special_text_config(tuple_row_element, tuple_column_elemnt)
+                    self.input_table_cell.insert(END, inserted_data_to_cell)
+                self.add_special_text_config(tuple_row_element, tuple_column_element)
 
-                if (1 <= tuple_column_elemnt <= 2) and tuple_row_element != 0:
+                if (1 <= tuple_column_element <= 2) and tuple_row_element != 0:
                     text_cells_rows.append(self.input_table_cell)
 
             if tuple_row_element != 0:
@@ -65,14 +65,14 @@ class TableInterface:
         self.full_frame.erase()
         self.inner_frame = self.full_frame.display_widget(Frame)
 
-    def add_special_text_config(self, row_element, column_elemnt):
+    def add_special_text_config(self, row_element, column_element):
         if row_element == 0:
             self.input_table_cell.config(wrap=WORD, height=3, background='green', fg='white', state='disabled')
 
-        if column_elemnt == 1 or column_elemnt == 2:
+        if column_element == 1 or column_element == 2:
             self.input_table_cell.config(width=40)
 
-        if (column_elemnt != 1 and column_elemnt != 2) and row_element != 0:
+        if (column_element != 1 and column_element != 2) and row_element != 0:
             self.input_table_cell.config(background='yellow', state='disabled')
 
     def update_data_using_table_interface(self, lang_state):
@@ -94,7 +94,7 @@ class TableInterface:
                 compare_with_password = data_for_compare[num_elem_in_list][1]
 
                 if password_usage_cell_element == '':
-                    ivalid_password_usage_message(lang_state)
+                    invalid_password_usage_message(lang_state)
                     return
                 elif password_cell_element == '':
                     invalid_password_value_message(lang_state)

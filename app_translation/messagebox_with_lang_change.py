@@ -1,8 +1,9 @@
-from additional_modules.custom_input_dialogs import askinteger, askstring
 from tkinter import messagebox
 
+from additional_modules.custom_input_dialogs import askinteger, askstring
 
-def ivalid_password_usage_message(lang_state_check):
+
+def invalid_password_usage_message(lang_state_check):
     if lang_state_check:
         messagebox.showerror('Invalid input', 'Length of password usage field have to be in range from 1 to 384!')
     else:
@@ -252,6 +253,7 @@ def ask_to_sync_message(lang_state_check):
 
     return user_choice
 
+
 def token_input_message(lang_state_check, application_window):
     if lang_state_check:
         user_choice = askstring(
@@ -303,12 +305,12 @@ def data_is_identical_message(lang_state_check):
 
 def error_sync_message(lang_state_check):
     if lang_state_check:
-         messagebox.showerror(
+        messagebox.showerror(
             'Operational error',
             'Unexpected error during synchronization.\nCanceling the process...'
         )
     else:
-         messagebox.showerror(
+        messagebox.showerror(
             'Помилка операції',
             'Неочікувана помилка під час синхронізації. Відміна процесу...'
         )
@@ -316,12 +318,12 @@ def error_sync_message(lang_state_check):
 
 def successful_sync_message(lang_state_check):
     if lang_state_check:
-         messagebox.showinfo(
+        messagebox.showinfo(
             'Operation successful!',
             'Passwords have been successfully synchronized. Press "Reload" to see changes.'
         )
     else:
-         messagebox.showinfo(
+        messagebox.showinfo(
             'Операція успішна!',
             'Паролі успішно синхронізовано. Натисніть "Оновити", щоб побачити зміни.'
         )
@@ -329,12 +331,12 @@ def successful_sync_message(lang_state_check):
 
 def connection_error_message(lang_state_check):
     if lang_state_check:
-         messagebox.showerror(
+        messagebox.showerror(
             'Connection error',
             'Synchronization is not possible due to lack of Internet connection.'
         )
     else:
-         messagebox.showerror(
+        messagebox.showerror(
             'Помилка з’єднання',
             'Синхронізація неможлива, через відсутність Інтернет з’єднання.'
         )
@@ -342,12 +344,12 @@ def connection_error_message(lang_state_check):
 
 def connection_timeout_message(lang_state_check):
     if lang_state_check:
-         messagebox.showerror(
+        messagebox.showerror(
             'Connection timeout',
             'Synchronization is not possible because the waiting time is too long.'
         )
     else:
-         messagebox.showerror(
+        messagebox.showerror(
             'Закінчення часу очікування',
             'Синхронізація неможлива, через занадто довгий час очікування.'
         )
@@ -362,7 +364,6 @@ def ask_to_save_token_message(lang_state_check):
         user_choice = messagebox.askyesno(
             'Збереження токену', 'Ви хочете зберегти цей токен для наступних синхронізацій?'
         )
-
 
     return user_choice
 
@@ -414,14 +415,14 @@ def ask_to_save_new_token(lang_state_check):
     return user_choice
 
 
-def successfuly_changed_token_message(lang_state_check):
+def successfully_changed_token_message(lang_state_check):
     if lang_state_check:
         messagebox.showinfo(
             'Token changed',
-            'Token was successfuly changed and saved!'
+            'Token was successfully changed and saved!'
         )
     else:
-         messagebox.showinfo(
+        messagebox.showinfo(
             'Токен змінено',
             'Токен було успішно змінено і збережено!'
         )
@@ -434,7 +435,7 @@ def was_not_changed_token_message(lang_state_check):
             'Token was not changed. Try again to set and save new token.'
         )
     else:
-         messagebox.showinfo(
+        messagebox.showinfo(
             'Токен не змінено',
             'Токен не було змінено. Спробуйте ще раз, щоб змінити і зберегти новий токен.'
         )
@@ -470,7 +471,7 @@ def invalid_search_query_message(lang_state_check):
         )
 
 
-def no_mathes_for_search_message(lang_state_check, search_query):
+def no_matches_for_search_message(lang_state_check, search_query):
     if lang_state_check:
         messagebox.showinfo(
             'No matches',

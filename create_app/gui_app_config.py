@@ -1,7 +1,8 @@
 import tkinter
 from tkinter.constants import TOP
 from tkinter import ttk
-from tkinter.ttk import Label, Entry, Button, Radiobutton, Frame
+from tkinter import Entry
+from tkinter.ttk import Label, Button, Radiobutton, Frame
 
 from change_interface_look.change_background_color import AppBackgroundTheme
 from change_interface_look.change_radiobtn_text_position import change_text_pos
@@ -37,19 +38,6 @@ class PasswordGeneratorApp(tkinter.Tk):
 
         self.show_frame(MainPage)
 
-        frame_style = ttk.Style()
-        frame_style.configure('TFrame', background='black')
-
-        button_style = ttk.Style()
-        button_style.configure(
-            'TButton',
-            background='#00D8A1',
-            font=('Arial Black', 8, 'bold')
-        )
-
-        change_bg_style = ttk.Style()
-        change_bg_style.configure('BG.TButton', font=('Arial', 9))
-
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
@@ -64,24 +52,18 @@ class MainPage(Frame):
         password_usage_label = Label(
             main_frame,
             text='For what this password should be?:',
-            font='Arial 8 bold',
-            # foreground='white',
-            # background='black,'
         )
         password_length_label = Label(
             main_frame,
             text='Enter password length:',
-            font='Arial 8 bold'
         )
         repeatable_label = Label(
             main_frame,
             text='Can be repeatable characters in password(y/n)?:',
-            font='Arial 8 bold'
         )
         result_password_label = Label(
             main_frame,
             text='GENERATED PASSWORD',
-            font='Arial 8 bold'
         )
 
         password_usage_entry = Entry(main_frame, width=50)
@@ -101,6 +83,7 @@ class MainPage(Frame):
             value=1,
             takefocus=0,
         )
+
         only_letters = Radiobutton(
             main_frame,
             text='Only letters',
@@ -183,10 +166,10 @@ class MainPage(Frame):
             main_frame,
             text='Write to database',
             command=lambda:
-                write_to_database(
-                    password_usage_entry.get(),
-                    result_password_entry.get()
-                ),
+            write_to_database(
+                password_usage_entry.get(),
+                result_password_entry.get()
+            ),
             padding=8,
         )
 
@@ -215,7 +198,6 @@ class MainPage(Frame):
                 ),
             ],
             padding=8,
-            style='BG.TButton'
         )
 
         change_bg_btn.invoke()
@@ -236,7 +218,20 @@ class MainPage(Frame):
             'quit_btn': quit_btn,
         }
 
-        english_lang = Button(
+        ukrainian_lang_btn = Button(
+            main_frame,
+            text='UA',
+            command=lambda: [
+                ukrainian_language_main_window_data(
+                    labels_dict,
+                    buttons_dict,
+                    radiobtn_dict,
+                ),
+            ],
+            padding=8
+        )
+
+        english_lang_btn = Button(
             main_frame,
             text='EN',
             command=lambda: english_language_main_window_data(
@@ -245,17 +240,6 @@ class MainPage(Frame):
                 radiobtn_dict,
             ),
             padding=8,
-        )
-
-        ukrainian_lang = Button(
-            main_frame,
-            text='UA',
-            command=lambda: ukrainian_language_main_window_data(
-                labels_dict,
-                buttons_dict,
-                radiobtn_dict,
-            ),
-            padding=8
         )
 
         password_usage_label.grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 10))
@@ -268,15 +252,15 @@ class MainPage(Frame):
         repeatable_entry.grid(row=2, column=3, columnspan=3, sticky='e', pady=10)
 
         generate_btn.grid(row=3, column=0, columnspan=3, sticky='we', padx=(0, 2), pady=20)
-        ukrainian_lang.grid(row=3, column=3, sticky='we', padx=(2, 2))
+        ukrainian_lang_btn.grid(row=3, column=3, sticky='we', padx=(2, 2))
         change_bg_btn.grid(row=3, column=4, sticky='we', padx=(2, 2))
-        english_lang.grid(row=3, column=5, sticky='we', padx=(2, 0))
+        english_lang_btn.grid(row=3, column=5, sticky='we', padx=(2, 0))
 
         all_symbols.grid(row=4, column=0)
         only_letters.grid(row=4, column=1)
         only_digits.grid(row=4, column=2)
         letters_digits.grid(row=4, column=3)
-        letters_signs.grid(row=4, column=4,)
+        letters_signs.grid(row=4, column=4, )
         digits_signs.grid(row=4, column=5)
 
         result_password_label.grid(row=5, column=0, pady=(45, 0), columnspan=6)
@@ -373,16 +357,6 @@ class TablePage(Frame):
             'table_quit_btn': quit_btn,
         }
 
-        english_lang_btn = Button(
-            upper_frame,
-            text='EN',
-            command=lambda: [
-                english_language_table_window_data(table_buttons_dict),
-                all_data_from_table.get_data_from_db()
-            ],
-            padding=8,
-        )
-
         ukrainian_lang_btn = Button(
             upper_frame,
             text='UA',
@@ -391,6 +365,16 @@ class TablePage(Frame):
                 all_data_from_table.get_data_from_db()
             ],
             padding=8
+        )
+
+        english_lang_btn = Button(
+            upper_frame,
+            text='EN',
+            command=lambda: [
+                english_language_table_window_data(table_buttons_dict),
+                all_data_from_table.get_data_from_db()
+            ],
+            padding=8,
         )
 
         ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))

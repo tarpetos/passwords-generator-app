@@ -10,7 +10,6 @@ from random import choices, sample
 
 from additional_modules.encryption_decryption import encrypt, decrypt
 from additional_modules.pop_up_windows import app_loading_screen, search_screen
-from additional_modules.search_for_description_in_database import check_if_description_existing
 from app_translation.en_lists_with_transalation import english_list_of_text_for_labels, \
     english_list_of_text_for_buttons, english_list_of_text_for_radiobtns, english_list_of_text_for_table_buttons, \
     english_tuple_of_columns_names
@@ -18,16 +17,16 @@ from app_translation.uk_lists_with_translation import ukrain_list_of_text_for_la
     ukrain_list_of_text_for_radiobtns, ukrain_list_of_text_for_buttons, ukrain_list_of_text_for_table_buttons, \
     ukrain_tuple_of_columns_names
 from change_interface_look.change_window_config import label_lang_change, radiobtn_lang_change, btn_lang_change
-from app_translation.messagebox_with_lang_change import ivalid_password_usage_message, invalid_password_type_message, \
+from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
     invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
     duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
     successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
     token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
     choose_between_duplicates_message, show_warn_by_regex_message, token_server_changed_message, remake_table_message, \
-    empty_table_warn, ask_to_save_new_token, successfuly_changed_token_message, was_not_changed_token_message, \
+    empty_table_warn, ask_to_save_new_token, successfully_changed_token_message, was_not_changed_token_message, \
     search_query_input_message, invalid_search_query_message, \
-    no_mathes_for_search_message
+    no_matches_for_search_message
 from app_translation.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
     ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
     unexpected_database_error_message
@@ -38,6 +37,7 @@ lang_state = True
 HALF_VARCHAR = 384
 
 database_user_data = PasswordStore()
+
 
 def english_language_main_window_data(labels_dict, buttons_dict, radiobtn_dict):
     global lang_state
@@ -123,7 +123,7 @@ def check_password_usage_input(user_input) -> bool:
     if 0 < len(user_input) <= HALF_VARCHAR:
         return True
     else:
-        ivalid_password_usage_message(lang_state)
+        invalid_password_usage_message(lang_state)
         return False
 
 
@@ -156,6 +156,15 @@ def check_password_result_input(result_password) -> bool:
         return False
     else:
         return True
+
+
+def check_if_description_existing(store_of_user_passwords, password_description):
+    list_of_descriptions = store_of_user_passwords.select_descriptions()
+
+    if password_description in list_of_descriptions:
+        return True
+    else:
+        return False
 
 
 def follow_user_if_record_repeats(description_store, password_usage) -> bool or int:
@@ -511,7 +520,6 @@ def change_local_token(application_window):
     if remote_connection is None:
         return
 
-
     full_list_of_tokens = remote_connection.select_all_tokens()
 
     while True:
@@ -526,7 +534,7 @@ def change_local_token(application_window):
             if ask_to_save_new_token(lang_state):
                 database_user_data.truncate_saved_token()
                 database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
-                successfuly_changed_token_message(lang_state)
+                successfully_changed_token_message(lang_state)
             else:
                 was_not_changed_token_message(lang_state)
             break
@@ -554,7 +562,7 @@ def database_search(event):
                 searched_description_list.append(description[0])
 
         if not searched_description_list:
-            no_mathes_for_search_message(lang_state, user_search)
+            no_matches_for_search_message(lang_state, user_search)
         else:
             data_list = get_search_data_from_database_table(searched_description_list)
             search_screen(lang_state, user_search, data_list)
