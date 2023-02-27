@@ -1,4 +1,4 @@
-from modules.window_creation import run_app
+from create_app.window_creation import run_app
 
 
 def main():
