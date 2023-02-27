@@ -5,4 +5,4 @@ passwords/
 build/
 main.spec
 test.py
-test.html
+.env

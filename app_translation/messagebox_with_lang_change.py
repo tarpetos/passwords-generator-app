@@ -306,12 +306,12 @@ def data_is_identical_message(lang_state_check):
 def error_sync_message(lang_state_check):
     if lang_state_check:
         messagebox.showerror(
-            'Operational error',
+            'Database error',
             'Unexpected error during synchronization.\nCanceling the process...'
         )
     else:
         messagebox.showerror(
-            'Помилка операції',
+            'Помилка бази даних',
             'Неочікувана помилка під час синхронізації. Відміна процесу...'
         )
 

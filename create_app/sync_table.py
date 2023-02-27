@@ -1,20 +1,22 @@
+import os
 import mysql
 import mysql.connector
 
 from additional_modules.encryption_decryption import decrypt
-
+from dotenv import load_dotenv, find_dotenv
 
 class RemoteDB:
     def __init__(self):
+        load_dotenv(find_dotenv())
         self.con = mysql.connector.connect(
-            host='178.128.198.251',
-            user='remote_root',
-            passwd='12/TaRaNtOs/34',
-            database='bot_db'
+            host=os.getenv('REMOTE_IP'),
+            user=os.getenv('REMOTE_USER'),
+            passwd=os.getenv('REMOTE_PASSWORD'),
+            database=os.getenv('DATABASE_NAME'),
+            connect_timeout=10,
         )
 
         self.cur = self.con.cursor()
-
 
 
     def select_all_tokens(self):

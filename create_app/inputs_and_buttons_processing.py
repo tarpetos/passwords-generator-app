@@ -104,7 +104,7 @@ def check_columns_names(full_list_of_data,
     return full_list_of_data
 
 
-def check_for_repeatable_charachters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
+def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
     if check_if_repeatable_allowed.capitalize() == 'Y':
         return ''.join(choices(password_alphabet, k=password_length))
     elif check_if_repeatable_allowed.capitalize() == 'N':
@@ -187,18 +187,18 @@ def write_to_database(password_usage, result_password):
     try:
         if user_choice:
             yes_no_choice = follow_user_if_record_repeats(database_user_data, (f'{password_usage}',))
-            encryped_password = encrypt(result_password)
+            encrypted_password = encrypt(result_password)
             if yes_no_choice == -1:
                 database_user_data.insert_into_tb(
                     password_usage,
-                    encryped_password,
+                    encrypted_password,
                     len(result_password),
                     check_if_repeatable_characters_is_present(result_password)
                 )
                 successful_write_to_database_message(lang_state)
             elif yes_no_choice:
                 database_user_data.update_existing_password(
-                    encryped_password,
+                    encrypted_password,
                     len(result_password),
                     check_if_repeatable_characters_is_present(result_password),
                     password_usage
@@ -212,7 +212,7 @@ def write_to_database(password_usage, result_password):
         unexpected_database_error_message(lang_state)
 
 
-def exclude_invalid_symblols_for_markup() -> str:
+def exclude_invalid_symbols_for_markup() -> str:
     excluded_symbols = '<>&"'
     allowed_symbols = ''.join([char for char in punctuation if char not in excluded_symbols])
 
@@ -220,7 +220,7 @@ def exclude_invalid_symblols_for_markup() -> str:
 
 
 def get_radiobtn_option(var) -> str:
-    fixed_punctuation = exclude_invalid_symblols_for_markup()
+    fixed_punctuation = exclude_invalid_symbols_for_markup()
 
     if var.get() == 1:
         return digits + ascii_letters + fixed_punctuation
@@ -257,7 +257,7 @@ def generate_password(password_usage_entry, password_length_entry, repeatable_en
         return
 
     result_password_entry.delete(0, END)
-    result = check_for_repeatable_charachters(password_alphabet, int(password_length), check_if_repeatable_allowed)
+    result = check_for_repeatable_characters(password_alphabet, int(password_length), check_if_repeatable_allowed)
     result_password_entry.insert(0, result)
 
 
