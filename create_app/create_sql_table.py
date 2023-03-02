@@ -1,6 +1,6 @@
 import sqlite3
 from customtkinter import CTkFrame
-from tkinter import Text, ttk
+from tkinter import Text
 from tkinter.constants import END, NONE, WORD, TOP
 
 from tkscrolledframe import ScrolledFrame
@@ -17,10 +17,13 @@ get_data = PasswordStore()
 
 
 class TableInterface:
-    def __init__(self, root):
+    def __init__(self, root, search_func):
         self.input_table_cell = None
 
         self.full_frame = ScrolledFrame(root, width=800, height=430)
+        self.full_frame.bind('<Control-f>', search_func)
+        self.full_frame.bind('<Control-F>', search_func)
+        self.full_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
         self.full_frame.pack(side=TOP)
 
         self.full_frame.bind_arrow_keys(root)
@@ -53,7 +56,7 @@ class TableInterface:
                     self.input_table_cell.insert(END, decrypted_password)
                 else:
                     self.input_table_cell.insert(END, inserted_data_to_cell)
-                self.add_special_text_config(tuple_row_element, tuple_column_element)
+                self.add_special_config_to_text(tuple_row_element, tuple_column_element)
 
                 if (1 <= tuple_column_element <= 2) and tuple_row_element != 0:
                     text_cells_rows.append(self.input_table_cell)
@@ -67,7 +70,7 @@ class TableInterface:
         self.full_frame.erase()
         self.inner_frame = self.full_frame.display_widget(CTkFrame)
 
-    def add_special_text_config(self, row_element, column_element):
+    def add_special_config_to_text(self, row_element, column_element):
         if row_element == 0:
             self.input_table_cell.config(wrap=WORD, height=3, background='green', fg='white', state='disabled')
 

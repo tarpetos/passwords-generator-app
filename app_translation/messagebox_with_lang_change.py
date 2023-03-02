@@ -1,6 +1,6 @@
 from tkinter import messagebox
 
-from additional_modules.custom_input_dialogs import askinteger, askstring
+from additional_modules.custom_input_dialogs import askinteger, askstring, custom_askinteger
 
 
 def invalid_password_usage_message(lang_state_check):
@@ -145,12 +145,12 @@ def empty_table_warn(lang_state_check):
 
 def input_dialog_message(lang_state_check, application_window):
     if lang_state_check:
-        user_input_choice = askinteger(
+        user_input_choice = custom_askinteger(
             'ID input', 'Enter the ID of the record you want to delete...',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_input_choice = askinteger(
+        user_input_choice = custom_askinteger(
             'Ввід ID', 'Введіть ID запису, який ви хочете видалити...',
             parent=application_window, lang_state=lang_state_check
         )

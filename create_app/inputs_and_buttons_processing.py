@@ -320,41 +320,41 @@ def sync_db_data(lang_state, application_window):
                 if sorted_local_table == sorted_united_lst and sorted_remote_table == sorted_united_lst:
                     data_is_identical_message(lang_state)
                     return
-                else:
-                    temp_lst = local_full_table + remote_full_table
-                    if check_if_has_duplicates_desc(temp_lst):
-                        while True:
-                            save_pass = choose_between_duplicates_message(lang_state, application_window)
 
-                            if save_pass == '' or save_pass:
-                                local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
-                                remote_choice_pattern = re.compile('^(remote|сервер)$', re.IGNORECASE)
-                                if re.match(local_choice_pattern, save_pass):
-                                    load_screen = app_loading_screen(lang_state)
-                                    local_full_table = correct_lst_unite(local_full_table, remote_full_table)
-                                    sync_tables_loop(remote_connection, table_name, local_full_table)
-                                    successful_sync_message(lang_state)
-                                    load_screen.destroy()
-                                    return
-                                elif re.match(remote_choice_pattern, save_pass):
-                                    load_screen = app_loading_screen(lang_state)
-                                    remote_full_table = correct_lst_unite(remote_full_table, local_full_table)
-                                    sync_tables_loop(remote_connection, table_name, remote_full_table)
-                                    successful_sync_message(lang_state)
-                                    load_screen.destroy()
-                                    return
-                                else:
-                                    load_screen = app_loading_screen(lang_state)
-                                    show_warn_by_regex_message(lang_state)
-                                    load_screen.destroy()
-                            else:
+                temp_lst = local_full_table + remote_full_table
+                if check_if_has_duplicates_desc(temp_lst):
+                    while True:
+                        save_pass = choose_between_duplicates_message(lang_state, application_window)
+
+                        if save_pass == '' or save_pass:
+                            local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
+                            remote_choice_pattern = re.compile('^(remote|сервер)$', re.IGNORECASE)
+                            if re.match(local_choice_pattern, save_pass):
+                                load_screen = app_loading_screen(lang_state)
+                                local_full_table = correct_lst_unite(local_full_table, remote_full_table)
+                                sync_tables_loop(remote_connection, table_name, local_full_table)
+                                load_screen.destroy()
+                                successful_sync_message(lang_state)
                                 return
-                    else:
-                        load_screen = app_loading_screen(lang_state)
-                        sync_tables_loop(remote_connection, table_name, temp_lst)
-                        successful_sync_message(lang_state)
-                        load_screen.destroy()
-                        return
+                            elif re.match(remote_choice_pattern, save_pass):
+                                load_screen = app_loading_screen(lang_state)
+                                remote_full_table = correct_lst_unite(remote_full_table, local_full_table)
+                                sync_tables_loop(remote_connection, table_name, remote_full_table)
+                                load_screen.destroy()
+                                successful_sync_message(lang_state)
+                                return
+                            else:
+                                load_screen = app_loading_screen(lang_state)
+                                load_screen.destroy()
+                                show_warn_by_regex_message(lang_state)
+                        else:
+                            return
+                else:
+                    load_screen = app_loading_screen(lang_state)
+                    sync_tables_loop(remote_connection, table_name, temp_lst)
+                    load_screen.destroy()
+                    successful_sync_message(lang_state)
+                    return
             else:
                 if saved_data:
                     token_server_changed_message(lang_state)
@@ -467,14 +467,17 @@ def change_local_token(lang_state, application_window):
     full_list_of_tokens = remote_connection.select_all_tokens()
 
     while True:
-        try_token_change(lang_state, application_window, remote_connection, full_list_of_tokens)
+        exit_status = try_token_change(lang_state, application_window, remote_connection, full_list_of_tokens)
+
+        if exit_status == "Exit from token dialog box":
+            return
 
 
 def try_token_change(language, app, remote_ids, remote_tokens):
     user_token = token_input_message(language, app)
 
     if user_token is None:
-        return
+        return "Exit from token dialog box"
 
     user_id = remote_ids.select_id_by_token(encrypt(user_token))
 
@@ -485,22 +488,18 @@ def try_token_change(language, app, remote_ids, remote_tokens):
             successfully_changed_token_message(language)
         else:
             was_not_changed_token_message(language)
-        return
+        return "Exit from token dialog box"
     else:
         input_token_error_message(language)
 
 
-def database_search(event, lang_state, application_window):
-    search_shortcut_unbind(event, application_window)
-    print('lang:', lang_state)
+def database_search(event, lang_state):
     user_search = search_query_input_message(lang_state)
 
     if user_search is None:
-        search_shortcut_bind(event, lang_state, application_window)
         return
     elif user_search == '' or len(user_search) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
         invalid_search_query_message(lang_state)
-        search_shortcut_bind(event, lang_state, application_window)
         return
 
     packed_description_list = database_user_data.select_descriptions()
@@ -514,22 +513,6 @@ def database_search(event, lang_state, application_window):
 
     if not searched_description_list:
         no_matches_for_search_message(lang_state, user_search)
-        search_shortcut_bind(event, lang_state, application_window)
     else:
         data_list = get_search_data_from_database_table(lang_state, searched_description_list)
         search_screen(lang_state, user_search, data_list)
-        search_shortcut_bind(event, lang_state, application_window)
-
-
-def search_shortcut_bind(event, lang_state, application_window):
-    application_window.bind_all('<Control-f>', lambda event: database_search(event, lang_state, application_window))
-    application_window.bind_all('<Control-F>', lambda event: database_search(event, lang_state, application_window))
-
-
-def search_shortcut_unbind(event, application_window):
-    application_window.bind_all('<Control-f>', nothing_instead_search)
-    application_window.bind_all('<Control-F>', nothing_instead_search)
-
-
-def nothing_instead_search(event):
-    pass

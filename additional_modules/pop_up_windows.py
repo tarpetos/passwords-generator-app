@@ -69,11 +69,11 @@ def search_screen(lang_state, search_query, data_list):
     table_frame.grid(column=0, row=1, columnspan=2, sticky='nsew', pady=(0, 5))
 
     search_frame.pack(pady=10)
-    def on_close():
-        search_window.destroy()
-        search_window.quit()
-
-    search_window.wm_protocol('WM_DELETE_WINDOW', on_close)
+    # def on_close():
+    #     search_window.destroy()
+    #     search_window.quit()
+    #
+    # search_window.wm_protocol('WM_DELETE_WINDOW', on_close)
 
     search_window.mainloop()
 

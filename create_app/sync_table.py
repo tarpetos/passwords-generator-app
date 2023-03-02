@@ -60,18 +60,6 @@ class RemoteDB:
         return table_rows
 
 
-    def insert_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):
-        self.cur.execute(
-            '''
-            INSERT INTO `%s` (password_description, generated_password, password_length, has_repetetive) 
-            VALUES (%s, %s, %s, %s)
-            ''',
-            (user_id, user_desc, generated_pass, password_length, has_repetetive)
-        )
-
-        self.con.commit()
-
-
     def insert_update_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):
         self.cur.execute(
             '''

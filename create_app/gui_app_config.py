@@ -37,11 +37,11 @@ class PasswordGeneratorApp(customtkinter.CTk):
 
         self.show_frame(MainPage)
 
-    @staticmethod
-    def shortcut_search(event):
-        current_lang = app.current_language
-        print(current_lang)
-        database_search(event, current_lang, app)
+    # @staticmethod
+    # def shortcut_search(event):
+    #     current_lang = app.current_language
+    #     print(current_lang)
+    #     database_search(event, current_lang, app)
 
     def show_frame(self, cont):
         frame = self.frames[cont]
@@ -321,7 +321,7 @@ class TablePage(BasePage):
         full_frame = CTkFrame(self)
 
         table_frame = CTkFrame(full_frame)
-        data_table_obj = TableInterface(table_frame)
+        data_table_obj = TableInterface(table_frame, self.shortcut_search)
         data_table_obj.get_data_from_db(self.current_language_state_bool)
 
         upper_frame = CTkFrame(full_frame)
@@ -413,6 +413,10 @@ class TablePage(BasePage):
         bottom_frame.pack(fill='both', expand=True)
 
         full_frame.pack(side='top', pady=15)
+
+    def shortcut_search(self, event):
+        current_lang = self.controller.current_language
+        database_search(event, current_lang)
 
 
 app = PasswordGeneratorApp()
