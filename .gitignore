@@ -6,3 +6,6 @@ build/
 main.spec
 test.py
 .env
+license.txt
+readme.md
+readme.txt

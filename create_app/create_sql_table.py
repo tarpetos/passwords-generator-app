@@ -1,5 +1,6 @@
 import sqlite3
-from tkinter import Text, Frame
+from customtkinter import CTkFrame
+from tkinter import Text, ttk
 from tkinter.constants import END, NONE, WORD, TOP
 
 from tkscrolledframe import ScrolledFrame
@@ -18,18 +19,19 @@ get_data = PasswordStore()
 class TableInterface:
     def __init__(self, root):
         self.input_table_cell = None
+
         self.full_frame = ScrolledFrame(root, width=800, height=430)
         self.full_frame.pack(side=TOP)
 
         self.full_frame.bind_arrow_keys(root)
         self.full_frame.bind_scroll_wheel(root)
 
-        self.inner_frame = self.full_frame.display_widget(Frame)
+        self.inner_frame = self.full_frame.display_widget(CTkFrame)
         self.text_cells_list = []
 
-    def get_data_from_db(self):
+    def get_data_from_db(self, lang_state):
         self.remake_inner_frame()
-        full_list_of_data = get_data_from_database_table()
+        full_list_of_data = get_data_from_database_table(lang_state)
         self.text_cells_list = []
         for tuple_row_element in range(len(full_list_of_data)):
             text_cells_rows = []
@@ -63,7 +65,7 @@ class TableInterface:
 
     def remake_inner_frame(self):
         self.full_frame.erase()
-        self.inner_frame = self.full_frame.display_widget(Frame)
+        self.inner_frame = self.full_frame.display_widget(CTkFrame)
 
     def add_special_text_config(self, row_element, column_element):
         if row_element == 0:
@@ -103,7 +105,7 @@ class TableInterface:
                 if compare_with_usage == password_usage_cell_element and compare_with_password == encrypted_password:
                     continue
                 else:
-                    if not search_for_update_flag and update_record_in_table():
+                    if not search_for_update_flag and update_record_in_table(lang_state):
                         search_for_update_flag = True
                         get_data.update_password_data_by_id(
                             password_usage_cell_element,
@@ -112,7 +114,7 @@ class TableInterface:
                             check_if_repeatable_characters_is_present(password_cell_element),
                             table_id_for_update,
                         )
-                        successful_update_in_table()
+                        successful_update_in_table(lang_state)
                     elif search_for_update_flag:
                         get_data.update_password_data_by_id(
                             password_usage_cell_element,
@@ -124,8 +126,8 @@ class TableInterface:
                     else:
                         return
         except sqlite3.IntegrityError:
-            duplicate_usage_in_table()
+            duplicate_usage_in_table(lang_state)
             return
 
         if not search_for_update_flag:
-            nothing_to_update_in_table()
+            nothing_to_update_in_table(lang_state)

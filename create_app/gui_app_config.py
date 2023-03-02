@@ -1,25 +1,22 @@
-import tkinter
 from tkinter.constants import TOP
-from tkinter import ttk
-from tkinter import Entry
-from tkinter.ttk import Label, Button, Radiobutton, Frame
 
-from change_interface_look.change_background_color import AppBackgroundTheme
-from change_interface_look.change_radiobtn_text_position import change_text_pos
+import customtkinter
+from customtkinter import CTkLabel, CTkButton, CTkRadioButton, CTkFrame, CTkEntry
+
+from app_translation.load_data_for_localization import all_json_localization_data
+from change_interface_look.change_background_color import change_background_color, change_messagebox_color
 from create_app.create_sql_table import TableInterface
-from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, clear_entries, \
-    english_language_main_window_data, ukrainian_language_main_window_data, remove_record_from_table, \
-    english_language_table_window_data, ukrainian_language_table_window_data, sync_db_data, change_local_token, \
+from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, \
+    clear_entries, remove_record_from_table, \
+    sync_db_data, change_local_token, \
     database_search, update_columns_via_app_interface
 
-change_background = AppBackgroundTheme()
 
-
-class PasswordGeneratorApp(tkinter.Tk):
+class PasswordGeneratorApp(customtkinter.CTk):
     def __init__(self, *args, **kwargs):
-        tkinter.Tk.__init__(self, *args, **kwargs)
+        customtkinter.CTk.__init__(self, *args, **kwargs)
 
-        container = Frame(self)
+        container = CTkFrame(self)
         container.pack(side=TOP, fill='both', expand=True)
 
         container.grid_rowconfigure(0, weight=1)
@@ -27,374 +24,395 @@ class PasswordGeneratorApp(tkinter.Tk):
 
         self.frames = {}
 
-        pages_tuple = (MainPage, TablePage)
+        main_page = MainPage(container, self)
+        table_page = TablePage(container, self)
 
-        for page in pages_tuple:
-            frame = page(container, self)
+        self.frames[MainPage] = main_page
+        self.frames[TablePage] = table_page
 
-            self.frames[page] = frame
+        main_page.grid(row=0, column=0, sticky='nsew')
+        table_page.grid(row=0, column=0, sticky='nsew')
 
-            frame.grid(row=0, column=0, sticky='nswe')
+        self.current_language = True
 
         self.show_frame(MainPage)
+
+    @staticmethod
+    def shortcut_search(event):
+        current_lang = app.current_language
+        print(current_lang)
+        database_search(event, current_lang, app)
 
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
 
+    def change_language(self, language):
+        for frame in self.frames.values():
+            if isinstance(frame, BasePage):
+                self.current_language = frame.change_language(language)
 
-class MainPage(Frame):
+
+class BasePage(CTkFrame):
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
+        CTkFrame.__init__(self, parent)
+        self.controller = controller
+        self.current_language_state_bool = True
+        self._current_language_state_str = 'EN'
+        self.language_options = all_json_localization_data  # get data for app localization
+        customtkinter.set_default_color_theme('green')  # set default app theme
+        change_messagebox_color()  # set default bg and font color to messageboxes
 
-        main_frame = Frame(self)
+    @staticmethod
+    def make_language_state_boolean(language):
+        return True if language == 'EN' else False
 
-        password_usage_label = Label(
+    def check_if_app_has_element_type(self, element_type, new_data_text):
+        if hasattr(self, element_type):
+            button = getattr(self, element_type)
+            button.configure(text=new_data_text)
+
+    def parse_localization_json_data(self, options):
+        for element_group, group_options in options.items():
+            for specific_element, text in group_options.items():
+                self.check_if_app_has_element_type(specific_element, text)
+
+    def change_language(self, language):
+        self.current_language_state_bool = self.make_language_state_boolean(language)
+        if language in self.language_options and self._current_language_state_str != language:
+            self._current_language_state_str = language
+            options = self.language_options[language]
+            self.parse_localization_json_data(options)
+
+        return self.current_language_state_bool
+
+
+class MainPage(BasePage):
+    def __init__(self, parent, controller):
+        BasePage.__init__(self, parent, controller)
+
+        main_frame = CTkFrame(self)
+
+        self.password_usage_label = CTkLabel(
             main_frame,
-            text='For what this password should be?:',
+            text=self.language_options['EN']['labels']['password_usage_label']
         )
-        password_length_label = Label(
+        self.password_length_label = CTkLabel(
             main_frame,
-            text='Enter password length:',
+            text=self.language_options['EN']['labels']['password_length_label'],
         )
-        repeatable_label = Label(
+        self.repeatable_label = CTkLabel(
             main_frame,
-            text='Can be repeatable characters in password(y/n)?:',
+            text=self.language_options['EN']['labels']['repeatable_label'],
         )
-        result_password_label = Label(
+        self.result_password_label = CTkLabel(
             main_frame,
-            text='GENERATED PASSWORD',
+            text=self.language_options['EN']['labels']['result_password_label'],
         )
 
-        password_usage_entry = Entry(main_frame, width=50)
-        password_length_entry = Entry(main_frame, width=50)
-        repeatable_entry = Entry(main_frame, width=50)
-        result_password_entry = Entry(main_frame)
+        self.password_usage_entry = CTkEntry(main_frame)
+        self.password_length_entry = CTkEntry(main_frame)
+        self.repeatable_entry = CTkEntry(main_frame)
+        self.result_password_entry = CTkEntry(main_frame)
 
-        change_text_pos()  # set bottom text position in radiobuttons
-
-        radiobutton_choice_option = tkinter.IntVar()
+        radiobutton_choice_option = customtkinter.IntVar()
         radiobutton_choice_option.set(1)  # default option is all symbols
 
-        all_symbols = Radiobutton(
-            main_frame,
-            text='All symbols',
+        radiobutton_frame = CTkFrame(main_frame)
+
+        self.all_symbols_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=1,
-            takefocus=0,
         )
-
-        only_letters = Radiobutton(
-            main_frame,
-            text='Only letters',
+        self.only_letters_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=2,
-            takefocus=0
         )
-        only_digits = Radiobutton(
-            main_frame,
-            text='Only digits',
+        self.only_digits_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=3,
-            takefocus=0
         )
-        letters_digits = Radiobutton(
-            main_frame,
-            text='Letters & digits',
+        self.letters_digits_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=4,
-            takefocus=0
         )
-        letters_signs = Radiobutton(
-            main_frame,
-            text='Letters & signs',
+        self.letters_signs_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=5,
-            takefocus=0
         )
-        digits_signs = Radiobutton(
-            main_frame,
-            text='Digits & signs',
+        self.digits_signs_radio_btn = CTkRadioButton(
+            radiobutton_frame,
+            text='',
             variable=radiobutton_choice_option,
             value=6,
-            takefocus=0
+
         )
 
-        radiobtn_dict = {
-            'all_symbols': all_symbols,
-            'only_letters': only_letters,
-            'only_digits': only_digits,
-            'letters_digits': letters_digits,
-            'letters_signs': letters_signs,
-            'digits_signs': digits_signs,
-        }
+        self.all_symbols_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['all_symbols_label']
+        )
+        self.only_letters_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['only_letters_label']
+        )
+        self.only_digits_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['only_digits_label']
+        )
+        self.letters_digits_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['letters_digits_label']
+        )
+        self.letters_signs_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['letters_signs_label']
+        )
+        self.digits_signs_label = CTkLabel(
+            radiobutton_frame,
+            text=self.language_options['EN']['radio_buttons_labels']['digits_signs_label']
+        )
 
-        generate_btn = Button(
+        self.generate_btn = CTkButton(
             main_frame,
-            text='Generate',
+            text=self.language_options['EN']['buttons']['generate_btn'],
+            text_color='black',
             command=lambda: generate_password(
-                password_usage_entry,
-                password_length_entry,
-                repeatable_entry,
-                result_password_entry,
+                self.current_language_state_bool,
+                self.password_usage_entry,
+                self.password_length_entry,
+                self.repeatable_entry,
+                self.result_password_entry,
                 radiobutton_choice_option
             ),
-            padding=8,
         )
 
-        copy_btn = Button(
+        self.copy_btn = CTkButton(
             main_frame,
-            text='Copy password',
-            command=lambda: copy_password(result_password_entry),
-            padding=8,
+            text=self.language_options['EN']['buttons']['generate_btn'],
+            text_color='black',
+            command=lambda: copy_password(self.current_language_state_bool, self.result_password_entry),
         )
 
-        clear_btn = Button(
+        self.clear_btn = CTkButton(
             main_frame,
-            text='Clear all',
-            command=lambda:
-            clear_entries(
-                password_usage_entry,
-                password_length_entry,
-                repeatable_entry,
-                result_password_entry
+            text=self.language_options['EN']['buttons']['clear_btn'],
+            text_color='black',
+            command=lambda: clear_entries(
+                self.password_usage_entry,
+                self.password_length_entry,
+                self.repeatable_entry,
+                self.result_password_entry
             ),
-            padding=8,
         )
 
-        write_to_db_btn = Button(
+        self.write_to_db_btn = CTkButton(
             main_frame,
-            text='Write to database',
-            command=lambda:
-            write_to_database(
-                password_usage_entry.get(),
-                result_password_entry.get()
+            text=self.language_options['EN']['buttons']['write_to_db_btn'],
+            text_color='black',
+            command=lambda: write_to_database(
+                self.current_language_state_bool,
+                self.password_usage_entry.get(),
+                self.result_password_entry.get()
             ),
-            padding=8,
         )
 
-        quit_btn = Button(
+        self.change_bg_btn = CTkButton(
             main_frame,
-            text='Quit',
+            text=u'\u263E',
+            text_color='black',
+            command=lambda: change_background_color(self.change_bg_btn),
+        )
+
+        self.move_to_table_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['move_to_table_btn'],
+            text_color='black',
+            command=lambda: controller.show_frame(TablePage),
+        )
+
+        self.ukrainian_lang_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
+            text_color='black',
+            command=lambda: controller.change_language('UA'),
+        )
+
+        self.english_lang_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['english_lang_btn'],
+            text_color='black',
+            command=lambda: controller.change_language('EN')
+        )
+
+        self.quit_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['quit_btn'],
+            text_color='black',
             command=lambda: app.destroy(),
-            padding=8
         )
 
-        labels_dict = {
-            'password_usage_label': password_usage_label,
-            'password_length_label': password_length_label,
-            'repeatable_label': repeatable_label,
-            'result_password_label': result_password_label
-        }
+        self.password_usage_label.grid(row=0, column=0, columnspan=3, sticky='w', pady=(30, 10), padx=15)
+        self.password_usage_entry.grid(row=0, column=3, columnspan=3, sticky='we', pady=(30, 10), padx=(0, 15))
 
-        change_bg_btn = Button(
-            main_frame,
-            text=u'\u263C',
-            command=lambda: [
-                change_background.change_background_color(
-                    labels_dict,
-                    change_bg_btn,
-                    radiobtn_dict,
-                ),
-            ],
-            padding=8,
-        )
+        self.password_length_label.grid(row=1, column=0, columnspan=3, sticky='w', pady=10, padx=15)
+        self.password_length_entry.grid(row=1, column=3, columnspan=3, sticky='we', pady=10, padx=(0, 15))
 
-        change_bg_btn.invoke()
+        self.repeatable_label.grid(row=2, column=0, columnspan=3, sticky='w', pady=10, padx=15)
+        self.repeatable_entry.grid(row=2, column=3, columnspan=3, sticky='we', pady=10, padx=(0, 15))
 
-        move_to_table_btn = ttk.Button(
-            main_frame,
-            text='Show table >>>>',
-            padding=8,
-            command=lambda: controller.show_frame(TablePage)
-        )
+        self.generate_btn.grid(row=3, column=0, columnspan=3, sticky='we', padx=(15, 2), pady=20)
+        self.ukrainian_lang_btn.grid(row=3, column=3, sticky='we', padx=(2, 2))
+        self.change_bg_btn.grid(row=3, column=4, sticky='we', padx=(2, 2))
+        self.english_lang_btn.grid(row=3, column=5, sticky='we', padx=(2, 15))
 
-        buttons_dict = {
-            'generate_btn': generate_btn,
-            'copy_btn': copy_btn,
-            'clear_btn': clear_btn,
-            'write_to_db_btn': write_to_db_btn,
-            'move_to_table_btn': move_to_table_btn,
-            'quit_btn': quit_btn,
-        }
+        radiobutton_frame.grid(row=4, column=0, columnspan=6, padx=15, sticky='we')
 
-        ukrainian_lang_btn = Button(
-            main_frame,
-            text='UA',
-            command=lambda: [
-                ukrainian_language_main_window_data(
-                    labels_dict,
-                    buttons_dict,
-                    radiobtn_dict,
-                ),
-            ],
-            padding=8
-        )
+        self.all_symbols_radio_btn.grid(row=0, column=2, sticky='we', pady=(5, 0))
+        self.only_letters_radio_btn.grid(row=0, column=7, sticky='we', pady=(5, 0))
+        self.only_digits_radio_btn.grid(row=0, column=12, sticky='we', pady=(5, 0))
+        self.letters_digits_radio_btn.grid(row=0, column=17, sticky='we', pady=(5, 0))
+        self.letters_signs_radio_btn.grid(row=0, column=22, sticky='we', pady=(5, 0))
+        self.digits_signs_radio_btn.grid(row=0, column=27, sticky='we', pady=(5, 0))
 
-        english_lang_btn = Button(
-            main_frame,
-            text='EN',
-            command=lambda: english_language_main_window_data(
-                labels_dict,
-                buttons_dict,
-                radiobtn_dict,
-            ),
-            padding=8,
-        )
+        self.all_symbols_label.grid(row=1, column=0, columnspan=5, sticky='we')
+        self.only_letters_label.grid(row=1, column=5, columnspan=5, sticky='we')
+        self.only_digits_label.grid(row=1, column=10, columnspan=5, sticky='we')
+        self.letters_digits_label.grid(row=1, column=15, columnspan=5, sticky='we')
+        self.letters_signs_label.grid(row=1, column=20, columnspan=5, sticky='we')
+        self.digits_signs_label.grid(row=1, column=25, columnspan=5, sticky='we')
 
-        password_usage_label.grid(row=0, column=0, columnspan=3, sticky='w', pady=(0, 10))
-        password_usage_entry.grid(row=0, column=3, columnspan=3, sticky='e', pady=(0, 10))
+        self.result_password_label.grid(row=5, column=0, pady=(20, 0), columnspan=6)
+        self.result_password_entry.grid(row=6, column=0, sticky='nsew', pady=10, padx=15, columnspan=6)
 
-        password_length_label.grid(row=1, column=0, columnspan=3, sticky='w', pady=10)
-        password_length_entry.grid(row=1, column=3, columnspan=3, sticky='e', pady=10)
+        self.copy_btn.grid(row=7, column=0, columnspan=2, sticky='we', pady=20, padx=(15, 2))
+        self.clear_btn.grid(row=7, column=2, columnspan=2, sticky='we', pady=20, padx=(2, 2))
+        self.write_to_db_btn.grid(row=7, column=4, columnspan=2, sticky='we', pady=20, padx=(2, 15))
 
-        repeatable_label.grid(row=2, column=0, columnspan=3, sticky='w', pady=10)
-        repeatable_entry.grid(row=2, column=3, columnspan=3, sticky='e', pady=10)
+        self.quit_btn.grid(row=8, column=0, columnspan=3, sticky='we', padx=(15, 2), pady=(0, 60))
+        self.move_to_table_btn.grid(row=8, column=3, columnspan=3, sticky='we', padx=(2, 15), pady=(0, 60))
 
-        generate_btn.grid(row=3, column=0, columnspan=3, sticky='we', padx=(0, 2), pady=20)
-        ukrainian_lang_btn.grid(row=3, column=3, sticky='we', padx=(2, 2))
-        change_bg_btn.grid(row=3, column=4, sticky='we', padx=(2, 2))
-        english_lang_btn.grid(row=3, column=5, sticky='we', padx=(2, 0))
+        def set_equal_column_width(frame, column_number):
+            for column in range(column_number):
+                frame.columnconfigure(column, weight=1, uniform="equal")
 
-        all_symbols.grid(row=4, column=0)
-        only_letters.grid(row=4, column=1)
-        only_digits.grid(row=4, column=2)
-        letters_digits.grid(row=4, column=3)
-        letters_signs.grid(row=4, column=4, )
-        digits_signs.grid(row=4, column=5)
+        CENTER_RADIO_BUTTONS_NUMBER = 30
+        set_equal_column_width(radiobutton_frame, CENTER_RADIO_BUTTONS_NUMBER)
 
-        result_password_label.grid(row=5, column=0, pady=(45, 0), columnspan=6)
-        result_password_entry.grid(row=6, column=0, sticky='nswe', pady=10, columnspan=6)
+        MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE = 6
+        set_equal_column_width(main_frame, MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE)
 
-        copy_btn.grid(row=7, column=0, columnspan=2, sticky='we', pady=20, padx=(0, 2))
-        clear_btn.grid(row=7, column=2, columnspan=2, sticky='we', pady=20, padx=(2, 2))
-        write_to_db_btn.grid(row=7, column=4, columnspan=2, sticky='we', pady=20, padx=(2, 0))
-
-        quit_btn.grid(row=8, column=0, columnspan=3, sticky='we', padx=(0, 2))
-        move_to_table_btn.grid(row=8, column=3, columnspan=3, sticky='we', padx=(2, 0))
-
-        main_frame.pack(side=TOP, pady=50)
+        main_frame.pack(side=TOP, pady=20, padx=20)
 
 
-class TablePage(Frame):
+class TablePage(BasePage):
     def __init__(self, parent, controller):
-        Frame.__init__(self, parent)
-        full_frame = Frame(self)
+        BasePage.__init__(self, parent, controller)
+        full_frame = CTkFrame(self)
 
-        table_frame = Frame(full_frame)
-        all_data_from_table = TableInterface(table_frame)
-        all_data_from_table.get_data_from_db()
+        table_frame = CTkFrame(full_frame)
+        data_table_obj = TableInterface(table_frame)
+        data_table_obj.get_data_from_db(self.current_language_state_bool)
 
-        upper_frame = Frame(full_frame)
-        synchronize_data_btn = Button(
+        upper_frame = CTkFrame(full_frame)
+        self.synchronize_data_btn = CTkButton(
             upper_frame,
-            text='Synchronization',
-            command=lambda: [
-                sync_db_data(app),
-            ],
-            padding=8,
+            text=self.language_options['EN']['buttons']['synchronize_data_btn'],
+            text_color='black',
+            command=lambda: sync_db_data(self.current_language_state_bool, app),
         )
 
-        change_token_btn = Button(
+        self.change_token_btn = CTkButton(
             upper_frame,
-            text='Change token',
-            command=lambda: [
-                change_local_token(app),
-            ],
-            padding=8,
+            text=self.language_options['EN']['buttons']['change_token_btn'],
+            text_color='black',
+            command=lambda: change_local_token(self.current_language_state_bool, app),
         )
 
-        bottom_frame = Frame(full_frame)
-        return_to_main_btn = Button(
+        bottom_frame = CTkFrame(full_frame)
+        self.return_to_main_btn = CTkButton(
             bottom_frame,
-            text='<<<< Back',
-            padding=8,
+            text=self.language_options['EN']['buttons']['return_to_main_btn'],
+            text_color='black',
             command=lambda: controller.show_frame(MainPage)
         )
 
-        reload_table_btn = Button(
+        self.reload_table_btn = CTkButton(
             bottom_frame,
-            text='Reload',
-            padding=8,
-            command=lambda: [
-                all_data_from_table.get_data_from_db(),
-            ]
+            text=self.language_options['EN']['buttons']['reload_table_btn'],
+            text_color='black',
+            command=lambda: data_table_obj.get_data_from_db(self.current_language_state_bool),
         )
 
-        update_table_btn = Button(
+        self.update_table_btn = CTkButton(
             bottom_frame,
-            text='Update record',
-            padding=8,
-            command=lambda: [
-                update_columns_via_app_interface(all_data_from_table)
-            ]
+            text=self.language_options['EN']['buttons']['update_table_btn'],
+            text_color='black',
+            command=lambda: update_columns_via_app_interface(self.current_language_state_bool, data_table_obj),
         )
 
-        delete_record_btn = Button(
+        def delete_record_and_refresh_table():
+            remove_status = remove_record_from_table(self.current_language_state_bool, app)
+            return None if remove_status is None else data_table_obj.get_data_from_db(self.current_language_state_bool)
+
+        self.delete_record_btn = CTkButton(
             bottom_frame,
-            text='Delete',
-            padding=8,
-            command=lambda: [
-                remove_record_from_table(app),
-                all_data_from_table.get_data_from_db()
-            ]
+            text=self.language_options['EN']['buttons']['delete_record_btn'],
+            text_color='black',
+            command=lambda: delete_record_and_refresh_table(),
         )
 
-        quit_btn = Button(
+        def set_new_language(language: str):
+            controller.change_language(language)
+            data_table_obj.get_data_from_db(self.current_language_state_bool)
+
+        self.ukrainian_lang_btn = CTkButton(
+            upper_frame,
+            text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
+            text_color='black',
+            command=lambda: set_new_language('UA'),
+        )
+
+        self.english_lang_btn = CTkButton(
+            upper_frame,
+            text=self.language_options['EN']['buttons']['english_lang_btn'],
+            text_color='black',
+            command=lambda: set_new_language('EN'),
+        )
+
+        self.quit_btn = CTkButton(
             bottom_frame,
-            text='Quit',
-            padding=8,
+            text=self.language_options['EN']['buttons']['quit_btn'],
+            text_color='black',
             command=lambda: app.destroy(),
         )
 
-        table_buttons_dict = {
-            'synchronize_data': synchronize_data_btn,
-            'change_token': change_token_btn,
-            'return_to_main_btn': return_to_main_btn,
-            'reload_table_btn': reload_table_btn,
-            'update_table_btn': update_table_btn,
-            'delete_record_btn': delete_record_btn,
-            'table_quit_btn': quit_btn,
-        }
-
-        ukrainian_lang_btn = Button(
-            upper_frame,
-            text='UA',
-            command=lambda: [
-                ukrainian_language_table_window_data(table_buttons_dict),
-                all_data_from_table.get_data_from_db()
-            ],
-            padding=8
-        )
-
-        english_lang_btn = Button(
-            upper_frame,
-            text='EN',
-            command=lambda: [
-                english_language_table_window_data(table_buttons_dict),
-                all_data_from_table.get_data_from_db()
-            ],
-            padding=8,
-        )
-
-        ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
-        synchronize_data_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        change_token_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        english_lang_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
+        self.ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        self.synchronize_data_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.change_token_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.english_lang_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
         upper_frame.pack(fill='both', expand=True)
 
         table_frame.pack(fill='both', expand=True, pady=5)
 
-        return_to_main_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
-        reload_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        update_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        delete_record_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        quit_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
+        self.return_to_main_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        self.reload_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.update_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.delete_record_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.quit_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
         bottom_frame.pack(fill='both', expand=True)
 
         full_frame.pack(side='top', pady=15)
 
 
 app = PasswordGeneratorApp()
-app.bind_all('<Control-f>', database_search)
-app.bind_all('<Control-F>', database_search)
