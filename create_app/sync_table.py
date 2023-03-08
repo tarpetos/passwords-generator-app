@@ -29,6 +29,8 @@ class RemoteDB:
         all_tokens_tuple_lst = self.cur.fetchall()
         all_tokens_lst = [decrypt(token_tuple[0]) for token_tuple in all_tokens_tuple_lst]
 
+        self.con.commit()
+
         return all_tokens_lst
 
 
@@ -43,6 +45,8 @@ class RemoteDB:
 
         get_id = self.cur.fetchone()
 
+        self.con.commit()
+
         if get_id:
             return get_id[0]
 
@@ -56,6 +60,8 @@ class RemoteDB:
         )
 
         table_rows = self.cur.fetchall()
+
+        self.con.commit()
 
         return table_rows
 

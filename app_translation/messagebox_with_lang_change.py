@@ -1,6 +1,6 @@
 from tkinter import messagebox
 
-from additional_modules.custom_input_dialogs import askinteger, askstring, custom_askinteger
+from additional_modules.custom_input_dialogs import custom_askstring, custom_askinteger
 
 
 def invalid_password_usage_message(lang_state_check):
@@ -282,12 +282,12 @@ def ask_to_sync_message(lang_state_check):
 
 def token_input_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Token input', 'Enter the token assigned to you by the bot\n(use /token command in Telegram)...\n',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Ввід токену',
             'Введіть токен, який присвоїв вам бот\n(використовуйте команду /token у Telegram)...\n',
             parent=application_window, lang_state=lang_state_check
@@ -309,7 +309,7 @@ def input_token_error_message(lang_state_check):
         )
 
 
-def token_server_changed_message(lang_state_check):
+def server_token_changed_message(lang_state_check):
     if lang_state_check:
         messagebox.showwarning(
             'Token was changed',
@@ -402,13 +402,13 @@ def ask_to_save_token_message(lang_state_check):
 
 def choose_between_duplicates_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Duplicate password description found',
             'Enter "Remote" to keep remote passwords, or enter "Local" to keep local passwords.\n',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Знайдено дубльований опис пароля',
             'Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
             parent=application_window, lang_state=lang_state_check
@@ -475,13 +475,13 @@ def was_not_changed_token_message(lang_state_check):
 
 def search_query_input_message(lang_state_check):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Search',
             'Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
             lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Пошук',
             'Введіть пошуковий запит (опис пароля, який хочете знайти).\nПошук є регістро незалежним.\n',
             lang_state=lang_state_check

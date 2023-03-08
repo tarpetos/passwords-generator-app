@@ -1,9 +1,8 @@
 import sqlite3
-from customtkinter import CTkFrame
-from tkinter import Text
-from tkinter.constants import END, NONE, WORD, TOP
 
-from tkscrolledframe import ScrolledFrame
+from customtkinter import CTkFrame, CTkScrollbar
+from tkinter import ttk
+from tkinter.constants import END, WORD, TOP, NO, CENTER, W
 
 from additional_modules.encryption_decryption import decrypt, encrypt
 from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_value_message
@@ -13,62 +12,65 @@ from create_app.inputs_and_buttons_processing import get_data_from_database_tabl
 from create_app.store_user_passwords import PasswordStore
 
 
-get_data = PasswordStore()
-
-
 class TableInterface:
     def __init__(self, root, search_func):
+        self.data_from_storage = PasswordStore()
         self.input_table_cell = None
+        self.pandas_table_iterator = None
+        self.table_header = None
 
-        self.full_frame = ScrolledFrame(root, width=800, height=430)
-        self.full_frame.bind('<Control-f>', search_func)
-        self.full_frame.bind('<Control-F>', search_func)
-        self.full_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
+        self.full_frame = CTkFrame(root, width=800, height=430, fg_color='white')
         self.full_frame.pack(side=TOP)
 
-        self.full_frame.bind_arrow_keys(root)
-        self.full_frame.bind_scroll_wheel(root)
+        self.table_tree_frame = ttk.Treeview(self.full_frame, height=20)
+        self.table_tree_frame.bind('<Control-f>', search_func)
+        self.table_tree_frame.bind('<Control-F>', search_func)
+        self.table_tree_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
 
-        self.inner_frame = self.full_frame.display_widget(CTkFrame)
         self.text_cells_list = []
 
     def get_data_from_db(self, lang_state):
-        self.remake_inner_frame()
-        full_list_of_data = get_data_from_database_table(lang_state)
-        self.text_cells_list = []
-        for tuple_row_element in range(len(full_list_of_data)):
-            text_cells_rows = []
-            for tuple_column_element in range(len(full_list_of_data[tuple_row_element])):
-                self.input_table_cell = Text(
-                    self.inner_frame,
-                    width=14,
-                    height=1,
-                    wrap=NONE,
-                    fg='black',
-                    borderwidth=1.5,
-                    font=('Arial', 9, 'bold'),
-                )
-                self.input_table_cell.grid(row=tuple_row_element, column=tuple_column_element)
+        data_for_table = get_data_from_database_table(lang_state)
+        self.pandas_table_iterator = data_for_table['data']
+        data_list_decrypted_column = self.pandas_table_iterator.iloc[:, 2].apply(decrypt)
+        self.pandas_table_iterator.iloc[:, 2] = data_list_decrypted_column
 
-                inserted_data_to_cell = full_list_of_data[tuple_row_element][tuple_column_element]
-                if tuple_column_element == 2 and tuple_row_element != 0:
-                    decrypted_password = decrypt(inserted_data_to_cell)
-                    self.input_table_cell.insert(END, decrypted_password)
-                else:
-                    self.input_table_cell.insert(END, inserted_data_to_cell)
-                self.add_special_config_to_text(tuple_row_element, tuple_column_element)
+        self.table_tree_frame['columns'] = list(self.pandas_table_iterator.columns)
 
-                if (1 <= tuple_column_element <= 2) and tuple_row_element != 0:
-                    text_cells_rows.append(self.input_table_cell)
+        self.table_tree_frame.column('#0', width=0, stretch=NO)
 
-            if tuple_row_element != 0:
-                self.text_cells_list.append(text_cells_rows)
+        self.table_header = self.get_table_col_header(lang_state, data_for_table)
+        self.insert_table_data(self.table_header)
 
-        return self.text_cells_list
+        vertical_scrollbar = CTkScrollbar(
+            self.full_frame, orientation='vertical', command=self.table_tree_frame.yview
+        )
+        vertical_scrollbar.pack(side='right', fill='y')
+        self.table_tree_frame.configure(yscrollcommand=vertical_scrollbar.set)
 
-    def remake_inner_frame(self):
-        self.full_frame.erase()
-        self.inner_frame = self.full_frame.display_widget(CTkFrame)
+        horizontal_scrollbar = CTkScrollbar(
+            self.full_frame, orientation='horizontal', command=self.table_tree_frame.xview
+        )
+        horizontal_scrollbar.pack(side='bottom', fill='x')
+        self.table_tree_frame.configure(xscrollcommand=horizontal_scrollbar.set)
+        self.table_tree_frame.pack()
+
+    def insert_table_data(self, table_header):
+        for column_number, column in enumerate(self.table_tree_frame['columns']):
+            self.table_tree_frame.column(column, anchor=W, minwidth=300, width=300, stretch=NO)
+            self.table_tree_frame.heading(column, text=table_header[column_number], anchor=CENTER)
+
+        for row_number, row in enumerate(self.pandas_table_iterator.values):
+            self.table_tree_frame.insert('', END, text=str(row_number), values=row.tolist())
+
+    @staticmethod
+    def get_table_col_header(lang_state, col_names) -> dict:
+        return col_names['english_lst'] if lang_state else col_names['ukrainian_lst']
+
+    def reload_table(self, root, search_func, lang_state):
+        self.full_frame.destroy()
+        self.__init__(root, search_func)
+        self.get_data_from_db(lang_state)
 
     def add_special_config_to_text(self, row_element, column_element):
         if row_element == 0:
@@ -81,8 +83,8 @@ class TableInterface:
             self.input_table_cell.config(background='yellow', state='disabled')
 
     def update_data_using_table_interface(self, lang_state):
-        update_id = get_data.select_id()
-        data_for_compare = get_data.select_descriptions_password()
+        update_id = self.data_from_storage.select_id()
+        data_for_compare = self.data_from_storage.select_descriptions_password()
         data_list_from_user = self.text_cells_list
 
         search_for_update_flag = False
@@ -110,7 +112,7 @@ class TableInterface:
                 else:
                     if not search_for_update_flag and update_record_in_table(lang_state):
                         search_for_update_flag = True
-                        get_data.update_password_data_by_id(
+                        self.data_from_storage.update_password_data_by_id(
                             password_usage_cell_element,
                             encrypted_password,
                             len(password_cell_element),
@@ -119,7 +121,7 @@ class TableInterface:
                         )
                         successful_update_in_table(lang_state)
                     elif search_for_update_flag:
-                        get_data.update_password_data_by_id(
+                        self.data_from_storage.update_password_data_by_id(
                             password_usage_cell_element,
                             encrypted_password,
                             len(password_cell_element),

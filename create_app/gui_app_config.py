@@ -199,7 +199,7 @@ class MainPage(BasePage):
 
         self.copy_btn = CTkButton(
             main_frame,
-            text=self.language_options['EN']['buttons']['generate_btn'],
+            text=self.language_options['EN']['buttons']['copy_btn'],
             text_color='black',
             command=lambda: copy_password(self.current_language_state_bool, self.result_password_entry),
         )
@@ -318,7 +318,7 @@ class MainPage(BasePage):
 class TablePage(BasePage):
     def __init__(self, parent, controller):
         BasePage.__init__(self, parent, controller)
-        full_frame = CTkFrame(self)
+        full_frame = CTkFrame(self, fg_color='transparent')
 
         table_frame = CTkFrame(full_frame)
         data_table_obj = TableInterface(table_frame, self.shortcut_search)
@@ -351,7 +351,11 @@ class TablePage(BasePage):
             bottom_frame,
             text=self.language_options['EN']['buttons']['reload_table_btn'],
             text_color='black',
-            command=lambda: data_table_obj.get_data_from_db(self.current_language_state_bool),
+            command=lambda: data_table_obj.reload_table(
+                table_frame,
+                self.shortcut_search,
+                self.current_language_state_bool
+            ),
         )
 
         self.update_table_btn = CTkButton(
@@ -363,7 +367,11 @@ class TablePage(BasePage):
 
         def delete_record_and_refresh_table():
             remove_status = remove_record_from_table(self.current_language_state_bool, app)
-            return None if remove_status is None else data_table_obj.get_data_from_db(self.current_language_state_bool)
+            return None if remove_status is None else data_table_obj.reload_table(
+                table_frame,
+                self.shortcut_search,
+                self.current_language_state_bool
+            )
 
         self.delete_record_btn = CTkButton(
             bottom_frame,
@@ -372,22 +380,22 @@ class TablePage(BasePage):
             command=lambda: delete_record_and_refresh_table(),
         )
 
-        def set_new_language(language: str):
-            controller.change_language(language)
-            data_table_obj.get_data_from_db(self.current_language_state_bool)
+        # def set_new_language(language: str):
+        #     controller.change_language(language)
+        #     data_table_obj.get_data_from_db(self.current_language_state_bool)
 
         self.ukrainian_lang_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
             text_color='black',
-            command=lambda: set_new_language('UA'),
+            command=lambda: controller.change_language('UA'),
         )
 
         self.english_lang_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['english_lang_btn'],
             text_color='black',
-            command=lambda: set_new_language('EN'),
+            command=lambda: controller.change_language('EN'),
         )
 
         self.quit_btn = CTkButton(
@@ -403,7 +411,7 @@ class TablePage(BasePage):
         self.english_lang_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
         upper_frame.pack(fill='both', expand=True)
 
-        table_frame.pack(fill='both', expand=True, pady=5)
+        table_frame.pack(fill='both', expand=True, pady=10)
 
         self.return_to_main_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
         self.reload_table_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
@@ -412,7 +420,7 @@ class TablePage(BasePage):
         self.quit_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
         bottom_frame.pack(fill='both', expand=True)
 
-        full_frame.pack(side='top', pady=15)
+        full_frame.pack(side='top', pady=15, padx=15)
 
     def shortcut_search(self, event):
         current_lang = self.controller.current_language

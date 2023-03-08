@@ -31,11 +31,11 @@
       "quit_btn":             "Quit"
     },
     "table_column_names": {
-      "id":             "UNIQUE\nIDENTIFIER",
+      "id":             "UNIQUE IDENTIFIER",
       "description":    "PASSWORD DESCRIPTION",
       "password":       "PASSWORD",
-      "length":         "PASSWORD\nLENGTH",
-      "has_repeatable": "CONTAIN\nREPEATED CHARACTERS?"
+      "length":         "PASSWORD LENGTH",
+      "has_repeatable": "CONTAIN REPEATED CHARACTERS?"
     }
   },
   "UA": {
@@ -70,11 +70,11 @@
       "quit_btn":             "Вихід"
     },
     "table_column_names": {
-      "id":             "УНІКАЛЬНИЙ\nІДЕНТИФІКАТОР",
+      "id":             "УНІКАЛЬНИЙ ІДЕНТИФІКАТОР",
       "description":    "ОПИС ПАРОЛЯ",
       "password":       "ПАРОЛЬ",
-      "length":         "ДОВЖИНА\nПАРОЛЯ",
-      "has_repeatable": "МІСТИТЬ\nПОВТОРЮВАНІ СИМВОЛИ?"
+      "length":         "ДОВЖИНА ПАРОЛЯ",
+      "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?"
     }
   }
 }

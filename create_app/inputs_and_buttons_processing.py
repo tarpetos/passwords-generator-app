@@ -1,23 +1,26 @@
 import re
 import sqlite3
+from typing import Dict, Any, Iterator
+
 import mysql.connector
 import pyperclip
 import requests
 
 from random import choices, sample
 from string import digits, ascii_letters, punctuation
-from tkinter.constants import END
+
+from pandas import DataFrame
 
 from additional_modules.encryption_decryption import encrypt, decrypt
 from additional_modules.pop_up_windows import app_loading_screen, search_screen
-from app_translation.load_data_for_localization import en_table_columns_names, uk_table_columns_names
+from app_translation.load_data_for_localization import all_json_localization_data
 from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
     invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
     duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
     successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
     token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
-    choose_between_duplicates_message, show_warn_by_regex_message, token_server_changed_message, remake_table_message, \
+    choose_between_duplicates_message, show_warn_by_regex_message, server_token_changed_message, remake_table_message, \
     empty_table_warn, ask_to_save_new_token, successfully_changed_token_message, was_not_changed_token_message, \
     search_query_input_message, invalid_search_query_message, \
     no_matches_for_search_message, successful_delete_message, successful_remake_table_message
@@ -32,28 +35,37 @@ MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
 database_user_data = PasswordStore()
 
 
-def get_data_from_database_table(lang_state) -> list:
-    en_table_lst = en_table_columns_names
-    uk_table_lst = uk_table_columns_names
+def table_column_names() -> tuple[list, list]:
+    en_table_columns_names = [column for column in all_json_localization_data['EN']['table_column_names'].values()]
+    uk_table_columns_names = [column for column in all_json_localization_data['UA']['table_column_names'].values()]
+
+    return en_table_columns_names, uk_table_columns_names
+
+
+def get_data_from_database_table(lang_state) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
+    column_name_localization = table_column_names()
+    en_table_lst = column_name_localization[0]
+    uk_table_lst = column_name_localization[1]
 
     full_list_of_data = database_user_data.select_full_table()
-    full_list_of_data = check_columns_names(lang_state, full_list_of_data, en_table_lst, uk_table_lst)
+    # full_list_of_data = check_columns_names(lang_state, full_list_of_data, en_table_lst, uk_table_lst)
 
-    return full_list_of_data
+    return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
 
 
 def get_search_data_from_database_table(lang_state, all_queries) -> list:
     full_list_of_data = [database_user_data.select_search_data_by_desc(record) for record in all_queries]
 
-    en_search_table_lst = en_table_columns_names[:3]
-    uk_search_table_lst = uk_table_columns_names[:3]
+    column_name_localization = table_column_names()
+    en_search_table_lst = column_name_localization[:3]
+    uk_search_table_lst = column_name_localization[:3]
     full_list_of_data = check_columns_names(lang_state, full_list_of_data, en_search_table_lst, uk_search_table_lst)
 
     return full_list_of_data
 
 
-def check_columns_names(lang_state, full_list_of_data, en_tuple, uk_tuple) -> list:
-    full_list_of_data.insert(0, en_tuple) if lang_state else full_list_of_data.insert(0, uk_tuple)
+def check_columns_names(lang_state, full_list_of_data, en_lst, uk_lst) -> list:
+    full_list_of_data.insert(0, en_lst) if lang_state else full_list_of_data.insert(0, uk_lst)
 
     return full_list_of_data
 
@@ -94,7 +106,7 @@ def check_password_length_input(lang_state, user_input) -> bool:
 def check_repeatable_input(lang_state, user_input, password_length_entry, password_length, password_alphabet) -> bool:
     if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(password_length) > len(password_alphabet):
         invalid_value_if_no_repeatable_characters_message(lang_state, password_alphabet)
-        password_length_entry.delete(0, END)
+        password_length_entry.delete(0, 'end')
         return True
     elif user_input.capitalize() == 'Y' or user_input.capitalize() == 'N':
         return False
@@ -207,7 +219,7 @@ def generate_password(lang_state, pass_usage_entry, pass_length_entry, repeatabl
     if check_repeatable_input(lang_state, check_if_repeatable_allowed, pass_length_entry, password_length, password_alphabet):
         return
 
-    result_pass_entry.delete(0, END)
+    result_pass_entry.delete(0, 'end')
     result = check_for_repeatable_characters(password_alphabet, int(password_length), check_if_repeatable_allowed)
     result_pass_entry.insert(0, result)
 
@@ -222,10 +234,10 @@ def copy_password(lang_state, result_password_entry):
 
 
 def clear_entries(password_usage_entry, password_length_entry, repeatable_entry, result_password_entry):
-    password_usage_entry.delete(0, END)
-    password_length_entry.delete(0, END)
-    repeatable_entry.delete(0, END)
-    result_password_entry.delete(0, END)
+    password_usage_entry.delete(0, 'end')
+    password_length_entry.delete(0, 'end')
+    repeatable_entry.delete(0, 'end')
+    result_password_entry.delete(0, 'end')
     # clear_all_fields_message(lang_state) # uncomment this if you want to see a message after clearing the fields
 
 
@@ -357,7 +369,7 @@ def sync_db_data(lang_state, application_window):
                     return
             else:
                 if saved_data:
-                    token_server_changed_message(lang_state)
+                    server_token_changed_message(lang_state)
                     database_user_data.truncate_saved_token()
                     user_token = token_input_message(lang_state, application_window)
                     save_token(lang_state, saved_data, user_id, user_token, full_list_of_tokens)
@@ -372,7 +384,7 @@ def sync_db_data(lang_state, application_window):
 def result_of_connection(lang_state) -> RemoteDB | None:
     load_screen = app_loading_screen(lang_state)
     remote_connection = control_mysql_connection(lang_state, load_screen)
-    if remote_connection == -1:
+    if remote_connection == 'MySQL connection error':
         return
 
     if not check_internet_connection():
@@ -388,24 +400,24 @@ def update_columns_via_app_interface(lang_state, all_data_from_table):
     all_data_from_table.update_data_using_table_interface(lang_state)
 
 
-def control_mysql_connection(lang_state, load_screen) -> RemoteDB | int:
+def control_mysql_connection(lang_state, load_screen) -> RemoteDB | str:
     try:
         remote_mysql_obj = RemoteDB()
         return remote_mysql_obj
     except mysql.connector.errors.OperationalError:
         connection_timeout_message(lang_state, load_screen)
-        return -1
+        return 'MySQL connection error'
     except mysql.connector.errors.DatabaseError:
         error_sync_message(lang_state, load_screen)
-        return -1
+        return 'MySQL connection error'
     except mysql.connector.errors.InterfaceError:
         error_sync_message(lang_state, load_screen)
-        return -1
+        return 'MySQL connection error'
 
 
 def check_internet_connection():
     try:
-        requests.get("http://google.com", timeout=5)
+        requests.get('http://google.com', timeout=5)
         return True
     except requests.ConnectionError:
         return False
@@ -469,7 +481,7 @@ def change_local_token(lang_state, application_window):
     while True:
         exit_status = try_token_change(lang_state, application_window, remote_connection, full_list_of_tokens)
 
-        if exit_status == "Exit from token dialog box":
+        if exit_status == 'Exit from token dialog box':
             return
 
 
@@ -477,7 +489,7 @@ def try_token_change(language, app, remote_ids, remote_tokens):
     user_token = token_input_message(language, app)
 
     if user_token is None:
-        return "Exit from token dialog box"
+        return 'Exit from token dialog box'
 
     user_id = remote_ids.select_id_by_token(encrypt(user_token))
 
@@ -488,7 +500,7 @@ def try_token_change(language, app, remote_ids, remote_tokens):
             successfully_changed_token_message(language)
         else:
             was_not_changed_token_message(language)
-        return "Exit from token dialog box"
+        return 'Exit from token dialog box'
     else:
         input_token_error_message(language)
 

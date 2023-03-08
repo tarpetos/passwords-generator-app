@@ -1,8 +1,9 @@
 .idea
 venv/
 **/__pycache__/
-passwords/
+.passwords/
 build/
+dist/
 main.spec
 test.py
 .env
