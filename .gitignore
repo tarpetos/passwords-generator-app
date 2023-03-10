@@ -2,7 +2,13 @@
 venv/
 **/__pycache__/
 passwords/
+.passwords/
 build/
+dist/
 main.spec
+readme.txt
+readme.md
+license.txt
 test.py
 test.html
+.env

@@ -3,13 +3,14 @@ import sqlite3
 
 
 def create_directory():
-    if not os.path.exists('passwords'):
-        os.mkdir('passwords')
+    if not os.path.exists('.passwords'):
+        os.mkdir('.passwords')
+
 
 class PasswordStore:
     def __init__(self):
         create_directory()
-        self.con = sqlite3.connect('passwords/data')
+        self.con = sqlite3.connect('.passwords/data')
         self.cur = self.con.cursor()
         self.create_table()
         self.create_token_id_table()
@@ -19,21 +20,19 @@ class PasswordStore:
             '''
             CREATE TABLE IF NOT EXISTS passwords (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                password_usage VARCHAR(384) NOT NULL,
+                description VARCHAR(384) NOT NULL,
                 password VARCHAR(384) NOT NULL,
-                password_length INTEGER NOT NULL,
-                password_has_repeatable BOOLEAN NOT NULL,
-                CONSTRAINT unique_data UNIQUE(password_usage)
+                length INTEGER NOT NULL,
+                has_repeatable BOOLEAN NOT NULL,
+                CONSTRAINT unique_data UNIQUE(description)
             )
             '''
         )
         self.con.commit()
 
-
     def drop_table(self):
         self.cur.execute('DROP TABLE IF EXISTS passwords')
         self.con.commit()
-
 
     def create_token_id_table(self):
         self.cur.execute(
@@ -45,30 +44,27 @@ class PasswordStore:
             '''
         )
 
-
-    def insert_into_tb(self, password_usage, password, password_length, password_has_repeatable):
+    def insert_into_tb(self, description, password, length, has_repeatable):
         self.cur.execute(
             '''
-            INSERT OR IGNORE INTO passwords(password_usage, password, password_length, password_has_repeatable)
+            INSERT OR IGNORE INTO passwords(description, password, length, has_repeatable)
             VALUES (?, ?, ?, ?)
             ''',
-            (password_usage, password, password_length, password_has_repeatable)
+            (description, password, length, has_repeatable)
         )
 
         self.con.commit()
 
-
-    def insert_update_into_tb(self, password_usage, password, password_length, password_has_repeatable):
+    def insert_update_into_tb(self, description, password, length, has_repeatable):
         self.cur.execute(
             '''
-            REPLACE INTO passwords(password_usage, password, password_length, password_has_repeatable)
+            REPLACE INTO passwords(description, password, length, has_repeatable)
             VALUES (?, ?, ?, ?)
             ''',
-            (password_usage, password, password_length, password_has_repeatable)
+            (description, password, length, has_repeatable)
         )
 
         self.con.commit()
-
 
     def insert_into_save_tb(self, user_id, user_token):
         self.cur.execute(
@@ -81,11 +77,9 @@ class PasswordStore:
 
         self.con.commit()
 
-
     def truncate_saved_token(self):
         self.cur.execute('DELETE FROM id_token')
         self.con.commit()
-
 
     def select_from_save_tb(self):
         self.cur.execute('SELECT * FROM id_token')
@@ -95,27 +89,26 @@ class PasswordStore:
         if result:
             return result[0]
 
-
-    def update_password_data_by_id(self, password_usage, password, password_length, password_has_repeatable, table_id):
+    def update_password_data_by_id(self, description, password, length, has_repeatable, table_id):
         self.cur.execute(
             '''
             UPDATE passwords
-            SET password_usage =  ?, password =  ?, password_length =  ?, password_has_repeatable =  ?
+            SET description =  ?, password =  ?, length =  ?, has_repeatable =  ?
             WHERE id =  ?
             ''',
-            (password_usage, password, password_length, password_has_repeatable, table_id)
+            (description, password, length, has_repeatable, table_id)
         )
 
         self.con.commit()
 
-    def update_existing_password(self, password, password_length, password_has_repeatable, password_usage):
+    def update_existing_password(self, password, length, has_repeatable, description):
         self.cur.execute(
             '''
             UPDATE passwords
-            SET password =  ?, password_length =  ?, password_has_repeatable =  ?
-            WHERE password_usage =  ?
+            SET password =  ?, length =  ?, has_repeatable =  ?
+            WHERE description =  ?
             ''',
-            (password, password_length, password_has_repeatable, password_usage)
+            (password, length, has_repeatable, description)
         )
 
         self.con.commit()
@@ -123,19 +116,19 @@ class PasswordStore:
     def select_descriptions(self) -> list:
         self.cur.execute(
             '''
-            SELECT password_usage FROM passwords
+            SELECT description FROM passwords
             ORDER BY id
             '''
         )
 
-        password_usage_list = self.cur.fetchall()
+        description_list = self.cur.fetchall()
 
-        return password_usage_list
+        return description_list
 
     def select_descriptions_password(self) -> list:
         self.cur.execute(
             '''
-            SELECT password_usage, password FROM passwords
+            SELECT description, password FROM passwords
             ORDER BY id
             '''
         )
@@ -144,12 +137,11 @@ class PasswordStore:
 
         return password_main_data_list
 
-
     def select_search_data_by_desc(self, search_query) -> tuple:
         self.cur.execute(
             '''
-            SELECT id, password_usage, password FROM passwords
-            WHERE password_usage = ?
+            SELECT id, description, password FROM passwords
+            WHERE description = ?
             ORDER BY id
             ''', (search_query,)
         )
@@ -157,7 +149,6 @@ class PasswordStore:
         main_data_list = self.cur.fetchone()
 
         return main_data_list
-
 
     def select_full_table(self) -> list:
         self.cur.execute(
@@ -171,7 +162,6 @@ class PasswordStore:
 
         return password_data_list
 
-
     def select_id(self) -> list:
         self.cur.execute(
             '''
@@ -184,11 +174,10 @@ class PasswordStore:
 
         return id_data_list
 
-
     def select_without_id(self):
         self.cur.execute(
             '''
-            SELECT password_usage, password, password_length, password_has_repeatable FROM passwords
+            SELECT description, password, length, has_repeatable FROM passwords
             ORDER BY id
             '''
         )
@@ -196,7 +185,6 @@ class PasswordStore:
         data_list = self.cur.fetchall()
 
         return data_list
-
 
     def delete_by_id(self, table_id):
         self.cur.execute(
