@@ -29,6 +29,8 @@ class RemoteDB:
         all_tokens_tuple_lst = self.cur.fetchall()
         all_tokens_lst = [decrypt(token_tuple[0]) for token_tuple in all_tokens_tuple_lst]
 
+        self.con.commit()
+
         return all_tokens_lst
 
 
@@ -42,6 +44,8 @@ class RemoteDB:
         )
 
         get_id = self.cur.fetchone()
+
+        self.con.commit()
 
         if get_id:
             return get_id[0]
@@ -57,19 +61,9 @@ class RemoteDB:
 
         table_rows = self.cur.fetchall()
 
-        return table_rows
-
-
-    def insert_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):
-        self.cur.execute(
-            '''
-            INSERT INTO `%s` (password_description, generated_password, password_length, has_repetetive) 
-            VALUES (%s, %s, %s, %s)
-            ''',
-            (user_id, user_desc, generated_pass, password_length, has_repetetive)
-        )
-
         self.con.commit()
+
+        return table_rows
 
 
     def insert_update_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):

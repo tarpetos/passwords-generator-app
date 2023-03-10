@@ -1,6 +1,6 @@
 from tkinter import messagebox
 
-from additional_modules.custom_input_dialogs import askinteger, askstring
+from additional_modules.custom_input_dialogs import custom_askstring, custom_askinteger
 
 
 def invalid_password_usage_message(lang_state_check):
@@ -51,7 +51,7 @@ def invalid_value_for_repeatable_or_not_message(lang_state_check):
     else:
         messagebox.showerror(
             'Некоректний ввід',
-            'Ви можете використовувати тільки "y/Y" або "n/N", щоб дозволити чи заборонити повторювані символи!'
+            'Ви можете використовувати тільки "т/Т" або "н/Н", щоб дозволити чи заборонити повторювані символи!'
         )
 
 
@@ -145,12 +145,12 @@ def empty_table_warn(lang_state_check):
 
 def input_dialog_message(lang_state_check, application_window):
     if lang_state_check:
-        user_input_choice = askinteger(
+        user_input_choice = custom_askinteger(
             'ID input', 'Enter the ID of the record you want to delete...',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_input_choice = askinteger(
+        user_input_choice = custom_askinteger(
             'Ввід ID', 'Введіть ID запису, який ви хочете видалити...',
             parent=application_window, lang_state=lang_state_check
         )
@@ -239,6 +239,32 @@ def successful_update_message(lang_state_check):
         )
 
 
+def successful_delete_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showinfo(
+            'Record deleting',
+            'The record with the specified ID has been deleted successfully!'
+        )
+    else:
+        messagebox.showinfo(
+            'Видалення запису',
+            'Запис зі вказаним ID видалено успішно!'
+        )
+
+
+def successful_remake_table_message(lang_state_check):
+    if lang_state_check:
+        messagebox.showinfo(
+            'Table regeneration',
+            'Table was successfully completely was regenerated! Reload the table to reflect the changes.'
+        )
+    else:
+        messagebox.showinfo(
+            'Перегенерація таблиці',
+            'Таблиця була успішно повністю перегенерована! Оновіть таблицю для відображення змін.'
+        )
+
+
 def ask_to_sync_message(lang_state_check):
     if lang_state_check:
         user_choice = messagebox.askyesno(
@@ -256,12 +282,12 @@ def ask_to_sync_message(lang_state_check):
 
 def token_input_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Token input', 'Enter the token assigned to you by the bot\n(use /token command in Telegram)...\n',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Ввід токену',
             'Введіть токен, який присвоїв вам бот\n(використовуйте команду /token у Telegram)...\n',
             parent=application_window, lang_state=lang_state_check
@@ -283,7 +309,7 @@ def input_token_error_message(lang_state_check):
         )
 
 
-def token_server_changed_message(lang_state_check):
+def server_token_changed_message(lang_state_check):
     if lang_state_check:
         messagebox.showwarning(
             'Token was changed',
@@ -303,7 +329,9 @@ def data_is_identical_message(lang_state_check):
         messagebox.showinfo('Дані актуальні', 'Дані в базі даних бота та локальній базі ідентичні.')
 
 
-def error_sync_message(lang_state_check):
+def error_sync_message(lang_state_check, load_screen):
+    load_screen.destroy()
+
     if lang_state_check:
         messagebox.showerror(
             'Database error',
@@ -329,7 +357,9 @@ def successful_sync_message(lang_state_check):
         )
 
 
-def connection_error_message(lang_state_check):
+def connection_error_message(lang_state_check, load_screen):
+    load_screen.destroy()
+
     if lang_state_check:
         messagebox.showerror(
             'Connection error',
@@ -342,7 +372,9 @@ def connection_error_message(lang_state_check):
         )
 
 
-def connection_timeout_message(lang_state_check):
+def connection_timeout_message(lang_state_check, load_screen):
+    load_screen.destroy()
+
     if lang_state_check:
         messagebox.showerror(
             'Connection timeout',
@@ -370,13 +402,13 @@ def ask_to_save_token_message(lang_state_check):
 
 def choose_between_duplicates_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Duplicate password description found',
             'Enter "Remote" to keep remote passwords, or enter "Local" to keep local passwords.\n',
             parent=application_window, lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Знайдено дубльований опис пароля',
             'Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
             parent=application_window, lang_state=lang_state_check
@@ -443,13 +475,13 @@ def was_not_changed_token_message(lang_state_check):
 
 def search_query_input_message(lang_state_check):
     if lang_state_check:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Search',
             'Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
             lang_state=lang_state_check
         )
     else:
-        user_choice = askstring(
+        user_choice = custom_askstring(
             'Пошук',
             'Введіть пошуковий запит (опис пароля, який хочете знайти).\nПошук є регістро незалежним.\n',
             lang_state=lang_state_check
@@ -480,5 +512,5 @@ def no_matches_for_search_message(lang_state_check, search_query):
     else:
         messagebox.showinfo(
             'Відсутні збіги',
-            f'Збіги відустні на запит:\n{search_query}',
+            f'Збіги відсутні на запит:\n{search_query}',
         )

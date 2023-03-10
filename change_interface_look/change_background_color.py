@@ -1,66 +1,61 @@
-from enum import Enum
-from tkinter import ttk
+import customtkinter
+
 from tkinter.ttk import Style
+from enum import Enum
 
 
 class BackgroundTheme(Enum):
-    LIGHT = '#D3D3D3'
-    MAX_LIGHT = 'white'
-    DARK = 'black'
+    LIGHT = 'Light'
+    DARK = 'Dark'
 
 
-def set_color_to_labels(labels_dict, opposite_color, current_color):
-    for label_key in labels_dict.items().mapping.values():
-        label_key.config(background=opposite_color, foreground=current_color)
+def get_current_color() -> str:
+    current_mode = customtkinter.get_appearance_mode()
+    return current_mode
 
 
-def change_buttons_border_color(current_color, opposite_color, bg_opposite_color_code):
-    style_config = ttk.Style()
-
-    if opposite_color == BackgroundTheme.DARK:
-        btn_color = 'gray'
-    else:
-        btn_color = BackgroundTheme.MAX_LIGHT.value
-
-    style_config.configure('TButton', background=btn_color)
-    style_config.configure('TFrame', background=bg_opposite_color_code)
-    btn_label_color = get_btn_label_color(opposite_color)
-    style_config.configure('.', background=bg_opposite_color_code, foreground=btn_label_color)
+def get_general_background(current_color: str) -> tuple[str, str]:
+    return ('\u263E', BackgroundTheme.DARK.value) if current_color == BackgroundTheme.LIGHT.value else ('\u263C', BackgroundTheme.LIGHT.value)
 
 
-def get_opposite_color(current_color):
-    return BackgroundTheme.DARK if current_color == BackgroundTheme.LIGHT else BackgroundTheme.LIGHT
+def get_bg_for_dialogs(current_color: str) -> tuple[str, str]:
+    return ('#D9D9D9', '#292929') if current_color == BackgroundTheme.LIGHT.value else ('#292929', '#D9D9D9')
 
 
-def get_btn_content(opposite_color):
-    return '\u263C' if opposite_color == BackgroundTheme.LIGHT else '\u263E'
+def change_messagebox_color():
+    current_mode = get_current_color()
+
+    messagebox_style = Style()
+    messagebox_bg_color = get_bg_for_dialogs(current_mode)[0]
+    messagebox_font_color = get_bg_for_dialogs(current_mode)[1]
+    messagebox_style.configure('.', background=messagebox_bg_color, foreground=messagebox_font_color)
 
 
-def get_btn_label_color(opposite_color):
-    return BackgroundTheme.DARK.value if opposite_color == BackgroundTheme.LIGHT else BackgroundTheme.MAX_LIGHT.value
+def change_pop_up_color(box, label) -> str:
+    current_mode = get_current_color()
+
+    box_bg_color = get_bg_for_dialogs(current_mode)[0]
+    box_font_color = get_bg_for_dialogs(current_mode)[1]
+
+    box.configure(bg=box_bg_color)
+    label.configure(foreground=box_font_color, background=box_bg_color)
+
+    return box_bg_color
 
 
-def set_color_to_radiobtn(radiobtn_dict, opposite_color, current_color):
-    radio_button_style = Style()
-    radio_button_style.configure(
-        'TRadiobutton',
-        background=opposite_color,
-        foreground=current_color,
-    )
-    radio_button_style.map('TRadiobutton', background=[('active', opposite_color)])
+def change_search_box_color(canvas_widget):
+    current_mode = get_current_color()
+
+    new_background = get_bg_for_dialogs(current_mode)[0]
+    canvas_widget.configure(background=new_background)
 
 
-class AppBackgroundTheme:
-    def __init__(self):
-        self.bg_color = BackgroundTheme.LIGHT
-        self.bg_table_color = BackgroundTheme.LIGHT
+def change_background_color(btn):
+    current_mode = get_current_color()
+    new_btn_content = get_general_background(current_mode)[0]
+    btn.configure(text=new_btn_content)
 
-    def change_background_color(self, labels_dict, btn, radiobtn_dict):
-        opposite_color = get_opposite_color(self.bg_color)
-        bg_current_color_code = self.bg_color.value
-        bg_opposite_color_code = opposite_color.value
-        set_color_to_labels(labels_dict, bg_opposite_color_code, bg_current_color_code)
-        set_color_to_radiobtn(radiobtn_dict, bg_opposite_color_code, bg_current_color_code)
-        btn.config(text=get_btn_content(opposite_color))
-        change_buttons_border_color(bg_current_color_code, opposite_color, bg_opposite_color_code)
-        self.bg_color = opposite_color
+    new_app_theme = get_general_background(current_mode)[1]
+    customtkinter.set_appearance_mode(new_app_theme)
+
+    change_messagebox_color()

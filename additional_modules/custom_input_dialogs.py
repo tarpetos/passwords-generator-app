@@ -1,15 +1,17 @@
-from tkinter import *
 from tkinter import messagebox
+from tkinter.constants import LEFT, W, END, E
 from tkinter.simpledialog import Dialog
+from customtkinter import CTkLabel, CTkEntry
 
 
-class _CustomDialog(Dialog):
-    def __init__(self, title, prompt, lang_state, initialvalue=None, parent=None):
+# askstring
+class _CustomAskStringDialog(Dialog):
+    def __init__(self, title, prompt, initialvalue=None, minvalue=None, maxvalue=None, parent=None):
         self.prompt = prompt
+        self.minvalue = minvalue
+        self.maxvalue = maxvalue
 
         self.initialvalue = initialvalue
-
-        self.lang_state = lang_state
 
         Dialog.__init__(self, parent, title)
 
@@ -18,12 +20,58 @@ class _CustomDialog(Dialog):
         Dialog.destroy(self)
 
     def body(self, master):
-        self.winfo_toplevel().wm_resizable(False, False)
-
-        w = Label(master, text=self.prompt, justify=LEFT)
+        w = CTkLabel(master, text=self.prompt, justify=LEFT, text_color='black')
         w.grid(row=0, padx=5, sticky=W)
 
-        self.entry = Entry(master, name="entry")
+        self.entry = CTkEntry(master)
+        self.entry.grid(row=1, padx=5, sticky=W + E)
+
+        return self.entry
+
+    def validate(self):
+        result = self.getresult()
+        self.result = result
+        return 1
+
+
+class _QueryString(_CustomAskStringDialog):
+    def __init__(self, *args, **kw):
+        if 'show' in kw:
+            self.__show = kw['show']
+            del kw['show']
+        else:
+            self.__show = None
+        _CustomAskStringDialog.__init__(self, *args, **kw)
+
+    def body(self, master):
+        entry = _CustomAskStringDialog.body(self, master)
+        if self.__show is not None:
+            entry.configure(show=self.__show)
+        return entry
+
+    def getresult(self):
+        return self.entry.get()
+
+
+def custom_askstring(title, prompt, lang_state, **kw):
+    d = _QueryString(title, prompt, lang_state, **kw)
+    return d.result
+
+
+# askinteger
+class _CustomAskIntegerDialog(Dialog):
+    def __init__(self, title, prompt, lang_state, initialvalue=None, parent=None):
+        self.prompt = prompt
+        self.initialvalue = initialvalue
+        self.lang_state = lang_state
+        super().__init__(parent, title)
+
+    def body(self, master):
+        self.winfo_toplevel().wm_resizable(False, False)
+        w = CTkLabel(master, text=self.prompt, justify=LEFT, text_color='black')
+        w.grid(row=0, padx=5, sticky=W)
+
+        self.entry = CTkEntry(master)
         self.entry.grid(row=1, padx=5, sticky=W + E)
 
         if self.initialvalue is not None:
@@ -54,36 +102,10 @@ class _CustomDialog(Dialog):
 
         return 1
 
-
-class _QueryInteger(_CustomDialog):
     def getresult(self):
         return self.getint(self.entry.get())
 
 
-def askinteger(title, prompt, lang_state, **kw):
-    d = _QueryInteger(title, prompt, lang_state, **kw)
-    return d.result
-
-
-class _QueryString(_CustomDialog):
-    def __init__(self, *args, **kw):
-        if 'show' in kw:
-            self.__show = kw['show']
-            del kw['show']
-        else:
-            self.__show = None
-        _CustomDialog.__init__(self, *args, **kw)
-
-    def body(self, master):
-        entry = _CustomDialog.body(self, master)
-        if self.__show is not None:
-            entry.configure(show=self.__show)
-        return entry
-
-    def getresult(self):
-        return self.entry.get()
-
-
-def askstring(title, prompt, lang_state, **kw):
-    d = _QueryString(title, prompt, lang_state, **kw)
-    return d.result
+def custom_askinteger(title, prompt, lang_state, **kw):
+    dialog = _CustomAskIntegerDialog(title, prompt, lang_state, **kw)
+    return dialog.result
