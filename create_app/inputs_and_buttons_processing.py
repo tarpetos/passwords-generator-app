@@ -1,3 +1,4 @@
+import random
 import re
 import sqlite3
 import mysql.connector
@@ -10,6 +11,8 @@ from typing import Any, Iterator
 from pandas import DataFrame
 
 from additional_modules.encryption_decryption import encrypt, decrypt
+from additional_modules.password_strength_score import strength_rating, password_strength, make_score_proportion, \
+    password_strength_chat_gpt
 from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
 from app_translation.load_data_for_localization import all_json_localization_data
 from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
@@ -28,8 +31,8 @@ from app_translation.messagebox_with_lang_change import nothing_to_copy_message,
 from create_app.store_user_passwords import PasswordStore
 from create_app.sync_table import RemoteDB
 
-
 MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
+# MAX_PASSWORD_LENGTH_WITHOUT_REPETITIVE = 90
 
 database_user_data = PasswordStore()
 
@@ -119,7 +122,7 @@ def check_if_description_existing(store_of_user_passwords, password_description)
         return False
 
 
-def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool or int:
+def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool | int:
     if check_if_description_existing(description_store, password_usage):
         user_choice = ask_if_record_exist_message(lang_state)
         return user_choice
@@ -207,6 +210,65 @@ def generate_password(lang_state, pass_usage_entry, pass_length_entry, repeatabl
     result_pass_entry.delete(0, 'end')
     result = check_for_repeatable_characters(pass_alphabet, int(pass_length), check_if_repeatable_allowed)
     result_pass_entry.insert(0, result)
+
+
+def get_menu_option(var):
+    if var == 'Extremely unreliable':
+        return random.randint(1, 6)
+    elif var == 'Very easy':
+        return random.randint(3, 6)
+    elif var == 'Easy':
+        return random.randint(5, 10)
+    elif var == 'Below average':
+        return random.randint(5, 10)
+    elif var == 'Average':
+        return random.randint(15, 20)
+    elif var == 'Strong':
+        return random.randint(20, 30)
+    elif var == 'Very strong':
+        return random.randint(30, 50)
+    else:
+        return random.randint(50, 100)
+
+
+def get_password_with_necessary_difficulty(expected_result):
+    fixed_punctuation = exclude_invalid_symbols_for_markup()
+    pass_alphabet = digits + ascii_letters + fixed_punctuation
+
+    actual_result = None
+    generated_pass = None
+
+    count = 0
+    while actual_result != expected_result:
+        pass_length = get_menu_option(expected_result)
+
+        generated_pass = check_for_repeatable_characters(pass_alphabet, pass_length, 'Y')
+        shannon_pass = password_strength(generated_pass)
+        chat_gpt_pass = make_score_proportion(password_strength_chat_gpt(generated_pass))
+        average_score = round(((shannon_pass + chat_gpt_pass) / 2), 2)
+
+        actual_result = strength_rating(True, average_score)
+        count += 1
+
+    print(count)
+
+    return generated_pass
+
+
+def simple_generate_password(result_pass_entry, current_menu_option, description_entry, switch_is_active):
+    result_pass_entry.delete(0, 'end')
+    result_pass = get_password_with_necessary_difficulty(current_menu_option)
+    result_pass_entry.insert(0, result_pass)
+
+    description = description_entry.get()
+
+    if switch_is_active and description:
+        database_user_data.insert_update_into_tb(
+            description,
+            encrypt(result_pass),
+            len(result_pass),
+            check_if_repeatable_characters_is_present(result_pass)
+        )
 
 
 def copy_password(lang_state, result_password_entry):
@@ -446,7 +508,7 @@ def check_if_has_duplicates_desc(lst):
 
 def sync_tables_loop(remote_connection, table, lst):
     for tuple_row in lst:
-        database_user_data.insert_update_into_tb(*tuple_row)
+        database_user_data.insert_replace_into_tb(*tuple_row)
         remote_connection.insert_update_password_data(table, *tuple_row)
 
 
@@ -506,6 +568,7 @@ def database_search(event, lang_state):
         return
 
     search_screen(lang_state, user_search, data_list)
+
 
 def password_strength_checker(event, lang_state):
     password_strength_screen(lang_state)

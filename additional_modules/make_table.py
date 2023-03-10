@@ -12,7 +12,6 @@ def make_table_for_page_and_search(lang_state, data, tree, main_frame):
     tree.column('#0', width=0, stretch='no')
 
     table_header = get_table_col_header(lang_state, data)
-
     insert_table_data(tree, table_header, pandas_table_iterator)
     treeview_scrollbars(main_frame, tree)
 

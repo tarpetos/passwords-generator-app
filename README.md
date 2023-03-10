@@ -40,7 +40,7 @@ python3 main.py
 ## Make binary file with pyinstaller
 
 ```sh
-pyinstaller --onefile --windowed icon=icon/main_icon.png main.py
+pyinstaller --onefile --windowed --icon=icon/main_icon.png main.py
 ```
 
 

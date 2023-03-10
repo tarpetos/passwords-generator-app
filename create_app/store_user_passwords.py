@@ -59,7 +59,7 @@ class PasswordStore:
 
         self.con.commit()
 
-    def insert_update_into_tb(self, description, password, length, has_repeatable):
+    def insert_replace_into_tb(self, description, password, length, has_repeatable):
         self.cur.execute(
             '''
             REPLACE INTO passwords(description, password, length, has_repeatable)
@@ -69,6 +69,25 @@ class PasswordStore:
         )
 
         self.con.commit()
+
+    def insert_update_into_tb(self, description, password, length, has_repeatable):
+        self.cur.execute(
+            '''
+            SELECT description FROM passwords
+            WHERE description = ?
+            ''', (description,)
+        )
+
+        searched_description = self.cur.fetchone()
+
+        self.con.commit()
+
+        if searched_description:
+            self.update_existing_password(password, length, has_repeatable, description)
+        else:
+            self.insert_into_tb(description, password, length, has_repeatable)
+
+
 
     def insert_into_save_tb(self, user_id, user_token):
         self.cur.execute(

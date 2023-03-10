@@ -4,7 +4,8 @@
       "password_usage_label":  "For what this password should be?: ",
       "password_length_label": "Enter password length:",
       "repeatable_label":      "Can be repeatable characters in password (y/n)?:",
-      "result_password_label": "GENERATED PASSWORD"
+      "result_password_label": "GENERATED PASSWORD",
+      "option_menu_label":    "Choose password difficulty:"
     },
     "radio_buttons_labels": {
       "all_symbols_label":    "All symbols",
@@ -19,6 +20,8 @@
       "copy_btn":             "Copy password",
       "clear_btn":            "Clear all",
       "write_to_db_btn":      "Write to database",
+      "simple_mode_btn":      "Simple mode",
+      "hard_mode_btn":        "Hard mode",
       "move_to_table_btn":    "Show table >>>>",
       "synchronize_data_btn": "Synchronization",
       "change_token_btn":     "Change token",
@@ -36,6 +39,19 @@
       "password":       "PASSWORD",
       "length":         "PASSWORD LENGTH",
       "has_repeatable": "CONTAIN REPEATED CHARACTERS?"
+    },
+    "switches": {
+      "write_to_db_switch": "Write to database?"
+    },
+    "password_difficulty_options": {
+      "extremely_unreliable": "Extremely unreliable",
+      "very_easy": "Very easy",
+      "easy": "Easy",
+      "below_average": "Below average",
+      "average": "Average",
+      "strong": "Strong",
+      "very_strong": "Very strong",
+      "extremely_reliable": "Extremely reliable"
     }
   },
   "UA": {
@@ -43,7 +59,8 @@
       "password_usage_label":  "Яке призначення цього пароля?: ",
       "password_length_label": "Введіть, якої довжини має бути пароль:",
       "repeatable_label":      "Чи можуть бути повторювані символи в паролі (т/н)?:",
-      "result_password_label": "ЗГЕНЕРОВАНИЙ ПАРОЛЬ"
+      "result_password_label": "ЗГЕНЕРОВАНИЙ ПАРОЛЬ",
+      "option_menu_label":     "Виберіть складність пароля:"
     },
     "radio_buttons_labels": {
       "all_symbols_label":    "Усі символи",
@@ -58,6 +75,8 @@
       "copy_btn":             "Скопіювати пароль",
       "clear_btn":            "Очистити всі поля",
       "write_to_db_btn":      "Записати до бази даних",
+      "simple_mode_btn":      "Простий режим",
+      "hard_mode_btn":        "Складний режим",
       "move_to_table_btn":    "Показати таблицю >>>>",
       "synchronize_data_btn": "Синхронізація",
       "change_token_btn":     "Змінити токен",
@@ -75,6 +94,19 @@
       "password":       "ПАРОЛЬ",
       "length":         "ДОВЖИНА ПАРОЛЯ",
       "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?"
+    },
+    "switches": {
+      "write_to_db_switch": "Записати до бази даних?"
+    },
+    "password_difficulty_options": {
+      "extremely_unreliable": "Мінімально надійний",
+      "very_easy": "Дуже простий",
+      "easy": "Простий",
+      "below_average": "Нижче середнього",
+      "average": "Середній",
+      "strong": "Надійний",
+      "very_strong": "Дуже надійний",
+      "extremely_reliable": "Максимально надійний"
     }
   }
 }

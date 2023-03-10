@@ -62,5 +62,15 @@ def strength_rating(lange_state, password_score):
         return 'Strong' if lange_state else 'Надійний'
     elif 95 <= password_score < 100:
         return 'Very strong' if lange_state else 'Дуже надійний'
-    else:
+    elif password_score == 100:
         return 'Extremely reliable' if lange_state else 'Максимально надійний'
+
+
+# user_input = 'BzMkQT2-[([~gfmk6`Vt#0hiPMGgSuA5l'
+#
+# shannon_pass = password_strength(user_input)
+# chat_gpt_pass = make_score_proportion(password_strength_chat_gpt(user_input))
+# average_score = round(((shannon_pass + chat_gpt_pass) / 2), 2)
+# result_rating = strength_rating(True, average_score)
+#
+# print(result_rating)

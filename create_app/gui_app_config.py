@@ -1,14 +1,17 @@
-from tkinter.constants import TOP
+from tkinter import StringVar
+from tkinter.ttk import Separator
 
 import customtkinter
-from customtkinter import CTkLabel, CTkButton, CTkRadioButton, CTkFrame, CTkEntry
+from customtkinter import CTkLabel, CTkButton, CTkRadioButton, CTkFrame, CTkEntry, CTkOptionMenu, CTkSwitch
+
+from tkinter.constants import TOP
 
 from app_translation.load_data_for_localization import all_json_localization_data
 from change_interface_look.change_background_color import change_background_color, change_messagebox_color
 from create_app.create_sql_table import TableInterface
 from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, \
-    clear_entries, remove_record_from_table, sync_db_data, change_local_token, database_search, \
-    update_columns_via_app_interface
+    clear_entries, remove_record_from_table, database_search, update_columns_via_app_interface, \
+    sync_db_data, change_local_token, simple_generate_password
 
 
 class PasswordGeneratorApp(customtkinter.CTk):
@@ -39,6 +42,8 @@ class PasswordGeneratorApp(customtkinter.CTk):
 
         self.show_frame(MainPage)
 
+    current_mode = 'hard'
+
     def show_frame(self, cont):
         frame = self.frames[cont]
         frame.tkraise()
@@ -55,8 +60,8 @@ class BasePage(CTkFrame):
         self.controller = controller
         self.current_language_state_bool = True
         self._current_language_state_str = 'EN'
-        self.current_gen_mode = 'hard'
         self.language_options = all_json_localization_data  # get data for app localization
+        customtkinter.set_appearance_mode('dark')
         customtkinter.set_default_color_theme('green')  # set default app theme
         change_messagebox_color()  # set default bg and font color to messageboxes
 
@@ -72,6 +77,7 @@ class BasePage(CTkFrame):
     def parse_localization_json_data(self, options):
         for element_group, group_options in options.items():
             for specific_element, text in group_options.items():
+                print(specific_element)
                 self.check_if_app_has_element_type(specific_element, text)
 
     def change_language(self, language):
@@ -231,6 +237,17 @@ class MainPage(BasePage):
             command=lambda: change_background_color(self.change_bg_btn),
         )
 
+        def save_page_state():
+            controller.current_mode = 'simple'
+            controller.show_frame(SimplePage)
+
+        self.simple_mode_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['simple_mode_btn'],
+            text_color='black',
+            command=save_page_state,
+        )
+
         self.move_to_table_btn = CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
@@ -296,8 +313,9 @@ class MainPage(BasePage):
         self.clear_btn.grid(row=7, column=2, columnspan=2, sticky='we', pady=20, padx=(2, 2))
         self.write_to_db_btn.grid(row=7, column=4, columnspan=2, sticky='we', pady=20, padx=(2, 15))
 
-        self.quit_btn.grid(row=8, column=0, columnspan=3, sticky='we', padx=(15, 2), pady=(0, 60))
-        self.move_to_table_btn.grid(row=8, column=3, columnspan=3, sticky='we', padx=(2, 15), pady=(0, 60))
+        self.quit_btn.grid(row=8, column=0, columnspan=2, sticky='we', padx=(15, 2), pady=(0, 60))
+        self.simple_mode_btn.grid(row=8, column=2, columnspan=2, sticky='we', padx=(2, 2), pady=(0, 60))
+        self.move_to_table_btn.grid(row=8, column=4, columnspan=2, sticky='we', padx=(2, 15), pady=(0, 60))
 
         def set_equal_column_width(frame, column_number):
             for column in range(column_number):
@@ -320,7 +338,125 @@ class SimplePage(BasePage):
 
         main_frame = CTkFrame(self)
 
-        main_frame.pack(side=TOP, pady=20, padx=20)
+        self.password_usage_label = CTkLabel(
+            main_frame,
+            text=self.language_options['EN']['labels']['password_usage_label']
+        )
+        self.result_password_label = CTkLabel(
+            main_frame,
+            text=self.language_options['EN']['labels']['result_password_label'],
+        )
+        self.option_menu_label = CTkLabel(
+            main_frame,
+            text=self.language_options['EN']['labels']['option_menu_label'],
+        )
+
+        self.password_usage_entry = CTkEntry(main_frame)
+        self.result_password_entry = CTkEntry(main_frame)
+
+        def option_menu_callback(choice):
+            print(choice)
+            self.chosen_opt_menu = choice
+
+        values_dict = self.language_options['EN']['password_difficulty_options'],
+
+        values = [value for value in values_dict[0].values()]
+
+        self.chosen_opt_menu = values[4]
+        self.default_opt_menu_var = StringVar(value=values[4])
+        self.symbols_option_menu = CTkOptionMenu(
+            main_frame,
+            text_color='black',
+            values=values,
+            variable=self.default_opt_menu_var,
+            command=option_menu_callback
+        )
+
+        def switch_callback():
+            self.switch_state = not self.switch_state
+
+        self.switch_state = False
+        self.write_to_db_switch = CTkSwitch(
+            main_frame,
+            text=self.language_options['EN']['switches']['write_to_db_switch'],
+            command=switch_callback,
+        )
+
+        self.upper_separator = Separator(main_frame, orient='horizontal')
+        self.bottom_separator = Separator(main_frame, orient='horizontal')
+
+        def save_page_state():
+            controller.current_mode = 'hard'
+            controller.show_frame(MainPage)
+
+        self.generate_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['generate_btn'],
+            text_color='black',
+            command=lambda: simple_generate_password(
+                self.result_password_entry,
+                self.chosen_opt_menu,
+                self.password_usage_entry,
+                self.switch_state
+            ),
+        )
+
+        self.hard_mode_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['hard_mode_btn'],
+            text_color='black',
+            command=save_page_state,
+        )
+
+        self.move_to_table_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['move_to_table_btn'],
+            text_color='black',
+            command=lambda: controller.show_frame(TablePage),
+        )
+
+        self.quit_btn = CTkButton(
+            main_frame,
+            text=self.language_options['EN']['buttons']['quit_btn'],
+            text_color='black',
+            command=lambda: app.destroy(),
+        )
+
+        self.password_usage_label.grid(row=0, column=0, sticky='w', pady=(30, 0), padx=15)
+        self.password_usage_entry.grid(row=0, column=1, columnspan=2, sticky='we', pady=(30, 0), padx=(0, 15))
+
+        self.option_menu_label.grid(row=1, column=0, sticky='w', pady=(5, 0), padx=15)
+        self.symbols_option_menu.grid(row=1, column=1, sticky='we', pady=(5, 0), padx=15)
+        self.write_to_db_switch.grid(row=1, column=2, sticky='e', pady=(5, 0), padx=(0, 15))
+
+        self.upper_separator.grid(row=2, column=0, columnspan=3, sticky='we', pady=(0, 5), padx=15)
+
+        self.result_password_label.grid(row=3, column=0, pady=(20, 0), columnspan=3)
+        self.result_password_entry.grid(row=4, column=0, sticky='nsew', pady=10, padx=15, columnspan=3)
+
+        self.generate_btn.grid(row=5, column=0, columnspan=3, sticky='we', pady=(5, 0), padx=15)
+
+        self.bottom_separator.grid(row=6, column=0, columnspan=3, sticky='we', pady=(0, 5), padx=15)
+
+        self.quit_btn.grid(row=7, column=0, sticky='we', padx=(15, 2), pady=(0, 30))
+        self.hard_mode_btn.grid(row=7, column=1, sticky='we', padx=(2, 2), pady=(0, 30))
+        self.move_to_table_btn.grid(row=7, column=2, sticky='we', padx=(2, 15), pady=(0, 30))
+
+        def set_equal_column_width(frame, column_number):
+            for column in range(column_number):
+                frame.columnconfigure(column, weight=1, uniform='equal')
+
+        def set_row_height(frame, row_number):
+            for column in range(row_number):
+                frame.rowconfigure(column, weight=1, uniform='equal')
+
+        # set equal size for all grid columns
+        MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE = 3
+        set_equal_column_width(main_frame, MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE)
+        MAIN_WINDOW_EQUAL_GRID_ROW_SIZE = 7
+        set_row_height(main_frame, MAIN_WINDOW_EQUAL_GRID_ROW_SIZE)
+
+        main_frame.pack(side=TOP, pady=20, padx=20, expand=True, fill='both')
 
 
 class TablePage(BasePage):
@@ -329,31 +465,36 @@ class TablePage(BasePage):
         full_frame = CTkFrame(self, fg_color='transparent')
 
         table_frame = CTkFrame(full_frame)
-        current_lang = self.current_language_state_bool
-        data_table_obj = TableInterface(table_frame, current_lang, self.shortcut_search, 800, 430, 20)
-        data_table_obj.get_data_from_db(current_lang)
+        data_table_obj = TableInterface(
+            table_frame, self.current_language_state_bool, self.shortcut_search, 800, 430, 20
+        )
+        data_table_obj.get_data_from_db(self.current_language_state_bool)
 
         upper_frame = CTkFrame(full_frame, fg_color='transparent')
         self.synchronize_data_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['synchronize_data_btn'],
             text_color='black',
-            command=lambda: sync_db_data(current_lang, app),
+            command=lambda: sync_db_data(self.current_language_state_bool, app),
         )
 
         self.change_token_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['change_token_btn'],
             text_color='black',
-            command=lambda: change_local_token(current_lang, app),
+            command=lambda: change_local_token(self.current_language_state_bool, app),
         )
 
         bottom_frame = CTkFrame(full_frame, fg_color='transparent')
+
+        def back_to_parent_page():
+            controller.show_frame(MainPage) if controller.current_mode == 'hard' else controller.show_frame(SimplePage)
+
         self.return_to_main_btn = CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['return_to_main_btn'],
             text_color='black',
-            command=lambda: controller.show_frame(MainPage)
+            command=back_to_parent_page
         )
 
         self.reload_table_btn = CTkButton(
@@ -363,7 +504,7 @@ class TablePage(BasePage):
             command=lambda: data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
-                current_lang
+                self.current_language_state_bool
             ),
         )
 
@@ -371,15 +512,15 @@ class TablePage(BasePage):
             bottom_frame,
             text=self.language_options['EN']['buttons']['update_table_btn'],
             text_color='black',
-            command=lambda: update_columns_via_app_interface(current_lang, data_table_obj),
+            command=lambda: update_columns_via_app_interface(self.current_language_state_bool, data_table_obj),
         )
 
         def delete_record_and_refresh_table():
-            remove_status = remove_record_from_table(current_lang, app)
+            remove_status = remove_record_from_table(self.current_language_state_bool, app)
             return None if remove_status is None else data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
-                current_lang
+                self.current_language_state_bool
             )
 
         self.delete_record_btn = CTkButton(
