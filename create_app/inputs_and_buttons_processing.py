@@ -1,18 +1,16 @@
 import re
 import sqlite3
-from typing import Dict, Any, Iterator
-
 import mysql.connector
 import pyperclip
 import requests
 
 from random import choices, sample
 from string import digits, ascii_letters, punctuation
-
+from typing import Any, Iterator
 from pandas import DataFrame
 
 from additional_modules.encryption_decryption import encrypt, decrypt
-from additional_modules.pop_up_windows import app_loading_screen, search_screen
+from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
 from app_translation.load_data_for_localization import all_json_localization_data
 from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
     invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
@@ -30,6 +28,7 @@ from app_translation.messagebox_with_lang_change import nothing_to_copy_message,
 from create_app.store_user_passwords import PasswordStore
 from create_app.sync_table import RemoteDB
 
+
 MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
 
 database_user_data = PasswordStore()
@@ -42,32 +41,18 @@ def table_column_names() -> tuple[list, list]:
     return en_table_columns_names, uk_table_columns_names
 
 
-def get_data_from_database_table(lang_state) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
+def retrieve_data_for_build_table_interface(
+        lang_state, column_number=5, user_query=None) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
     column_name_localization = table_column_names()
-    en_table_lst = column_name_localization[0]
-    uk_table_lst = column_name_localization[1]
+    en_table_lst = column_name_localization[0][:column_number]
+    uk_table_lst = column_name_localization[1][:column_number]
 
-    full_list_of_data = database_user_data.select_full_table()
-    # full_list_of_data = check_columns_names(lang_state, full_list_of_data, en_table_lst, uk_table_lst)
+    if user_query:
+        full_list_of_data = database_user_data.select_search_data_by_desc(user_query)
+    else:
+        full_list_of_data = database_user_data.select_full_table()
 
     return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
-
-
-def get_search_data_from_database_table(lang_state, all_queries) -> list:
-    full_list_of_data = [database_user_data.select_search_data_by_desc(record) for record in all_queries]
-
-    column_name_localization = table_column_names()
-    en_search_table_lst = column_name_localization[:3]
-    uk_search_table_lst = column_name_localization[:3]
-    full_list_of_data = check_columns_names(lang_state, full_list_of_data, en_search_table_lst, uk_search_table_lst)
-
-    return full_list_of_data
-
-
-def check_columns_names(lang_state, full_list_of_data, en_lst, uk_lst) -> list:
-    full_list_of_data.insert(0, en_lst) if lang_state else full_list_of_data.insert(0, uk_lst)
-
-    return full_list_of_data
 
 
 def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
@@ -103,10 +88,10 @@ def check_password_length_input(lang_state, user_input) -> bool:
     return True
 
 
-def check_repeatable_input(lang_state, user_input, password_length_entry, password_length, password_alphabet) -> bool:
-    if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(password_length) > len(password_alphabet):
-        invalid_value_if_no_repeatable_characters_message(lang_state, password_alphabet)
-        password_length_entry.delete(0, 'end')
+def check_repeatable_input(lang_state, user_input, pass_length_entry, pass_length, pass_alphabet) -> bool:
+    if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(pass_length) > len(pass_alphabet):
+        invalid_value_if_no_repeatable_characters_message(lang_state, pass_alphabet)
+        pass_length_entry.delete(0, 'end')
         return True
     elif user_input.capitalize() == 'Y' or user_input.capitalize() == 'N':
         return False
@@ -205,22 +190,22 @@ def get_radiobtn_option(var) -> str:
 
 
 def generate_password(lang_state, pass_usage_entry, pass_length_entry, repeatable_entry, result_pass_entry, var):
-    password_alphabet = get_radiobtn_option(var)
+    pass_alphabet = get_radiobtn_option(var)
 
-    password_usage = pass_usage_entry.get()
-    if not check_password_usage_input(lang_state, password_usage):
+    pass_usage = pass_usage_entry.get()
+    if not check_password_usage_input(lang_state, pass_usage):
         return
 
-    password_length = pass_length_entry.get()
-    if not check_password_length_input(lang_state, password_length):
+    pass_length = pass_length_entry.get()
+    if not check_password_length_input(lang_state, pass_length):
         return
 
     check_if_repeatable_allowed = repeatable_entry.get()
-    if check_repeatable_input(lang_state, check_if_repeatable_allowed, pass_length_entry, password_length, password_alphabet):
+    if check_repeatable_input(lang_state, check_if_repeatable_allowed, pass_length_entry, pass_length, pass_alphabet):
         return
 
     result_pass_entry.delete(0, 'end')
-    result = check_for_repeatable_characters(password_alphabet, int(password_length), check_if_repeatable_allowed)
+    result = check_for_repeatable_characters(pass_alphabet, int(pass_length), check_if_repeatable_allowed)
     result_pass_entry.insert(0, result)
 
 
@@ -514,17 +499,13 @@ def database_search(event, lang_state):
         invalid_search_query_message(lang_state)
         return
 
-    packed_description_list = database_user_data.select_descriptions()
+    data_list = retrieve_data_for_build_table_interface(lang_state, column_number=3, user_query=user_search)
 
-    searched_description_list = []
-    pattern = re.compile(f'^{user_search}', re.IGNORECASE)
-
-    for description in packed_description_list:
-        if re.match(pattern, description[0]):
-            searched_description_list.append(description[0])
-
-    if not searched_description_list:
+    if data_list['data'].empty:
         no_matches_for_search_message(lang_state, user_search)
-    else:
-        data_list = get_search_data_from_database_table(lang_state, searched_description_list)
-        search_screen(lang_state, user_search, data_list)
+        return
+
+    search_screen(lang_state, user_search, data_list)
+
+def password_strength_checker(event, lang_state):
+    password_strength_screen(lang_state)

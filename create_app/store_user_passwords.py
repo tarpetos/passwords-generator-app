@@ -147,16 +147,15 @@ class PasswordStore:
 
         return password_main_data_list
 
-    def select_search_data_by_desc(self, search_query) -> tuple:
-        self.cur.execute(
+
+    def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
+        main_data_list = pd.read_sql_query(
             '''
             SELECT id, description, password FROM passwords
-            WHERE description = ?
+            WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
             ORDER BY id
-            ''', (search_query,)
+            ''', self.con, params=[search_query,]
         )
-
-        main_data_list = self.cur.fetchone()
 
         self.con.commit()
 

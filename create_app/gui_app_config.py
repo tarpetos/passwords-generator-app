@@ -7,9 +7,8 @@ from app_translation.load_data_for_localization import all_json_localization_dat
 from change_interface_look.change_background_color import change_background_color, change_messagebox_color
 from create_app.create_sql_table import TableInterface
 from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, \
-    clear_entries, remove_record_from_table, \
-    sync_db_data, change_local_token, \
-    database_search, update_columns_via_app_interface
+    clear_entries, remove_record_from_table, sync_db_data, change_local_token, database_search, \
+    update_columns_via_app_interface
 
 
 class PasswordGeneratorApp(customtkinter.CTk):
@@ -25,23 +24,20 @@ class PasswordGeneratorApp(customtkinter.CTk):
         self.frames = {}
 
         main_page = MainPage(container, self)
+        simple_page = SimplePage(container, self)
         table_page = TablePage(container, self)
 
         self.frames[MainPage] = main_page
+        self.frames[SimplePage] = simple_page
         self.frames[TablePage] = table_page
 
         main_page.grid(row=0, column=0, sticky='nsew')
+        simple_page.grid(row=0, column=0, sticky='nsew')
         table_page.grid(row=0, column=0, sticky='nsew')
 
         self.current_language = True
 
         self.show_frame(MainPage)
-
-    # @staticmethod
-    # def shortcut_search(event):
-    #     current_lang = app.current_language
-    #     print(current_lang)
-    #     database_search(event, current_lang, app)
 
     def show_frame(self, cont):
         frame = self.frames[cont]
@@ -59,6 +55,7 @@ class BasePage(CTkFrame):
         self.controller = controller
         self.current_language_state_bool = True
         self._current_language_state_str = 'EN'
+        self.current_gen_mode = 'hard'
         self.language_options = all_json_localization_data  # get data for app localization
         customtkinter.set_default_color_theme('green')  # set default app theme
         change_messagebox_color()  # set default bg and font color to messageboxes
@@ -304,13 +301,24 @@ class MainPage(BasePage):
 
         def set_equal_column_width(frame, column_number):
             for column in range(column_number):
-                frame.columnconfigure(column, weight=1, uniform="equal")
+                frame.columnconfigure(column, weight=1, uniform='equal')
 
+        # center radio button in main grid
         CENTER_RADIO_BUTTONS_NUMBER = 30
         set_equal_column_width(radiobutton_frame, CENTER_RADIO_BUTTONS_NUMBER)
 
+        # set equal size for all grid columns
         MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE = 6
         set_equal_column_width(main_frame, MAIN_WINDOW_EQUAL_GRID_COLUMNS_SIZE)
+
+        main_frame.pack(side=TOP, pady=20, padx=20)
+
+
+class SimplePage(BasePage):
+    def __init__(self, parent, controller):
+        BasePage.__init__(self, parent, controller)
+
+        main_frame = CTkFrame(self)
 
         main_frame.pack(side=TOP, pady=20, padx=20)
 
@@ -321,25 +329,26 @@ class TablePage(BasePage):
         full_frame = CTkFrame(self, fg_color='transparent')
 
         table_frame = CTkFrame(full_frame)
-        data_table_obj = TableInterface(table_frame, self.shortcut_search)
-        data_table_obj.get_data_from_db(self.current_language_state_bool)
+        current_lang = self.current_language_state_bool
+        data_table_obj = TableInterface(table_frame, current_lang, self.shortcut_search, 800, 430, 20)
+        data_table_obj.get_data_from_db(current_lang)
 
-        upper_frame = CTkFrame(full_frame)
+        upper_frame = CTkFrame(full_frame, fg_color='transparent')
         self.synchronize_data_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['synchronize_data_btn'],
             text_color='black',
-            command=lambda: sync_db_data(self.current_language_state_bool, app),
+            command=lambda: sync_db_data(current_lang, app),
         )
 
         self.change_token_btn = CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['change_token_btn'],
             text_color='black',
-            command=lambda: change_local_token(self.current_language_state_bool, app),
+            command=lambda: change_local_token(current_lang, app),
         )
 
-        bottom_frame = CTkFrame(full_frame)
+        bottom_frame = CTkFrame(full_frame, fg_color='transparent')
         self.return_to_main_btn = CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['return_to_main_btn'],
@@ -354,7 +363,7 @@ class TablePage(BasePage):
             command=lambda: data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
-                self.current_language_state_bool
+                current_lang
             ),
         )
 
@@ -362,15 +371,15 @@ class TablePage(BasePage):
             bottom_frame,
             text=self.language_options['EN']['buttons']['update_table_btn'],
             text_color='black',
-            command=lambda: update_columns_via_app_interface(self.current_language_state_bool, data_table_obj),
+            command=lambda: update_columns_via_app_interface(current_lang, data_table_obj),
         )
 
         def delete_record_and_refresh_table():
-            remove_status = remove_record_from_table(self.current_language_state_bool, app)
+            remove_status = remove_record_from_table(current_lang, app)
             return None if remove_status is None else data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
-                self.current_language_state_bool
+                current_lang
             )
 
         self.delete_record_btn = CTkButton(
@@ -379,10 +388,6 @@ class TablePage(BasePage):
             text_color='black',
             command=lambda: delete_record_and_refresh_table(),
         )
-
-        # def set_new_language(language: str):
-        #     controller.change_language(language)
-        #     data_table_obj.get_data_from_db(self.current_language_state_bool)
 
         self.ukrainian_lang_btn = CTkButton(
             upper_frame,

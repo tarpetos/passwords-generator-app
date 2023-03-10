@@ -4,13 +4,10 @@ from tkinter.simpledialog import Dialog
 from customtkinter import CTkLabel, CTkEntry
 
 
+# askstring
 class _CustomAskStringDialog(Dialog):
-    def __init__(self, title, prompt,
-                 initialvalue=None,
-                 minvalue = None, maxvalue = None,
-                 parent = None):
-
-        self.prompt   = prompt
+    def __init__(self, title, prompt, initialvalue=None, minvalue=None, maxvalue=None, parent=None):
+        self.prompt = prompt
         self.minvalue = minvalue
         self.maxvalue = maxvalue
 
@@ -23,7 +20,6 @@ class _CustomAskStringDialog(Dialog):
         Dialog.destroy(self)
 
     def body(self, master):
-
         w = CTkLabel(master, text=self.prompt, justify=LEFT, text_color='black')
         w.grid(row=0, padx=5, sticky=W)
 
@@ -62,6 +58,7 @@ def custom_askstring(title, prompt, lang_state, **kw):
     return d.result
 
 
+# askinteger
 class _CustomAskIntegerDialog(Dialog):
     def __init__(self, title, prompt, lang_state, initialvalue=None, parent=None):
         self.prompt = prompt
