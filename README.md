@@ -44,7 +44,7 @@ python3 main.py
 ## Make *.exe file with pyinstaller
 
 ```sh
-pyinstaller.exe --onefile --windowed icon=icon/main_icon.ico main.py
+pyinstaller.exe --onefile --windowed --icon=icon/main_icon.ico main.py
 ```
 
 ## Author
