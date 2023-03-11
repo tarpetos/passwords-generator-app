@@ -26,9 +26,18 @@ def change_messagebox_color():
     current_mode = get_current_color()
 
     messagebox_style = Style()
+    edit_cell_entry_style = Style()
+
     messagebox_bg_color = get_bg_for_dialogs(current_mode)[0]
     messagebox_font_color = get_bg_for_dialogs(current_mode)[1]
     messagebox_style.configure('.', background=messagebox_bg_color, foreground=messagebox_font_color)
+    edit_cell_entry_style.configure(
+        'EntryStyle.TEntry',
+        foreground=messagebox_font_color,
+        fieldbackground=messagebox_bg_color,
+        insertwidth=2,
+        insertcolor='#007FFF',
+    )
 
 
 def change_pop_up_color(box, label) -> str:

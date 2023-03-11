@@ -7,6 +7,7 @@ from additional_modules.password_strength_score import password_strength, make_s
     password_strength_chat_gpt
 from change_interface_look.change_background_color import change_pop_up_color
 from change_interface_look.wait_flowbox_style import round_rectangle
+from create_app.store_user_passwords import PasswordStore
 
 
 def app_loading_screen(lang_state) -> CTk:
@@ -164,7 +165,7 @@ def search_screen(lang_state, search_query, data_list):
     search_frame = CTkFrame(search_window)
 
     table_frame = CTkFrame(search_frame)
-    data_for_table = SearchTableInterface(table_frame, 800, 500, 12)
+    data_for_table = SearchTableInterface(table_frame, lang_state, 800, 500, 12)
     data_for_table.get_data_from_db(lang_state, data_list)
 
     label = CTkLabel(
@@ -193,5 +194,6 @@ def search_screen(lang_state, search_query, data_list):
 
 
 class SearchTableInterface(TableBase):
-    def __init__(self, root, frame_width, frame_height, treeview_height):
-        super().__init__(root, frame_width, frame_height, treeview_height)
+    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
+        self.current_language = lang_state
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)

@@ -1,13 +1,12 @@
 import random
 import re
 import sqlite3
+from string import digits, ascii_letters, punctuation
+from typing import Any, Iterator
+
 import mysql.connector
 import pyperclip
 import requests
-
-from random import choices, sample
-from string import digits, ascii_letters, punctuation
-from typing import Any, Iterator
 from pandas import DataFrame
 
 from additional_modules.encryption_decryption import encrypt, decrypt
@@ -15,9 +14,8 @@ from additional_modules.password_strength_score import strength_rating, password
     password_strength_chat_gpt
 from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
 from app_translation.load_data_for_localization import all_json_localization_data
-from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
-    invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, input_dialog_error_message, \
-    invalid_value_for_repeatable_or_not_message, input_dialog_message, ask_to_update_record_message, \
+from app_translation.messagebox_with_lang_change import input_dialog_error_message, \
+    input_dialog_message, ask_to_update_record_message, \
     duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
     successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
     token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
@@ -25,13 +23,16 @@ from app_translation.messagebox_with_lang_change import invalid_password_usage_m
     empty_table_warn, ask_to_save_new_token, successfully_changed_token_message, was_not_changed_token_message, \
     search_query_input_message, invalid_search_query_message, \
     no_matches_for_search_message, successful_delete_message, successful_remake_table_message
-from app_translation.messagebox_with_lang_change import nothing_to_copy_message, empty_result_input_message, \
-    ask_write_to_database_message, successful_write_to_database_message, ask_if_record_exist_message, \
+from app_translation.messagebox_with_lang_change import nothing_to_copy_message, ask_write_to_database_message, \
+    successful_write_to_database_message, ask_if_record_exist_message, \
     unexpected_database_error_message
+from create_app.main_checks import MAX_AUTO_PASSWORD_AND_DESC_LENGTH, check_if_description_existing, \
+    check_password_usage_input, check_password_result_input, check_if_repeatable_characters_is_present, \
+    check_password_length_input, check_repeatable_input, check_for_repeatable_characters
 from create_app.store_user_passwords import PasswordStore
 from create_app.sync_table import RemoteDB
 
-MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
+# MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
 # MAX_PASSWORD_LENGTH_WITHOUT_REPETITIVE = 90
 
 database_user_data = PasswordStore()
@@ -56,70 +57,6 @@ def retrieve_data_for_build_table_interface(
         full_list_of_data = database_user_data.select_full_table()
 
     return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
-
-
-def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
-    if check_if_repeatable_allowed.capitalize() == 'Y' or check_if_repeatable_allowed.capitalize() == 'Т':
-        return ''.join(choices(password_alphabet, k=password_length))
-    elif check_if_repeatable_allowed.capitalize() == 'N' or check_if_repeatable_allowed.capitalize() == 'Н':
-        return ''.join(sample(password_alphabet, k=password_length))
-
-
-def check_if_repeatable_characters_is_present(result_password) -> bool:
-    for count_character, character in enumerate(result_password, 1):
-        if result_password.count(character) > 1:
-            return True
-        elif count_character == len(result_password):
-            return False
-
-
-def check_password_usage_input(lang_state, user_input) -> bool:
-    if 0 < len(user_input) <= MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
-        return True
-
-    invalid_password_usage_message(lang_state)
-    return False
-
-
-def check_password_length_input(lang_state, user_input) -> bool:
-    if not user_input.isdigit():
-        invalid_password_type_message(lang_state)
-        return False
-    elif int(user_input) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH or int(user_input) <= 0:
-        invalid_password_value_message(lang_state)
-        return False
-    return True
-
-
-def check_repeatable_input(lang_state, user_input, pass_length_entry, pass_length, pass_alphabet) -> bool:
-    if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(pass_length) > len(pass_alphabet):
-        invalid_value_if_no_repeatable_characters_message(lang_state, pass_alphabet)
-        pass_length_entry.delete(0, 'end')
-        return True
-    elif user_input.capitalize() == 'Y' or user_input.capitalize() == 'N':
-        return False
-    elif user_input.capitalize() == 'Т' or user_input.capitalize() == 'Н':
-        return False
-    else:
-        invalid_value_for_repeatable_or_not_message(lang_state)
-        return True
-
-
-def check_password_result_input(lang_state, result_password) -> bool:
-    if result_password == '':
-        empty_result_input_message(lang_state)
-        return False
-    else:
-        return True
-
-
-def check_if_description_existing(store_of_user_passwords, password_description):
-    list_of_descriptions = store_of_user_passwords.select_descriptions()
-
-    if password_description in list_of_descriptions:
-        return True
-    else:
-        return False
 
 
 def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool | int:
@@ -330,10 +267,6 @@ def remove_record_from_table(lang_state, application_window):
 
 def update_record_in_table(lang_state) -> bool:
     return ask_to_update_record_message(lang_state)
-
-
-def duplicate_usage_in_table(lang_state):
-    duplicate_usage_error_message(lang_state)
 
 
 def nothing_to_update_in_table(lang_state):
