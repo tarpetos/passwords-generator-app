@@ -1,6 +1,6 @@
 from additional_modules.base_table_interface import TableBase
 from create_app.inputs_and_buttons_processing import retrieve_data_for_build_table_interface
-from create_app.store_user_passwords import PasswordStore
+from database_connections.local_db_connection import PasswordStore
 
 
 class TableInterface(TableBase):
@@ -14,8 +14,7 @@ class TableInterface(TableBase):
         self.table_tree_frame.bind('<Control-F>', search_func)
         self.table_tree_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
 
-
     def reload_table(self, root, search_func, lang_state):
         self.full_frame.destroy()
-        self.__init__(root, lang_state, search_func, 800, 430, 20)
+        self.__init__(root, lang_state, search_func, 200, 200, 20)
         self.get_data_from_db(lang_state)

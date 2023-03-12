@@ -1,25 +1,19 @@
 from tkinter.constants import W, NO, CENTER, END
-
-from customtkinter import CTkScrollbar
+from tkinter.ttk import Scrollbar
+# from tkinter import Scrollbar
 
 
 def treeview_scrollbars(root, tree):
-    vertical_scrollbar = CTkScrollbar(
-        root, orientation='vertical', command=tree.yview
-    )
+    vertical_scrollbar = Scrollbar(root, orient='vertical', command=tree.yview)
     vertical_scrollbar.pack(side='right', fill='y')
     tree.configure(yscrollcommand=vertical_scrollbar.set)
 
-    horizontal_scrollbar = CTkScrollbar(
-        root, orientation='horizontal', command=tree.xview
-    )
+    horizontal_scrollbar = Scrollbar(root, orient='horizontal', command=tree.xview)
     horizontal_scrollbar.pack(side='bottom', fill='x')
     tree.configure(xscrollcommand=horizontal_scrollbar.set)
     
 
 def insert_table_data(tree, table_header, pandas_iterator):
-    tree.tag_configure('custom_tag', background='#5D6D7E')
-
     for column_number, column in enumerate(tree['columns']):
         tree.column(column, anchor=W, minwidth=300, width=300, stretch=NO)
         tree.heading(
@@ -28,7 +22,7 @@ def insert_table_data(tree, table_header, pandas_iterator):
         )
 
     for row_number, row in enumerate(pandas_iterator.values):
-        tree.insert('', END, text=str(row_number), values=row.tolist(), tags=('custom_tag',))
+        tree.insert('', END, text=str(row_number), values=row.tolist())
 
 
 def sort_column(tree, column, reverse):

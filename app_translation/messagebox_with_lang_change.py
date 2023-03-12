@@ -1,15 +1,17 @@
 from tkinter import messagebox
 
-from additional_modules.custom_input_dialogs import custom_askstring, custom_askinteger
+from customtkinter import CTkInputDialog
+
+# from additional_modules.custom_input_dialogs import custom_askstring, custom_askinteger
 
 
 def invalid_password_usage_message(lang_state_check):
     if lang_state_check:
-        messagebox.showerror('Invalid input', 'Length of password usage field have to be in range from 1 to 384!')
+        messagebox.showerror('Invalid input', 'Length of password usage field have to be in range from 1 to 500!')
     else:
         messagebox.showerror(
             'Некоректний ввід',
-            'Кількість символів в полі призначення має знаходитись в межах від 1 до 384!'
+            'Кількість символів в полі призначення має знаходитись в межах від 1 до 500!'
         )
 
 
@@ -22,9 +24,9 @@ def invalid_password_type_message(lang_state_check):
 
 def invalid_password_value_message(lang_state_check):
     if lang_state_check:
-        messagebox.showerror('Invalid input', 'Length of password have to be in range from 1 to 384')
+        messagebox.showerror('Invalid input', 'Length of password have to be in range from 1 to 500')
     else:
-        messagebox.showerror('Некоректний ввід', 'Значення довжини має знаходитись в межах від 1 до 384!')
+        messagebox.showerror('Некоректний ввід', 'Значення довжини має знаходитись в межах від 1 до 500!')
 
 
 def invalid_value_if_no_repeatable_characters_message(lang_state_check, password_alphabet):
@@ -145,17 +147,15 @@ def empty_table_warn(lang_state_check):
 
 def input_dialog_message(lang_state_check, application_window):
     if lang_state_check:
-        user_input_choice = custom_askinteger(
-            'ID input', 'Enter the ID of the record you want to delete...',
-            parent=application_window, lang_state=lang_state_check
+        user_input_choice = CTkInputDialog(
+            title='ID input', text='Enter the ID of the record you want to delete...',
         )
     else:
-        user_input_choice = custom_askinteger(
-            'Ввід ID', 'Введіть ID запису, який ви хочете видалити...',
-            parent=application_window, lang_state=lang_state_check
+        user_input_choice = CTkInputDialog(
+            title='Ввід ID', text='Введіть ID запису, який ви хочете видалити...',
         )
 
-    return user_input_choice
+    return user_input_choice.get_input()
 
 
 def input_dialog_error_message(lang_state_check):
@@ -229,13 +229,11 @@ def successful_update_message(lang_state_check):
         messagebox.showinfo(
             'Table update',
             'You have changed the data in the table!\nChanges saved successfully.\n'
-            'Reload the table to reflect the changes.'
         )
     else:
         messagebox.showinfo(
             'Зміна таблиці',
             'Ви змінили дані в таблиці! Зміни записано успішно.\n'
-            'Оновіть таблицю для відображення змін.'
         )
 
 
@@ -282,18 +280,17 @@ def ask_to_sync_message(lang_state_check):
 
 def token_input_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = custom_askstring(
-            'Token input', 'Enter the token assigned to you by the bot\n(use /token command in Telegram)...\n',
-            parent=application_window, lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Token input',
+            text='Enter the token assigned to you by the bot\n(use /token command in Telegram)...\n',
         )
     else:
-        user_choice = custom_askstring(
-            'Ввід токену',
-            'Введіть токен, який присвоїв вам бот\n(використовуйте команду /token у Telegram)...\n',
-            parent=application_window, lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Ввід токену',
+            text='Введіть токен, який присвоїв вам бот\n(використовуйте команду /token у Telegram)...\n',
         )
 
-    return user_choice
+    return user_choice.get_input()
 
 
 def input_token_error_message(lang_state_check):
@@ -402,19 +399,17 @@ def ask_to_save_token_message(lang_state_check):
 
 def choose_between_duplicates_message(lang_state_check, application_window):
     if lang_state_check:
-        user_choice = custom_askstring(
-            'Duplicate password description found',
-            'Enter "Remote" to keep remote passwords, or enter "Local" to keep local passwords.\n',
-            parent=application_window, lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Duplicate password description found',
+            text='Enter "Remote" to keep remote passwords, or enter "Local" to keep local passwords.\n',
         )
     else:
-        user_choice = custom_askstring(
-            'Знайдено дубльований опис пароля',
-            'Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
-            parent=application_window, lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Знайдено дубльований опис пароля',
+            text='Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
         )
 
-    return user_choice
+    return user_choice.get_input()
 
 
 def show_warn_by_regex_message(lang_state_check):
@@ -475,31 +470,29 @@ def was_not_changed_token_message(lang_state_check):
 
 def search_query_input_message(lang_state_check):
     if lang_state_check:
-        user_choice = custom_askstring(
-            'Search',
-            'Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
-            lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Search',
+            text='Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
         )
     else:
-        user_choice = custom_askstring(
-            'Пошук',
-            'Введіть пошуковий запит (опис пароля, який хочете знайти).\nПошук є регістро незалежним.\n',
-            lang_state=lang_state_check
+        user_choice = CTkInputDialog(
+            title='Пошук',
+            text='Введіть пошуковий запит (опис пароля, який хочете знайти).\nПошук є регістро незалежним.\n',
         )
 
-    return user_choice
+    return user_choice.get_input()
 
 
 def invalid_search_query_message(lang_state_check):
     if lang_state_check:
         messagebox.showwarning(
             'Invalid search query',
-            'Search query cannot be empty space or has more than 384 symbols in it! Try again.'
+            'Search query cannot be empty space or has more than 500 symbols in it! Try again.'
         )
     else:
         messagebox.showwarning(
             'Некоректний пошуковий запит',
-            'Пошуковий запит не можу бути пустим місцем або мати більше ніж 384 символи! Спробуйте ще раз.',
+            'Пошуковий запит не можу бути пустим місцем або мати більше ніж 500 символів! Спробуйте ще раз.',
         )
 
 

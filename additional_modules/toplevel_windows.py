@@ -1,13 +1,13 @@
-from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel
+from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel, CTkCanvas
 
-from tkinter import Canvas, Label, ttk, StringVar
+from tkinter import Label, ttk, StringVar
 
 from additional_modules.base_table_interface import TableBase
 from additional_modules.password_strength_score import password_strength, make_score_proportion, strength_rating, \
     password_strength_chat_gpt
 from change_interface_look.change_background_color import change_pop_up_color
 from change_interface_look.wait_flowbox_style import round_rectangle
-from create_app.store_user_passwords import PasswordStore
+from database_connections.local_db_connection import PasswordStore
 
 
 def app_loading_screen(lang_state) -> CTk:
@@ -17,7 +17,7 @@ def app_loading_screen(lang_state) -> CTk:
     loading_screen.title('Loading')
     loading_screen.geometry('400x100')
 
-    canvas = Canvas(loading_screen, bg='#292929', highlightthickness=0)
+    canvas = CTkCanvas(loading_screen, bg='#292929', highlightthickness=0)
     canvas.pack(fill='both', expand=True)
 
     load_label = Label(
@@ -90,7 +90,7 @@ def password_strength_screen(lang_state):
     str_var_modifier.trace('w', lambda name, index, mode, sv=str_var_modifier: entry_modified(sv))
     password_input_entry = CTkEntry(strength_frame, textvariable=str_var_modifier, width=300)
 
-    canvas = Canvas(strength_frame, height=20, background='gray', highlightthickness=0)
+    canvas = CTkCanvas(strength_frame, height=20, background='gray', highlightthickness=0)
 
     separator = ttk.Separator(strength_frame, orient='horizontal')
 

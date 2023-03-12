@@ -1,12 +1,10 @@
 import sqlite3
 
-from tkinter.ttk import Entry, Treeview
-
-from customtkinter import CTkFrame
+from tkinter.ttk import Entry, Treeview, Frame
 
 from additional_modules.encryption_decryption import encrypt
 from additional_modules.make_table import make_table_for_page_and_search
-from app_translation.messagebox_with_lang_change import duplicate_usage_error_message
+from app_translation.messagebox_with_lang_change import duplicate_usage_error_message, successful_update_message
 from create_app.main_checks import check_if_repeatable_characters_is_present
 
 
@@ -14,11 +12,12 @@ class TableBase:
     def __init__(self, root, lang_state, frame_width, frame_height, treeview_height, database_connector):
         self.current_language = lang_state
         self.database_connector = database_connector()
-        self.full_frame = CTkFrame(root, width=frame_width, height=frame_height, fg_color='#34495E')
+        self.full_frame = Frame(root, width=frame_width, height=frame_height)
         self.full_frame.pack(side='top')
 
         self.data_list = None
-        self.table_tree_frame = Treeview(self.full_frame, height=treeview_height)
+
+        self.table_tree_frame = Treeview(self.full_frame, height=treeview_height, style='TreeviewStyle.Treeview')
         self.table_tree_frame.bind('<Double-1>', self.on_double_click)
 
     def get_data_from_db(self, lang_state, search_data_list=None):
@@ -42,7 +41,6 @@ class TableBase:
 
         column_box = self.table_tree_frame.bbox(selected_element_iid, column_clicked)
 
-        # edit_cell_entry = CTkEntry(self.full_frame, width=column_box[2], corner_radius=0)
         edit_cell_entry = Entry(self.full_frame, width=column_box[2], style='EntryStyle.TEntry')
 
         edit_cell_entry.editing_column_index = column_index
@@ -73,9 +71,6 @@ class TableBase:
         current_values[column_index] = new_text
         modified_values = current_values
 
-        print(saved_values)
-        print(modified_values)
-
         self.update_table(selected_iid, current_values, saved_values, modified_values)
 
         event.widget.destroy()
@@ -96,6 +91,7 @@ class TableBase:
                 modified_values[0],
             )
             self.table_tree_frame.item(selected_iid, values=current_values)
+            successful_update_message(self.current_language)
         except sqlite3.IntegrityError:
             duplicate_usage_error_message(self.current_language)
             return

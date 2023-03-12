@@ -1,17 +1,17 @@
 from random import choices, sample
 
-from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_type_message, \
-    invalid_password_value_message, invalid_value_if_no_repeatable_characters_message, \
+from app_translation.messagebox_with_lang_change import invalid_password_usage_message, \
+    invalid_value_if_no_repeatable_characters_message, \
     invalid_value_for_repeatable_or_not_message, empty_result_input_message
 
 
-MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
+MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 500
 
 
 def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
-    if check_if_repeatable_allowed.capitalize() == 'Y' or check_if_repeatable_allowed.capitalize() == 'Т':
+    if check_if_repeatable_allowed == 'Yes' or check_if_repeatable_allowed == 'Так':
         return ''.join(choices(password_alphabet, k=password_length))
-    elif check_if_repeatable_allowed.capitalize() == 'N' or check_if_repeatable_allowed.capitalize() == 'Н':
+    elif check_if_repeatable_allowed == 'No' or check_if_repeatable_allowed== 'Ні':
         return ''.join(sample(password_alphabet, k=password_length))
 
 
@@ -31,24 +31,13 @@ def check_password_usage_input(lang_state, user_input) -> bool:
     return False
 
 
-def check_password_length_input(lang_state, user_input) -> bool:
-    if not user_input.isdigit():
-        invalid_password_type_message(lang_state)
-        return False
-    elif int(user_input) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH or int(user_input) <= 0:
-        invalid_password_value_message(lang_state)
-        return False
-    return True
-
-
-def check_repeatable_input(lang_state, user_input, pass_length_entry, pass_length, pass_alphabet) -> bool:
-    if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(pass_length) > len(pass_alphabet):
+def check_repeatable_input(lang_state, user_choice, pass_length, pass_alphabet) -> bool:
+    if (user_choice == 'No' or user_choice == 'Ні') and int(pass_length) > len(pass_alphabet):
         invalid_value_if_no_repeatable_characters_message(lang_state, pass_alphabet)
-        pass_length_entry.delete(0, 'end')
         return True
-    elif user_input.capitalize() == 'Y' or user_input.capitalize() == 'N':
+    elif user_choice == 'Yes' or user_choice== 'No':
         return False
-    elif user_input.capitalize() == 'Т' or user_input.capitalize() == 'Н':
+    elif user_choice == 'Так' or user_choice == 'Ні':
         return False
     else:
         invalid_value_for_repeatable_or_not_message(lang_state)

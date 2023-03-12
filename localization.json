@@ -43,16 +43,20 @@
     "switches": {
       "write_to_db_switch": "Write to database?"
     },
-    "password_difficulty_options": {
-      "extremely_unreliable": "Extremely unreliable",
-      "very_easy": "Very easy",
-      "easy": "Easy",
-      "below_average": "Below average",
-      "average": "Average",
-      "strong": "Strong",
-      "very_strong": "Very strong",
-      "extremely_reliable": "Extremely reliable"
-    }
+    "symbols_option_menu": [
+      "Extremely unreliable",
+      "Very easy",
+      "Easy",
+      "Below average",
+      "Average",
+      "Strong",
+      "Very strong",
+      "Extremely reliable"
+    ],
+    "repeatable_segment_btn": [
+      "Yes",
+      "No"
+    ]
   },
   "UA": {
     "labels": {
@@ -98,15 +102,19 @@
     "switches": {
       "write_to_db_switch": "Записати до бази даних?"
     },
-    "password_difficulty_options": {
-      "extremely_unreliable": "Мінімально надійний",
-      "very_easy": "Дуже простий",
-      "easy": "Простий",
-      "below_average": "Нижче середнього",
-      "average": "Середній",
-      "strong": "Надійний",
-      "very_strong": "Дуже надійний",
-      "extremely_reliable": "Максимально надійний"
-    }
+    "symbols_option_menu": [
+      "Мінімально надійний",
+      "Дуже простий",
+      "Простий",
+      "Нижче середнього",
+      "Середній",
+      "Надійний",
+      "Дуже надійний",
+      "Максимально надійний"
+    ],
+    "repeatable_segment_btn": [
+      "Так",
+      "Ні"
+    ]
   }
 }

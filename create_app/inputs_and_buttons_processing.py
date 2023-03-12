@@ -1,12 +1,13 @@
 import random
 import re
 import sqlite3
-from string import digits, ascii_letters, punctuation
-from typing import Any, Iterator
 
 import mysql.connector
 import pyperclip
 import requests
+
+from string import digits, ascii_letters, punctuation
+from typing import Any, Iterator
 from pandas import DataFrame
 
 from additional_modules.encryption_decryption import encrypt, decrypt
@@ -15,8 +16,7 @@ from additional_modules.password_strength_score import strength_rating, password
 from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
 from app_translation.load_data_for_localization import all_json_localization_data
 from app_translation.messagebox_with_lang_change import input_dialog_error_message, \
-    input_dialog_message, ask_to_update_record_message, \
-    duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
+    input_dialog_message, ask_to_update_record_message, no_update_warning_message, ask_to_sync_message, \
     successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
     token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
     choose_between_duplicates_message, show_warn_by_regex_message, server_token_changed_message, remake_table_message, \
@@ -28,12 +28,10 @@ from app_translation.messagebox_with_lang_change import nothing_to_copy_message,
     unexpected_database_error_message
 from create_app.main_checks import MAX_AUTO_PASSWORD_AND_DESC_LENGTH, check_if_description_existing, \
     check_password_usage_input, check_password_result_input, check_if_repeatable_characters_is_present, \
-    check_password_length_input, check_repeatable_input, check_for_repeatable_characters
-from create_app.store_user_passwords import PasswordStore
-from create_app.sync_table import RemoteDB
+    check_repeatable_input, check_for_repeatable_characters
+from database_connections.local_db_connection import PasswordStore
+from database_connections.remote_db_connection import RemoteDB
 
-# MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 384
-# MAX_PASSWORD_LENGTH_WITHOUT_REPETITIVE = 90
 
 database_user_data = PasswordStore()
 
@@ -129,19 +127,17 @@ def get_radiobtn_option(var) -> str:
         return digits + fixed_punctuation
 
 
-def generate_password(lang_state, pass_usage_entry, pass_length_entry, repeatable_entry, result_pass_entry, var):
+def generate_password(lang_state, pass_usage_entry, pass_length_slider, repeatable_btn, result_pass_entry, var):
     pass_alphabet = get_radiobtn_option(var)
 
     pass_usage = pass_usage_entry.get()
     if not check_password_usage_input(lang_state, pass_usage):
         return
 
-    pass_length = pass_length_entry.get()
-    if not check_password_length_input(lang_state, pass_length):
-        return
+    pass_length = pass_length_slider.get()
 
-    check_if_repeatable_allowed = repeatable_entry.get()
-    if check_repeatable_input(lang_state, check_if_repeatable_allowed, pass_length_entry, pass_length, pass_alphabet):
+    check_if_repeatable_allowed = repeatable_btn.get()
+    if check_repeatable_input(lang_state, check_if_repeatable_allowed, pass_length, pass_alphabet):
         return
 
     result_pass_entry.delete(0, 'end')
@@ -150,51 +146,49 @@ def generate_password(lang_state, pass_usage_entry, pass_length_entry, repeatabl
 
 
 def get_menu_option(var):
-    if var == 'Extremely unreliable':
+    if var == 'Extremely unreliable' or var == 'Мінімально надійний':
         return random.randint(1, 6)
-    elif var == 'Very easy':
+    elif var == 'Very easy' or var == 'Дуже простий':
         return random.randint(3, 6)
-    elif var == 'Easy':
+    elif var == 'Easy' or var == 'Простий':
         return random.randint(5, 10)
-    elif var == 'Below average':
+    elif var == 'Below average' or var == 'Нижче середнього':
         return random.randint(5, 10)
-    elif var == 'Average':
+    elif var == 'Average' or var == 'Середній':
         return random.randint(15, 20)
-    elif var == 'Strong':
+    elif var == 'Strong' or var == 'Надійний':
         return random.randint(20, 30)
-    elif var == 'Very strong':
+    elif var == 'Very strong' or var == 'Дуже надійний':
         return random.randint(30, 50)
     else:
         return random.randint(50, 100)
 
 
-def get_password_with_necessary_difficulty(expected_result):
+def get_password_with_necessary_difficulty(lange_state, expected_result):
     fixed_punctuation = exclude_invalid_symbols_for_markup()
     pass_alphabet = digits + ascii_letters + fixed_punctuation
 
     actual_result = None
     generated_pass = None
 
-    count = 0
     while actual_result != expected_result:
         pass_length = get_menu_option(expected_result)
 
-        generated_pass = check_for_repeatable_characters(pass_alphabet, pass_length, 'Y')
+        generated_pass = check_for_repeatable_characters(pass_alphabet, pass_length, 'Yes')
+
         shannon_pass = password_strength(generated_pass)
         chat_gpt_pass = make_score_proportion(password_strength_chat_gpt(generated_pass))
         average_score = round(((shannon_pass + chat_gpt_pass) / 2), 2)
 
-        actual_result = strength_rating(True, average_score)
-        count += 1
-
-    print(count)
+        actual_result = strength_rating(lange_state, average_score)
 
     return generated_pass
 
 
-def simple_generate_password(result_pass_entry, current_menu_option, description_entry, switch_is_active):
+def simple_generate_password(lange_state, result_pass_entry, current_menu_option, description_entry, switch_is_active):
     result_pass_entry.delete(0, 'end')
-    result_pass = get_password_with_necessary_difficulty(current_menu_option)
+    current_menu_option_value = current_menu_option.get()
+    result_pass = get_password_with_necessary_difficulty(lange_state, current_menu_option_value)
     result_pass_entry.insert(0, result_pass)
 
     description = description_entry.get()
@@ -217,10 +211,8 @@ def copy_password(lang_state, result_password_entry):
         # copy_successful_message(lang_state) # uncomment this if you want to see a message after a successful copy
 
 
-def clear_entries(password_usage_entry, password_length_entry, repeatable_entry, result_password_entry):
+def clear_entries(password_usage_entry, result_password_entry):
     password_usage_entry.delete(0, 'end')
-    password_length_entry.delete(0, 'end')
-    repeatable_entry.delete(0, 'end')
     result_password_entry.delete(0, 'end')
     # clear_all_fields_message(lang_state) # uncomment this if you want to see a message after clearing the fields
 
@@ -243,26 +235,32 @@ def remove_record_from_table(lang_state, application_window):
         return
 
     id_list = open_tuples_in_lst()
-    chosen_id = input_dialog_message(lang_state, application_window)
-
-    if chosen_id == -1:
-        if remake_table_message(lang_state):
-            database_user_data.drop_table()
-            database_user_data.create_table()
-            successful_remake_table_message(lang_state)
-        return
 
     while True:
+        chosen_id = input_dialog_message(lang_state, application_window)
+
         if not chosen_id:
             return
 
-        if chosen_id not in id_list:
+        try:
+            chosen_id = int(chosen_id)
+
+            if chosen_id == -1:
+                if remake_table_message(lang_state):
+                    database_user_data.drop_table()
+                    database_user_data.create_table()
+                    successful_remake_table_message(lang_state)
+                return
+
+            if chosen_id not in id_list:
+                input_dialog_error_message(lang_state)
+                continue
+            else:
+                database_user_data.delete_by_id(chosen_id)
+                successful_delete_message(lang_state)
+                return 0
+        except ValueError:
             input_dialog_error_message(lang_state)
-            chosen_id = input_dialog_message(lang_state, application_window)
-        else:
-            database_user_data.delete_by_id(chosen_id)
-            successful_delete_message(lang_state)
-            return 0
 
 
 def update_record_in_table(lang_state) -> bool:
@@ -271,10 +269,6 @@ def update_record_in_table(lang_state) -> bool:
 
 def nothing_to_update_in_table(lang_state):
     no_update_warning_message(lang_state)
-
-
-def successful_update_in_table(lang_state):
-    successful_update_message(lang_state)
 
 
 def sync_db_data(lang_state, application_window):
@@ -374,10 +368,6 @@ def result_of_connection(lang_state) -> RemoteDB | None:
     load_screen.destroy()
 
     return remote_connection
-
-
-def update_columns_via_app_interface(lang_state, all_data_from_table):
-    all_data_from_table.update_data_using_table_interface(lang_state)
 
 
 def control_mysql_connection(lang_state, load_screen) -> RemoteDB | str:
