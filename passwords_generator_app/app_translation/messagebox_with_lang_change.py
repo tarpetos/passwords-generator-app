@@ -2,8 +2,6 @@ from tkinter import messagebox
 
 from customtkinter import CTkInputDialog
 
-# from additional_modules.custom_input_dialogs import custom_askstring, custom_askinteger
-
 
 def invalid_password_usage_message(lang_state_check):
     if lang_state_check:
@@ -145,7 +143,7 @@ def empty_table_warn(lang_state_check):
         messagebox.showwarning('таблиця пуста', 'У локальній таблиці немає записів!')
 
 
-def input_dialog_message(lang_state_check, application_window):
+def input_dialog_message(lang_state_check):
     if lang_state_check:
         user_input_choice = CTkInputDialog(
             title='ID input', text='Enter the ID of the record you want to delete...',
@@ -267,7 +265,8 @@ def ask_to_sync_message(lang_state_check):
     if lang_state_check:
         user_choice = messagebox.askyesno(
             'Database synchronization',
-            'Are you sure you want to synchronize the passwords of this application with the passwords of the Telegram bot?'
+            'Are you sure you want to synchronize the passwords of '
+            'this application with the passwords of the Telegram bot?'
         )
     else:
         user_choice = messagebox.askyesno(
@@ -278,7 +277,7 @@ def ask_to_sync_message(lang_state_check):
     return user_choice
 
 
-def token_input_message(lang_state_check, application_window):
+def token_input_message(lang_state_check):
     if lang_state_check:
         user_choice = CTkInputDialog(
             title='Token input',
@@ -397,7 +396,7 @@ def ask_to_save_token_message(lang_state_check):
     return user_choice
 
 
-def choose_between_duplicates_message(lang_state_check, application_window):
+def choose_between_duplicates_message(lang_state_check):
     if lang_state_check:
         user_choice = CTkInputDialog(
             title='Duplicate password description found',
@@ -406,7 +405,8 @@ def choose_between_duplicates_message(lang_state_check, application_window):
     else:
         user_choice = CTkInputDialog(
             title='Знайдено дубльований опис пароля',
-            text='Введіть "Сервер", щоб зберегти паролі з сервера, або введіть "Локально", щоб зберегти локальні паролі',
+            text='Введіть "Сервер", щоб зберегти паролі з сервера, '
+                 'або введіть "Локально", щоб зберегти локальні паролі',
         )
 
     return user_choice.get_input()
@@ -472,7 +472,7 @@ def search_query_input_message(lang_state_check):
     if lang_state_check:
         user_choice = CTkInputDialog(
             title='Search',
-            text='Enter a search query (a description of the password you want to find).\nSearch is case-insensitive.\n',
+            text='Enter a search query (description of the password you want to find).\nSearch is case-insensitive.\n',
         )
     else:
         user_choice = CTkInputDialog(

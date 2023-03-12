@@ -2,10 +2,10 @@ import sqlite3
 
 from tkinter.ttk import Entry, Treeview, Frame
 
-from additional_modules.encryption_decryption import encrypt
-from additional_modules.make_table import make_table_for_page_and_search
-from app_translation.messagebox_with_lang_change import duplicate_usage_error_message, successful_update_message
-from create_app.main_checks import check_if_repeatable_characters_is_present
+from ..additional_modules.encryption_decryption import encrypt
+from ..additional_modules.make_table import make_table_for_page_and_search
+from ..app_translation.messagebox_with_lang_change import duplicate_usage_error_message, successful_update_message
+from ..create_app.main_checks import check_if_repeatable_characters_is_present
 
 
 class TableBase:

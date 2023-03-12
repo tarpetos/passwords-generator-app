@@ -2,12 +2,16 @@ from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel, CTkCan
 
 from tkinter import Label, ttk, StringVar
 
-from additional_modules.base_table_interface import TableBase
-from additional_modules.password_strength_score import password_strength, make_score_proportion, strength_rating, \
-    password_strength_chat_gpt
-from change_interface_look.change_background_color import change_pop_up_color
-from change_interface_look.wait_flowbox_style import round_rectangle
-from database_connections.local_db_connection import PasswordStore
+from ..additional_modules.base_table_interface import TableBase
+from ..change_interface_look.change_background_color import change_pop_up_color
+from ..change_interface_look.wait_flowbox_style import round_rectangle
+from ..database_connections.local_db_connection import PasswordStore
+from ..additional_modules.password_strength_score import (
+    password_strength,
+    make_score_proportion,
+    strength_rating,
+    password_strength_chat_gpt,
+)
 
 
 def app_loading_screen(lang_state) -> CTk:

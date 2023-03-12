@@ -10,27 +10,66 @@ from string import digits, ascii_letters, punctuation
 from typing import Any, Iterator
 from pandas import DataFrame
 
-from additional_modules.encryption_decryption import encrypt, decrypt
-from additional_modules.password_strength_score import strength_rating, password_strength, make_score_proportion, \
-    password_strength_chat_gpt
-from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
-from app_translation.load_data_for_localization import all_json_localization_data
-from app_translation.messagebox_with_lang_change import input_dialog_error_message, \
-    input_dialog_message, ask_to_update_record_message, no_update_warning_message, ask_to_sync_message, \
-    successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
-    token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
-    choose_between_duplicates_message, show_warn_by_regex_message, server_token_changed_message, remake_table_message, \
-    empty_table_warn, ask_to_save_new_token, successfully_changed_token_message, was_not_changed_token_message, \
-    search_query_input_message, invalid_search_query_message, \
-    no_matches_for_search_message, successful_delete_message, successful_remake_table_message
-from app_translation.messagebox_with_lang_change import nothing_to_copy_message, ask_write_to_database_message, \
-    successful_write_to_database_message, ask_if_record_exist_message, \
-    unexpected_database_error_message
-from create_app.main_checks import MAX_AUTO_PASSWORD_AND_DESC_LENGTH, check_if_description_existing, \
-    check_password_usage_input, check_password_result_input, check_if_repeatable_characters_is_present, \
-    check_repeatable_input, check_for_repeatable_characters
-from database_connections.local_db_connection import PasswordStore
-from database_connections.remote_db_connection import RemoteDB
+from ..additional_modules.encryption_decryption import encrypt, decrypt
+from ..additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
+from ..app_translation.load_data_for_localization import all_json_localization_data
+
+from ..additional_modules.password_strength_score import (
+    strength_rating,
+    password_strength,
+    make_score_proportion,
+    password_strength_chat_gpt,
+)
+
+from ..app_translation.messagebox_with_lang_change import (
+    input_dialog_error_message,
+    input_dialog_message,
+    ask_to_update_record_message,
+    no_update_warning_message,
+    ask_to_sync_message,
+    successful_sync_message,
+    error_sync_message,
+    connection_error_message,
+    connection_timeout_message,
+    token_input_message,
+    input_token_error_message,
+    data_is_identical_message,
+    ask_to_save_token_message,
+    choose_between_duplicates_message,
+    show_warn_by_regex_message,
+    server_token_changed_message,
+    remake_table_message,
+    empty_table_warn,
+    ask_to_save_new_token,
+    successfully_changed_token_message,
+    was_not_changed_token_message,
+    search_query_input_message,
+    invalid_search_query_message,
+    no_matches_for_search_message,
+    successful_delete_message,
+    successful_remake_table_message,
+)
+
+from ..app_translation.messagebox_with_lang_change import (
+    nothing_to_copy_message,
+    ask_write_to_database_message,
+    successful_write_to_database_message,
+    ask_if_record_exist_message,
+    unexpected_database_error_message,
+)
+
+from ..create_app.main_checks import (
+    MAX_AUTO_PASSWORD_AND_DESC_LENGTH,
+    check_if_description_existing,
+    check_password_usage_input,
+    check_password_result_input,
+    check_if_repeatable_characters_is_present,
+    check_repeatable_input,
+    check_for_repeatable_characters,
+)
+
+from ..database_connections.local_db_connection import PasswordStore
+from ..database_connections.remote_db_connection import RemoteDB
 
 
 database_user_data = PasswordStore()
@@ -229,7 +268,7 @@ def open_tuples_in_lst() -> list:
     return without_tuples_lst
 
 
-def remove_record_from_table(lang_state, application_window):
+def remove_record_from_table(lang_state):
     if database_user_data.select_full_table() is None:
         empty_table_warn(lang_state)
         return
@@ -237,7 +276,7 @@ def remove_record_from_table(lang_state, application_window):
     id_list = open_tuples_in_lst()
 
     while True:
-        chosen_id = input_dialog_message(lang_state, application_window)
+        chosen_id = input_dialog_message(lang_state)
 
         if not chosen_id:
             return
@@ -271,7 +310,7 @@ def nothing_to_update_in_table(lang_state):
     no_update_warning_message(lang_state)
 
 
-def sync_db_data(lang_state, application_window):
+def sync_db_data(lang_state):
     remote_connection = result_of_connection(lang_state)
     if remote_connection is None:
         return
@@ -282,7 +321,7 @@ def sync_db_data(lang_state, application_window):
         full_list_of_tokens = remote_connection.select_all_tokens()
         saved_data = database_user_data.select_from_save_tb()
 
-        user_token = check_for_token(lang_state, application_window, saved_data)
+        user_token = check_for_token(lang_state, saved_data)
         user_id = check_for_id(remote_connection, saved_data, user_token)
 
         if user_token is None:
@@ -302,6 +341,8 @@ def sync_db_data(lang_state, application_window):
                 sorted_united_lst = sorted(lst_union)
                 sorted_local_table = sorted(local_full_table)
                 sorted_remote_table = sorted(remote_full_table)
+                print(local_full_table)
+                print(remote_full_table)
 
                 if sorted_local_table == sorted_united_lst and sorted_remote_table == sorted_united_lst:
                     data_is_identical_message(lang_state)
@@ -310,7 +351,7 @@ def sync_db_data(lang_state, application_window):
                 temp_lst = local_full_table + remote_full_table
                 if check_if_has_duplicates_desc(temp_lst):
                     while True:
-                        save_pass = choose_between_duplicates_message(lang_state, application_window)
+                        save_pass = choose_between_duplicates_message(lang_state)
 
                         if save_pass == '' or save_pass:
                             local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
@@ -345,11 +386,11 @@ def sync_db_data(lang_state, application_window):
                 if saved_data:
                     server_token_changed_message(lang_state)
                     database_user_data.truncate_saved_token()
-                    user_token = token_input_message(lang_state, application_window)
+                    user_token = token_input_message(lang_state)
                     save_token(lang_state, saved_data, user_id, user_token, full_list_of_tokens)
                 else:
                     input_token_error_message(lang_state)
-                    user_token = token_input_message(lang_state, application_window)
+                    user_token = token_input_message(lang_state)
 
                 if user_token is None:
                     return
@@ -393,11 +434,11 @@ def check_internet_connection():
         return False
 
 
-def check_for_token(lang_state, app, saved_token):
+def check_for_token(lang_state, saved_token):
     if saved_token:
         user_token = decrypt(saved_token[1])
     else:
-        user_token = token_input_message(lang_state, app)
+        user_token = token_input_message(lang_state)
 
     return user_token
 
@@ -431,7 +472,8 @@ def check_if_has_duplicates_desc(lst):
 
 def sync_tables_loop(remote_connection, table, lst):
     for tuple_row in lst:
-        database_user_data.insert_replace_into_tb(*tuple_row)
+        print(tuple_row)
+        database_user_data.insert_update_into_tb(*tuple_row)
         remote_connection.insert_update_password_data(table, *tuple_row)
 
 
@@ -440,7 +482,7 @@ def correct_lst_unite(lst1, lst2):
     return lst1
 
 
-def change_local_token(lang_state, application_window):
+def change_local_token(lang_state):
     remote_connection = result_of_connection(lang_state)
 
     if remote_connection is None:
@@ -449,14 +491,15 @@ def change_local_token(lang_state, application_window):
     full_list_of_tokens = remote_connection.select_all_tokens()
 
     while True:
-        exit_status = try_token_change(lang_state, application_window, remote_connection, full_list_of_tokens)
+        exit_status = try_token_change(lang_state, remote_connection, full_list_of_tokens)
 
         if exit_status == 'Exit from token dialog box':
             return
 
 
-def try_token_change(language, app, remote_ids, remote_tokens):
-    user_token = token_input_message(language, app)
+def try_token_change(language, remote_ids, remote_tokens):
+    user_token = token_input_message(language)
+    print(user_token)
 
     if user_token is None:
         return 'Exit from token dialog box'

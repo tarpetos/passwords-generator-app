@@ -1,25 +1,31 @@
+import customtkinter as ctk
+
 from tkinter import StringVar
 from tkinter.constants import TOP
 from tkinter.ttk import Separator
 from typing import Any
 
-import customtkinter
-from customtkinter import CTkLabel, CTkButton, CTkRadioButton, CTkFrame, CTkEntry, \
-    CTkOptionMenu, CTkSwitch, CTkSlider, CTkSegmentedButton
+from ..app_translation.load_data_for_localization import all_json_localization_data
+from ..change_interface_look.change_background_color import change_background_color, change_element_bg_color
+from ..create_app.create_sql_table import TableInterface
+from ..create_app.inputs_and_buttons_processing import (
+    generate_password,
+    copy_password,
+    write_to_database,
+    clear_entries,
+    remove_record_from_table,
+    database_search,
+    sync_db_data,
+    change_local_token,
+    simple_generate_password,
+)
 
-from app_translation.load_data_for_localization import all_json_localization_data
-from change_interface_look.change_background_color import change_background_color, change_element_bg_color
-from create_app.create_sql_table import TableInterface
-from create_app.inputs_and_buttons_processing import generate_password, copy_password, write_to_database, \
-    clear_entries, remove_record_from_table, database_search, \
-    sync_db_data, change_local_token, simple_generate_password
 
-
-class PasswordGeneratorApp(customtkinter.CTk):
+class PasswordGeneratorApp(ctk.CTk):
     def __init__(self, *args, **kwargs):
-        customtkinter.CTk.__init__(self, *args, **kwargs)
+        ctk.CTk.__init__(self, *args, **kwargs)
 
-        container = CTkFrame(self)
+        container = ctk.CTkFrame(self)
         container.pack(side=TOP, fill='both', expand=True)
 
         container.grid_rowconfigure(0, weight=1)
@@ -55,15 +61,15 @@ class PasswordGeneratorApp(customtkinter.CTk):
                 self.current_language = frame.change_language(language)
 
 
-class BasePage(CTkFrame):
+class BasePage(ctk.CTkFrame):
     def __init__(self, parent, controller):
-        CTkFrame.__init__(self, parent)
+        ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
         self.current_language_state_bool = True
         self._current_language_state_str = 'EN'
         self.language_options = all_json_localization_data  # get data for app localization
-        customtkinter.set_appearance_mode('dark')
-        customtkinter.set_default_color_theme('green')  # set default app theme
+        ctk.set_appearance_mode('dark')
+        ctk.set_default_color_theme('green')  # set default app theme
         change_element_bg_color()  # set default bg and font color to messageboxes
 
     @staticmethod
@@ -90,9 +96,9 @@ class BasePage(CTkFrame):
         element.configure(values=new_data, variable=default_var)
 
     def element_configure(self, element, element_type, new_data):
-        if isinstance(element, CTkSegmentedButton):
+        if isinstance(element, ctk.CTkSegmentedButton):
             self.configure_elements_with_values_list(element, element_type, new_data)
-        elif isinstance(element, CTkOptionMenu):
+        elif isinstance(element, ctk.CTkOptionMenu):
             self.configure_elements_with_values_list(element, element_type, new_data)
         else:
             element.configure(text=new_data)
@@ -127,42 +133,42 @@ class MainPage(BasePage):
     def __init__(self, parent, controller):
         BasePage.__init__(self, parent, controller)
 
-        main_frame = CTkFrame(self)
+        main_frame = ctk.CTkFrame(self)
 
-        self.password_usage_label = CTkLabel(
+        self.password_usage_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['password_usage_label']
         )
-        self.password_length_label = CTkLabel(
+        self.password_length_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['password_length_label'],
         )
-        self.repeatable_label = CTkLabel(
+        self.repeatable_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['repeatable_label'],
         )
-        self.result_password_label = CTkLabel(
+        self.result_password_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['result_password_label'],
         )
 
-        self.password_usage_entry = CTkEntry(main_frame)
+        self.password_usage_entry = ctk.CTkEntry(main_frame)
 
-        self.slider_frame = CTkFrame(main_frame)
+        self.slider_frame = ctk.CTkFrame(main_frame)
 
         def print_slider(choice):
             self.password_length_slider_label.configure(text=int(choice))
 
-        default_pass_length = customtkinter.IntVar()
+        default_pass_length = ctk.IntVar()
         default_pass_length.set(50)
 
-        self.password_length_slider = CTkSlider(
+        self.password_length_slider = ctk.CTkSlider(
             self.slider_frame,
             from_=1, to=500,
             variable=default_pass_length,
             command=print_slider
         )
-        self.password_length_slider_label = CTkLabel(self.slider_frame, text=str(default_pass_length.get()))
+        self.password_length_slider_label = ctk.CTkLabel(self.slider_frame, text=str(default_pass_length.get()))
 
         def selected_button_callback(choice):
             self.chosen_button_menu = choice
@@ -171,51 +177,51 @@ class MainPage(BasePage):
         self.chosen_button_menu = values_list[0]
 
         self.default_chosen_btn_var = StringVar(value=self.chosen_button_menu)
-        self.repeatable_segment_btn = CTkSegmentedButton(
+        self.repeatable_segment_btn = ctk.CTkSegmentedButton(
             main_frame,
             values=values_list,
             variable=self.default_chosen_btn_var,
             command=selected_button_callback
         )
 
-        self.result_password_entry = CTkEntry(main_frame)
+        self.result_password_entry = ctk.CTkEntry(main_frame)
 
-        radiobutton_choice_option = customtkinter.IntVar()
+        radiobutton_choice_option = ctk.IntVar()
         radiobutton_choice_option.set(1)  # default option is all symbols
 
-        radiobutton_frame = CTkFrame(main_frame)
+        radiobutton_frame = ctk.CTkFrame(main_frame)
 
-        self.all_symbols_radio_btn = CTkRadioButton(
+        self.all_symbols_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
             value=1,
         )
-        self.only_letters_radio_btn = CTkRadioButton(
+        self.only_letters_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
             value=2,
         )
-        self.only_digits_radio_btn = CTkRadioButton(
+        self.only_digits_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
             value=3,
         )
-        self.letters_digits_radio_btn = CTkRadioButton(
+        self.letters_digits_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
             value=4,
         )
-        self.letters_signs_radio_btn = CTkRadioButton(
+        self.letters_signs_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
             value=5,
         )
-        self.digits_signs_radio_btn = CTkRadioButton(
+        self.digits_signs_radio_btn = ctk.CTkRadioButton(
             radiobutton_frame,
             text='',
             variable=radiobutton_choice_option,
@@ -223,32 +229,32 @@ class MainPage(BasePage):
 
         )
 
-        self.all_symbols_label = CTkLabel(
+        self.all_symbols_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['all_symbols_label']
         )
-        self.only_letters_label = CTkLabel(
+        self.only_letters_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['only_letters_label']
         )
-        self.only_digits_label = CTkLabel(
+        self.only_digits_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['only_digits_label']
         )
-        self.letters_digits_label = CTkLabel(
+        self.letters_digits_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['letters_digits_label']
         )
-        self.letters_signs_label = CTkLabel(
+        self.letters_signs_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['letters_signs_label']
         )
-        self.digits_signs_label = CTkLabel(
+        self.digits_signs_label = ctk.CTkLabel(
             radiobutton_frame,
             text=self.language_options['EN']['radio_buttons_labels']['digits_signs_label']
         )
 
-        self.generate_btn = CTkButton(
+        self.generate_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['generate_btn'],
             text_color='black',
@@ -262,14 +268,14 @@ class MainPage(BasePage):
             ),
         )
 
-        self.copy_btn = CTkButton(
+        self.copy_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['copy_btn'],
             text_color='black',
             command=lambda: copy_password(self.current_language_state_bool, self.result_password_entry),
         )
 
-        self.clear_btn = CTkButton(
+        self.clear_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['clear_btn'],
             text_color='black',
@@ -279,7 +285,7 @@ class MainPage(BasePage):
             ),
         )
 
-        self.write_to_db_btn = CTkButton(
+        self.write_to_db_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['write_to_db_btn'],
             text_color='black',
@@ -290,7 +296,7 @@ class MainPage(BasePage):
             ),
         )
 
-        self.change_bg_btn = CTkButton(
+        self.change_bg_btn = ctk.CTkButton(
             main_frame,
             text=u'\u263E',
             text_color='black',
@@ -301,35 +307,35 @@ class MainPage(BasePage):
             controller.current_mode = 'simple'
             controller.show_frame(SimplePage)
 
-        self.simple_mode_btn = CTkButton(
+        self.simple_mode_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['simple_mode_btn'],
             text_color='black',
             command=save_page_state,
         )
 
-        self.move_to_table_btn = CTkButton(
+        self.move_to_table_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
             text_color='black',
             command=lambda: controller.show_frame(TablePage),
         )
 
-        self.ukrainian_lang_btn = CTkButton(
+        self.ukrainian_lang_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
             text_color='black',
             command=lambda: controller.change_language('UA'),
         )
 
-        self.english_lang_btn = CTkButton(
+        self.english_lang_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['english_lang_btn'],
             text_color='black',
             command=lambda: controller.change_language('EN')
         )
 
-        self.quit_btn = CTkButton(
+        self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
             text_color='black',
@@ -396,23 +402,23 @@ class SimplePage(BasePage):
     def __init__(self, parent, controller):
         BasePage.__init__(self, parent, controller)
 
-        main_frame = CTkFrame(self)
+        main_frame = ctk.CTkFrame(self)
 
-        self.password_usage_label = CTkLabel(
+        self.password_usage_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['password_usage_label']
         )
-        self.result_password_label = CTkLabel(
+        self.result_password_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['result_password_label'],
         )
-        self.option_menu_label = CTkLabel(
+        self.option_menu_label = ctk.CTkLabel(
             main_frame,
             text=self.language_options['EN']['labels']['option_menu_label'],
         )
 
-        self.password_usage_entry = CTkEntry(main_frame)
-        self.result_password_entry = CTkEntry(main_frame)
+        self.password_usage_entry = ctk.CTkEntry(main_frame)
+        self.result_password_entry = ctk.CTkEntry(main_frame)
 
         def option_menu_callback(choice):
             self.chosen_opt_menu = choice
@@ -421,7 +427,7 @@ class SimplePage(BasePage):
         self.chosen_opt_menu = values_list[4]
 
         self.default_opt_menu_var = StringVar(value=self.chosen_opt_menu)
-        self.symbols_option_menu = CTkOptionMenu(
+        self.symbols_option_menu = ctk.CTkOptionMenu(
             main_frame,
             text_color='black',
             values=values_list,
@@ -433,7 +439,7 @@ class SimplePage(BasePage):
             self.switch_state = not self.switch_state
 
         self.switch_state = False
-        self.write_to_db_switch = CTkSwitch(
+        self.write_to_db_switch = ctk.CTkSwitch(
             main_frame,
             text=self.language_options['EN']['switches']['write_to_db_switch'],
             command=switch_callback,
@@ -442,7 +448,7 @@ class SimplePage(BasePage):
         self.upper_separator = Separator(main_frame, orient='horizontal')
         self.bottom_separator = Separator(main_frame, orient='horizontal')
 
-        self.generate_btn = CTkButton(
+        self.generate_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['generate_btn'],
             text_color='black',
@@ -459,21 +465,21 @@ class SimplePage(BasePage):
             controller.current_mode = 'hard'
             controller.show_frame(MainPage)
 
-        self.hard_mode_btn = CTkButton(
+        self.hard_mode_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['hard_mode_btn'],
             text_color='black',
             command=save_page_state,
         )
 
-        self.move_to_table_btn = CTkButton(
+        self.move_to_table_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
             text_color='black',
             command=lambda: controller.show_frame(TablePage),
         )
 
-        self.quit_btn = CTkButton(
+        self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
             text_color='black',
@@ -520,42 +526,42 @@ class SimplePage(BasePage):
 class TablePage(BasePage):
     def __init__(self, parent, controller):
         BasePage.__init__(self, parent, controller)
-        full_frame = CTkFrame(self, fg_color='transparent')
+        full_frame = ctk.CTkFrame(self, fg_color='transparent')
 
-        table_frame = CTkFrame(full_frame)
+        table_frame = ctk.CTkFrame(full_frame)
         data_table_obj = TableInterface(
             table_frame, self.current_language_state_bool, self.shortcut_search, 200, 200, 20
         )
         data_table_obj.get_data_from_db(self.current_language_state_bool)
 
-        upper_frame = CTkFrame(full_frame, fg_color='transparent')
-        self.synchronize_data_btn = CTkButton(
+        upper_frame = ctk.CTkFrame(full_frame, fg_color='transparent')
+        self.synchronize_data_btn = ctk.CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['synchronize_data_btn'],
             text_color='black',
-            command=lambda: sync_db_data(self.current_language_state_bool, app),
+            command=lambda: sync_db_data(self.current_language_state_bool),
         )
 
-        self.change_token_btn = CTkButton(
+        self.change_token_btn = ctk.CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['change_token_btn'],
             text_color='black',
-            command=lambda: change_local_token(self.current_language_state_bool, app),
+            command=lambda: change_local_token(self.current_language_state_bool),
         )
 
-        bottom_frame = CTkFrame(full_frame, fg_color='transparent')
+        bottom_frame = ctk.CTkFrame(full_frame, fg_color='transparent')
 
         def back_to_parent_page():
             controller.show_frame(MainPage) if controller.current_mode == 'hard' else controller.show_frame(SimplePage)
 
-        self.return_to_main_btn = CTkButton(
+        self.return_to_main_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['return_to_main_btn'],
             text_color='black',
             command=back_to_parent_page
         )
 
-        self.reload_table_btn = CTkButton(
+        self.reload_table_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['reload_table_btn'],
             text_color='black',
@@ -567,35 +573,35 @@ class TablePage(BasePage):
         )
 
         def delete_record_and_refresh_table():
-            remove_status = remove_record_from_table(self.current_language_state_bool, app)
+            remove_status = remove_record_from_table(self.current_language_state_bool)
             return None if remove_status is None else data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
                 self.current_language_state_bool
             )
 
-        self.delete_record_btn = CTkButton(
+        self.delete_record_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['delete_record_btn'],
             text_color='black',
             command=lambda: delete_record_and_refresh_table(),
         )
 
-        self.ukrainian_lang_btn = CTkButton(
+        self.ukrainian_lang_btn = ctk.CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
             text_color='black',
             command=lambda: controller.change_language('UA'),
         )
 
-        self.english_lang_btn = CTkButton(
+        self.english_lang_btn = ctk.CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['english_lang_btn'],
             text_color='black',
             command=lambda: controller.change_language('EN'),
         )
 
-        self.quit_btn = CTkButton(
+        self.quit_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
             text_color='black',

@@ -1,5 +1,5 @@
-from create_app.gui_app_config import app
-from create_app.inputs_and_buttons_processing import password_strength_checker
+from passwords_generator_app.create_app.gui_app_config import app
+from passwords_generator_app.create_app.inputs_and_buttons_processing import password_strength_checker
 
 
 def shortcut_strength(event):

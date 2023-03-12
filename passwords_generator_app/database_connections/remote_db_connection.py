@@ -2,8 +2,8 @@ import os
 import mysql
 import mysql.connector
 
-from additional_modules.encryption_decryption import decrypt
 from dotenv import load_dotenv, find_dotenv
+from passwords_generator_app.additional_modules.encryption_decryption import decrypt
 
 class RemoteDB:
     def __init__(self):

@@ -1,6 +1,5 @@
 from tkinter.constants import W, NO, CENTER, END
 from tkinter.ttk import Scrollbar
-# from tkinter import Scrollbar
 
 
 def treeview_scrollbars(root, tree):
@@ -11,7 +10,7 @@ def treeview_scrollbars(root, tree):
     horizontal_scrollbar = Scrollbar(root, orient='horizontal', command=tree.xview)
     horizontal_scrollbar.pack(side='bottom', fill='x')
     tree.configure(xscrollcommand=horizontal_scrollbar.set)
-    
+
 
 def insert_table_data(tree, table_header, pandas_iterator):
     for column_number, column in enumerate(tree['columns']):

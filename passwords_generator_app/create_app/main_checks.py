@@ -1,8 +1,11 @@
 from random import choices, sample
 
-from app_translation.messagebox_with_lang_change import invalid_password_usage_message, \
-    invalid_value_if_no_repeatable_characters_message, \
-    invalid_value_for_repeatable_or_not_message, empty_result_input_message
+from ..app_translation.messagebox_with_lang_change import (
+    invalid_password_usage_message,
+    invalid_value_if_no_repeatable_characters_message,
+    invalid_value_for_repeatable_or_not_message,
+    empty_result_input_message,
+)
 
 
 MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 500

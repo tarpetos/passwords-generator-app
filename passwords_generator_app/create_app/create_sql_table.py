@@ -1,6 +1,6 @@
-from additional_modules.base_table_interface import TableBase
-from create_app.inputs_and_buttons_processing import retrieve_data_for_build_table_interface
-from database_connections.local_db_connection import PasswordStore
+from ..additional_modules.base_table_interface import TableBase
+from ..create_app.inputs_and_buttons_processing import retrieve_data_for_build_table_interface
+from ..database_connections.local_db_connection import PasswordStore
 
 
 class TableInterface(TableBase):
