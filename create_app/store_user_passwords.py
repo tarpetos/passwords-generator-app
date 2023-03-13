@@ -1,152 +1,137 @@
 import os
+from typing import Any
 import sqlite3
 import pandas as pd
 
 from typing import Iterator
 
-
-def create_directory():
-    if not os.path.exists('.passwords'):
-        os.mkdir('.passwords')
+PASSWORD_STORE_QUERIES = {
+    'create_passwords_table':
+        '''
+        CREATE TABLE IF NOT EXISTS passwords (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            description VARCHAR(384) NOT NULL,
+            password VARCHAR(384) NOT NULL,
+            length INTEGER NOT NULL,
+            has_repeatable BOOLEAN NOT NULL,
+            CONSTRAINT unique_data UNIQUE(description)
+        )
+        ''',
+    'drop_passwords_table': 'DROP TABLE IF EXISTS passwords',
+    'create_token_table':
+        '''
+        CREATE TABLE IF NOT EXISTS id_token (
+            saved_id INTEGER NOT NULL,
+            saved_token VARCHAR(384) NOT NULL
+        )
+        ''',
+    'insert_password':
+        '''
+        INSERT OR IGNORE INTO passwords(description, password, length, has_repeatable)
+        VALUES (?, ?, ?, ?)
+        ''',
+    'change_password':
+        '''
+        REPLACE INTO passwords(description, password, length, has_repeatable)
+        VALUES (?, ?, ?, ?)
+        ''',
+    'change_token_data':
+        '''
+        INSERT INTO id_token(saved_id, saved_token)
+        VALUES (?, ?)
+        ''',
+    'delete_token_data': 'DELETE FROM id_token',
+    'get_first_token': 'SELECT * FROM id_token LIMIT 1',
+    'change_password_by_id':
+        '''
+        UPDATE passwords
+        SET description =  ?, password =  ?, length =  ?, has_repeatable =  ?
+        WHERE id =  ?
+        ''',
+    'change_password_by_description':
+        '''
+        UPDATE passwords
+        SET password =  ?, length =  ?, has_repeatable =  ?
+        WHERE description =  ?
+        ''',
+    'fetch_passwords_descriptions':
+        '''
+        SELECT description FROM passwords
+        ORDER BY id
+        ''',
+    'fetch_passwords': 'SELECT * FROM passwords',
+    'fetch_passwords_ids':
+        '''
+        SELECT id FROM passwords
+        ORDER BY id
+        ''',
+    'fetch_passwords_no_ids':
+        '''
+        SELECT description, password, length, has_repeatable FROM passwords
+        ORDER BY id
+        ''',
+    'delete_password':
+        '''
+        DELETE FROM passwords
+        WHERE id =  ?
+        ''',
+}
 
 
 class PasswordStore:
+    PASSWORDS_DIR = './.passwords/'
+    PASSWORDS_DATA_FILE_NAME = 'data'
+
     def __init__(self):
-        create_directory()
-        self.con = sqlite3.connect('.passwords/data')
+        self.create_passwords_directory()
+        self.con = sqlite3.connect(self.PASSWORDS_DIR + self.PASSWORDS_DATA_FILE_NAME)
         self.cur = self.con.cursor()
-        self.create_table()
-        self.create_token_id_table()
 
-    def create_table(self):
-        self.cur.execute(
-            '''
-            CREATE TABLE IF NOT EXISTS passwords (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                description VARCHAR(384) NOT NULL,
-                password VARCHAR(384) NOT NULL,
-                length INTEGER NOT NULL,
-                has_repeatable BOOLEAN NOT NULL,
-                CONSTRAINT unique_data UNIQUE(description)
-            )
-            '''
-        )
-        self.con.commit()
+    def create_passwords_directory(self) -> None:
+        if not os.path.exists(self.PASSWORDS_DIR):
+            os.mkdir(self.PASSWORDS_DIR)
 
-    def drop_table(self):
-        self.cur.execute('DROP TABLE IF EXISTS passwords')
-        self.con.commit()
+    def create_passwords_table(self) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['create_passwords_table'])
 
-    def create_token_id_table(self):
-        self.cur.execute(
-            '''
-            CREATE TABLE IF NOT EXISTS id_token (
-                saved_id INTEGER NOT NULL,
-                saved_token VARCHAR(384) NOT NULL
-            )
-            '''
-        )
-        self.con.commit()
+    def drop_passwords_table(self) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['drop_passwords_table'])
 
-    def insert_into_tb(self, description, password, length, has_repeatable):
-        self.cur.execute(
-            '''
-            INSERT OR IGNORE INTO passwords(description, password, length, has_repeatable)
-            VALUES (?, ?, ?, ?)
-            ''',
-            (description, password, length, has_repeatable)
+    def create_token_table(self) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['create_token_table'])
+
+    def insert_password(self, description: str, password: str, length: int, repeatable: bool) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['insert_password'], description, password, length, repeatable)
+
+    def change_password(self, description: str, password: str, length: int, repeatable: bool) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['change_password'], description, password, length, repeatable)
+
+    def change_token_data(self, user_id: str, token: str) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['change_token_data'], user_id, token)
+
+    def delete_token_data(self) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['delete_token_data'])
+
+    def fetch_token_data(self) -> tuple[str]:
+        token_data = self.read_query(PASSWORD_STORE_QUERIES['select_token_data'])
+        if not token_data:
+            raise ValueError('No records')
+        first_record = token_data[0]
+        return first_record
+
+    def change_password_by_id(self, id: int, description: str, password: str, length: int, repeatable: bool) -> None:
+        self.execute_query(
+            PASSWORD_STORE_QUERIES['change_password_by_id'], description, password, length, repeatable, id
         )
 
-        self.con.commit()
-
-    def insert_update_into_tb(self, description, password, length, has_repeatable):
-        self.cur.execute(
-            '''
-            REPLACE INTO passwords(description, password, length, has_repeatable)
-            VALUES (?, ?, ?, ?)
-            ''',
-            (description, password, length, has_repeatable)
+    def change_password_by_description(self, description: str, password: str, length: int, repeatable: bool) -> None:
+        self.execute_query(
+            PASSWORD_STORE_QUERIES['change_password_by_description'], password, length, repeatable, description
         )
 
-        self.con.commit()
-
-    def insert_into_save_tb(self, user_id, user_token):
-        self.cur.execute(
-            '''
-            INSERT INTO id_token(saved_id, saved_token)
-            VALUES (?, ?)
-            ''',
-            (user_id, user_token)
-        )
-
-        self.con.commit()
-
-    def truncate_saved_token(self):
-        self.cur.execute('DELETE FROM id_token')
-        self.con.commit()
-
-    def select_from_save_tb(self):
-        self.cur.execute('SELECT * FROM id_token')
-
-        result = self.cur.fetchall()
-
-        self.con.commit()
-
-        if result:
-            return result[0]
-
-    def update_password_data_by_id(self, description, password, length, has_repeatable, table_id):
-        self.cur.execute(
-            '''
-            UPDATE passwords
-            SET description =  ?, password =  ?, length =  ?, has_repeatable =  ?
-            WHERE id =  ?
-            ''',
-            (description, password, length, has_repeatable, table_id)
-        )
-
-        self.con.commit()
-
-    def update_existing_password(self, password, length, has_repeatable, description):
-        self.cur.execute(
-            '''
-            UPDATE passwords
-            SET password =  ?, length =  ?, has_repeatable =  ?
-            WHERE description =  ?
-            ''',
-            (password, length, has_repeatable, description)
-        )
-
-        self.con.commit()
-
-    def select_descriptions(self) -> list:
-        self.cur.execute(
-            '''
-            SELECT description FROM passwords
-            ORDER BY id
-            '''
-        )
-
-        description_list = self.cur.fetchall()
-
-        self.con.commit()
-
-        return description_list
-
-    def select_descriptions_password(self) -> list:
-        self.cur.execute(
-            '''
-            SELECT description, password FROM passwords
-            ORDER BY id
-            '''
-        )
-
-        password_main_data_list = self.cur.fetchall()
-
-        self.con.commit()
-
-        return password_main_data_list
-
+    def fetch_passwords_descriptions(self) -> list[tuple[str]]:
+        password_descriptions = self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_descriptions'])
+        return [password_description for (password_description,) in password_descriptions]
 
     def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
         main_data_list = pd.read_sql_query(
@@ -154,55 +139,34 @@ class PasswordStore:
             SELECT id, description, password FROM passwords
             WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
             ORDER BY id
-            ''', self.con, params=[search_query,]
+            ''', self.con, params=[search_query, ]
         )
-
         self.con.commit()
-
         return main_data_list
 
-    def select_full_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        password_data_list = pd.read_sql_query('SELECT * FROM passwords', self.con)
+    def fetch_passwords(self) -> list[tuple[Any]]:
+        return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords'])
 
+    def fetch_passwords_ids(self) -> list[tuple[int]]:
+        return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_ids'])
+
+    def fetch_passwords_no_ids(self) -> list[tuple[Any]]:
+        return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_no_ids'])
+
+    def delete_password(self, id: int) -> None:
+        self.execute_query(PASSWORD_STORE_QUERIES['delete_password'], id)
+
+    def read_query(self, query: str) -> list[tuple[Any]]:
+        self.cur.execute(query)
+        result = self.cur.fetchall()
+        self.con.commit()
+        return result
+
+    def execute_query(self, query: str, *options) -> None:
+        self.cur.execute(query, options)
         self.con.commit()
 
-        return password_data_list
 
-    def select_id(self) -> list:
-        self.cur.execute(
-            '''
-            SELECT id FROM passwords
-            ORDER BY id
-            '''
-        )
-
-        id_data_list = self.cur.fetchall()
-
-        self.con.commit()
-
-        return id_data_list
-
-    def select_without_id(self) -> list:
-        self.cur.execute(
-            '''
-            SELECT description, password, length, has_repeatable FROM passwords
-            ORDER BY id
-            '''
-        )
-
-        data_list = self.cur.fetchall()
-
-        self.con.commit()
-
-        return data_list
-
-    def delete_by_id(self, table_id):
-        self.cur.execute(
-            '''
-            DELETE FROM passwords
-            WHERE id =  ?
-            ''',
-            (table_id,)
-        )
-
-        self.con.commit()
+password_store = PasswordStore()
+password_store.create_passwords_table()
+password_store.create_token_table()
