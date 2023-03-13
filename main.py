@@ -3,7 +3,7 @@ from create_app.inputs_and_buttons_processing import password_strength_checker
 
 
 def shortcut_strength(event):
-    current_lang = app.current_language
+    current_lang = app.frames['main_page'].current_language
     password_strength_checker(event, current_lang)
 
 
