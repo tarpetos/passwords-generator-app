@@ -1,9 +1,11 @@
 import os
+
 import mysql
 import mysql.connector
 
 from dotenv import load_dotenv, find_dotenv
-from passwords_generator_app.additional_modules.encryption_decryption import decrypt
+from ..additional_modules.encryption_decryption import decrypt
+
 
 class RemoteDB:
     def __init__(self):
@@ -18,8 +20,7 @@ class RemoteDB:
 
         self.cur = self.con.cursor()
 
-
-    def select_all_tokens(self):
+    def select_all_tokens(self) -> list[str]:
         self.cur.execute(
             '''
             SELECT user_token FROM generated_tokens
@@ -33,8 +34,7 @@ class RemoteDB:
 
         return all_tokens_lst
 
-
-    def select_id_by_token(self, entered_token):
+    def select_id_by_token(self, entered_token: str) -> str | None:
         self.cur.execute(
             '''
             SELECT user_id FROM generated_tokens
@@ -47,11 +47,9 @@ class RemoteDB:
 
         self.con.commit()
 
-        if get_id:
-            return get_id[0]
+        return get_id[0] if get_id else None
 
-
-    def select_pass_gen_table_without_id(self, user_table_name):
+    def select_pass_gen_table_without_id(self, user_table_name: str) -> list[tuple, ...]:
         self.cur.execute(
             '''
             SELECT password_description, generated_password, password_length, has_repetetive FROM `%s`
@@ -65,16 +63,22 @@ class RemoteDB:
 
         return table_rows
 
-
-    def insert_update_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):
+    def insert_update_password_data(
+            self,
+            user_id: str,
+            user_desc: str,
+            generated_pass: str,
+            password_length: int,
+            has_repetitive: bool
+    ):
         self.cur.execute(
-            '''
+            f'''
             INSERT INTO `%s` (password_description, generated_password, password_length, has_repetetive) 
             VALUES (%s, %s, %s, %s)
             ON DUPLICATE KEY UPDATE generated_password  = %s, password_length = %s, has_repetetive = %s
             ''',
-            (user_id, user_desc, generated_pass, password_length, has_repetetive,
-             generated_pass, password_length, has_repetetive)
+            (user_id, user_desc, generated_pass, password_length,
+             has_repetitive, generated_pass, password_length, has_repetitive)
         )
 
         self.con.commit()

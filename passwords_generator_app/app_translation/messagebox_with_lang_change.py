@@ -173,7 +173,6 @@ def remake_table_message(lang_state_check):
             'Скидання таблиці', 'Ви впевнені, що хочете перегенерувати таблицю (усі локальні дані буде втрачено)?'
         )
 
-    print(user_choice)
     return user_choice
 
 

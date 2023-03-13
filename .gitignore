@@ -4,9 +4,7 @@ venv/
 .passwords/
 build/
 dist/
+.env
 main.spec
 test.py
-.env
-license.txt
-readme.md
-readme.txt
+records_inserter.py

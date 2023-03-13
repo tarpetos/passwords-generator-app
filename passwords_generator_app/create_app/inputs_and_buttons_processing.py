@@ -269,7 +269,7 @@ def open_tuples_in_lst() -> list:
 
 
 def remove_record_from_table(lang_state):
-    if database_user_data.select_full_table() is None:
+    if database_user_data.select_full_table().empty:
         empty_table_warn(lang_state)
         return
 
@@ -341,8 +341,6 @@ def sync_db_data(lang_state):
                 sorted_united_lst = sorted(lst_union)
                 sorted_local_table = sorted(local_full_table)
                 sorted_remote_table = sorted(remote_full_table)
-                print(local_full_table)
-                print(remote_full_table)
 
                 if sorted_local_table == sorted_united_lst and sorted_remote_table == sorted_united_lst:
                     data_is_identical_message(lang_state)
@@ -472,7 +470,6 @@ def check_if_has_duplicates_desc(lst):
 
 def sync_tables_loop(remote_connection, table, lst):
     for tuple_row in lst:
-        print(tuple_row)
         database_user_data.insert_update_into_tb(*tuple_row)
         remote_connection.insert_update_password_data(table, *tuple_row)
 
@@ -499,7 +496,6 @@ def change_local_token(lang_state):
 
 def try_token_change(language, remote_ids, remote_tokens):
     user_token = token_input_message(language)
-    print(user_token)
 
     if user_token is None:
         return 'Exit from token dialog box'

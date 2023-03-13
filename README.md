@@ -25,6 +25,14 @@ All previous versions of this application are incompatible with the current one.
 Переглянути свої паролі ви можете на іншій сторінці додатка, натиснувши `Показати таблицю >>>>`.
 Усі попередні версії цього додатка несумісні з поточною.
 
+# Full installation guide
+
+## Step 1
+
+```sh
+# ADD MORE STEPS
+```
+
 ## Install requirements
 
 ```sh
@@ -39,8 +47,11 @@ python3 main.py
 
 ## Make binary file with pyinstaller
 
+
 ```sh
-pyinstaller --onefile --windowed --icon=icon/main_icon.png main.py
+
+pyinstaller --noconfirm --onefile --windowed --add-data "<CUSTOMTKINTER_LOCATION>/customtkinter:customtkinter/" "main.py"
+
 ```
 
 
