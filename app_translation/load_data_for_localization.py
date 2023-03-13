@@ -1,10 +1,12 @@
+from typing import Any
 import json
 
-def load_json_localization_data():
-    with open('localization.json') as translation_file:
-        translation_data = json.load(translation_file)
-
-        return translation_data
+LOCALIZATION_FILE_PATH = './localization.json'
 
 
-all_json_localization_data = load_json_localization_data()
+def load_json_data(file_path: str) -> Any:
+    with open(file_path, 'r', encoding='utf-8') as file:
+        return json.load(file)
+
+
+localization_data = load_json_data(LOCALIZATION_FILE_PATH)
