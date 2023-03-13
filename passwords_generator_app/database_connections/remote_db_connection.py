@@ -4,7 +4,7 @@ import mysql
 import mysql.connector
 
 from dotenv import load_dotenv, find_dotenv
-from ..additional_modules.encryption_decryption import decrypt
+from passwords_generator_app.user_actions_processing.encryption_decryption import decrypt
 
 
 class RemoteDB:

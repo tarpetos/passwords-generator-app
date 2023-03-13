@@ -5,16 +5,17 @@ from tkinter.constants import TOP
 from tkinter.ttk import Separator
 from typing import Any
 
+from .toplevel_windows import database_search
+from .change_background_color import change_background_color, change_element_bg_color
+from .create_sql_table import TableInterface
+
 from ..app_translation.load_data_for_localization import all_json_localization_data
-from ..change_interface_look.change_background_color import change_background_color, change_element_bg_color
-from ..create_app.create_sql_table import TableInterface
-from ..create_app.inputs_and_buttons_processing import (
+from ..user_actions_processing.inputs_and_buttons_processing import (
     generate_password,
     copy_password,
     write_to_database,
     clear_entries,
     remove_record_from_table,
-    database_search,
     sync_db_data,
     change_local_token,
     simple_generate_password,

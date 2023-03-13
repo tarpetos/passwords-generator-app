@@ -14,7 +14,7 @@ MAX_AUTO_PASSWORD_AND_DESC_LENGTH = 500
 def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
     if check_if_repeatable_allowed == 'Yes' or check_if_repeatable_allowed == 'Так':
         return ''.join(choices(password_alphabet, k=password_length))
-    elif check_if_repeatable_allowed == 'No' or check_if_repeatable_allowed== 'Ні':
+    elif check_if_repeatable_allowed == 'No' or check_if_repeatable_allowed == 'Ні':
         return ''.join(sample(password_alphabet, k=password_length))
 
 
@@ -38,7 +38,7 @@ def check_repeatable_input(lang_state, user_choice, pass_length, pass_alphabet) 
     if (user_choice == 'No' or user_choice == 'Ні') and int(pass_length) > len(pass_alphabet):
         invalid_value_if_no_repeatable_characters_message(lang_state, pass_alphabet)
         return True
-    elif user_choice == 'Yes' or user_choice== 'No':
+    elif user_choice == 'Yes' or user_choice == 'No':
         return False
     elif user_choice == 'Так' or user_choice == 'Ні':
         return False

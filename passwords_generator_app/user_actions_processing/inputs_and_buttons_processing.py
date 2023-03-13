@@ -7,14 +7,11 @@ import pyperclip
 import requests
 
 from string import digits, ascii_letters, punctuation
-from typing import Any, Iterator
-from pandas import DataFrame
 
-from ..additional_modules.encryption_decryption import encrypt, decrypt
-from ..additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
-from ..app_translation.load_data_for_localization import all_json_localization_data
+from ..user_actions_processing.encryption_decryption import encrypt, decrypt
+from ..application_graphical_interface.toplevel_windows import app_loading_screen, password_strength_screen
 
-from ..additional_modules.password_strength_score import (
+from ..user_actions_processing.password_strength_score import (
     strength_rating,
     password_strength,
     make_score_proportion,
@@ -43,9 +40,6 @@ from ..app_translation.messagebox_with_lang_change import (
     ask_to_save_new_token,
     successfully_changed_token_message,
     was_not_changed_token_message,
-    search_query_input_message,
-    invalid_search_query_message,
-    no_matches_for_search_message,
     successful_delete_message,
     successful_remake_table_message,
 )
@@ -58,8 +52,7 @@ from ..app_translation.messagebox_with_lang_change import (
     unexpected_database_error_message,
 )
 
-from ..create_app.main_checks import (
-    MAX_AUTO_PASSWORD_AND_DESC_LENGTH,
+from ..user_actions_processing.main_checks import (
     check_if_description_existing,
     check_password_usage_input,
     check_password_result_input,
@@ -73,27 +66,6 @@ from ..database_connections.remote_db_connection import RemoteDB
 
 
 database_user_data = PasswordStore()
-
-
-def table_column_names() -> tuple[list, list]:
-    en_table_columns_names = [column for column in all_json_localization_data['EN']['table_column_names'].values()]
-    uk_table_columns_names = [column for column in all_json_localization_data['UA']['table_column_names'].values()]
-
-    return en_table_columns_names, uk_table_columns_names
-
-
-def retrieve_data_for_build_table_interface(
-        lang_state, column_number=5, user_query=None) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
-    column_name_localization = table_column_names()
-    en_table_lst = column_name_localization[0][:column_number]
-    uk_table_lst = column_name_localization[1][:column_number]
-
-    if user_query:
-        full_list_of_data = database_user_data.select_search_data_by_desc(user_query)
-    else:
-        full_list_of_data = database_user_data.select_full_table()
-
-    return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
 
 
 def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool | int:
@@ -512,24 +484,6 @@ def try_token_change(language, remote_ids, remote_tokens):
         return 'Exit from token dialog box'
     else:
         input_token_error_message(language)
-
-
-def database_search(event, lang_state):
-    user_search = search_query_input_message(lang_state)
-
-    if user_search is None:
-        return
-    elif user_search == '' or len(user_search) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
-        invalid_search_query_message(lang_state)
-        return
-
-    data_list = retrieve_data_for_build_table_interface(lang_state, column_number=3, user_query=user_search)
-
-    if data_list['data'].empty:
-        no_matches_for_search_message(lang_state, user_search)
-        return
-
-    search_screen(lang_state, user_search, data_list)
 
 
 def password_strength_checker(event, lang_state):

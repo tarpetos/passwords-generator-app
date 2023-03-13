@@ -2,11 +2,18 @@ from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel, CTkCan
 
 from tkinter import Label, ttk, StringVar
 
-from ..additional_modules.base_table_interface import TableBase
-from ..change_interface_look.change_background_color import change_pop_up_color
-from ..change_interface_look.wait_flowbox_style import round_rectangle
-from ..database_connections.local_db_connection import PasswordStore
-from ..additional_modules.password_strength_score import (
+from .create_sql_table import retrieve_data_for_build_table_interface, SearchTableInterface
+from .wait_flowbox_style import round_rectangle
+from .change_background_color import change_pop_up_color
+
+from ..app_translation.messagebox_with_lang_change import (
+    search_query_input_message,
+    no_matches_for_search_message,
+    invalid_search_query_message
+)
+
+from ..user_actions_processing.main_checks import MAX_AUTO_PASSWORD_AND_DESC_LENGTH
+from ..user_actions_processing.password_strength_score import (
     password_strength,
     make_score_proportion,
     strength_rating,
@@ -159,7 +166,7 @@ def strength_check(str_var_modifier, lang_state: bool, strength_labels: tuple) -
     return int(average_score)
 
 
-def search_screen(lang_state, search_query, data_list):
+def search_screen(lang_state, search_query, data_list, interface_object):
     search_window = CTkToplevel()
     search_window.grab_set()
     search_window.title('Password Generator: search')
@@ -169,7 +176,7 @@ def search_screen(lang_state, search_query, data_list):
     search_frame = CTkFrame(search_window)
 
     table_frame = CTkFrame(search_frame)
-    data_for_table = SearchTableInterface(table_frame, lang_state, 800, 500, 12)
+    data_for_table = interface_object(table_frame, lang_state, 800, 500, 12)
     data_for_table.get_data_from_db(lang_state, data_list)
 
     label = CTkLabel(
@@ -197,7 +204,19 @@ def search_screen(lang_state, search_query, data_list):
     search_window.mainloop()
 
 
-class SearchTableInterface(TableBase):
-    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
-        self.current_language = lang_state
-        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)
+def database_search(event, lang_state):
+    user_search = search_query_input_message(lang_state)
+
+    if user_search is None:
+        return
+    elif user_search == '' or len(user_search) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
+        invalid_search_query_message(lang_state)
+        return
+
+    data_list = retrieve_data_for_build_table_interface(lang_state, column_number=3, user_query=user_search)
+
+    if data_list['data'].empty:
+        no_matches_for_search_message(lang_state, user_search)
+        return
+
+    search_screen(lang_state, user_search, data_list, SearchTableInterface)

@@ -1,5 +1,5 @@
-from ..additional_modules.encryption_decryption import decrypt
-from ..additional_modules.treeview_processing import get_table_col_header, insert_table_data, treeview_scrollbars
+from .encryption_decryption import decrypt
+from .treeview_processing import get_table_col_header, insert_table_data, treeview_scrollbars
 
 
 def make_table_for_page_and_search(lang_state, data, tree, main_frame):

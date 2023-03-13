@@ -2,10 +2,12 @@ import sqlite3
 
 from tkinter.ttk import Entry, Treeview, Frame
 
-from ..additional_modules.encryption_decryption import encrypt
-from ..additional_modules.make_table import make_table_for_page_and_search
+from ..user_actions_processing.get_tables_columns_names import retrieve_data_for_build_table_interface
+from ..user_actions_processing.encryption_decryption import encrypt
+from ..user_actions_processing.make_table import make_table_for_page_and_search
+from ..user_actions_processing.main_checks import check_if_repeatable_characters_is_present
 from ..app_translation.messagebox_with_lang_change import duplicate_usage_error_message, successful_update_message
-from ..create_app.main_checks import check_if_repeatable_characters_is_present
+from ..database_connections.local_db_connection import PasswordStore
 
 
 class TableBase:
@@ -99,3 +101,26 @@ class TableBase:
     @staticmethod
     def on_focus_out(event):
         event.widget.destroy()
+
+
+class TableInterface(TableBase):
+    def __init__(self, root, lang_state, search_func, frame_width, frame_height, treeview_height):
+        self.current_language = lang_state
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)
+
+        self.data_list = retrieve_data_for_build_table_interface(lang_state)
+
+        self.table_tree_frame.bind('<Control-f>', search_func)
+        self.table_tree_frame.bind('<Control-F>', search_func)
+        self.table_tree_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
+
+    def reload_table(self, root, search_func, lang_state):
+        self.full_frame.destroy()
+        self.__init__(root, lang_state, search_func, 200, 200, 20)
+        self.get_data_from_db(lang_state)
+
+
+class SearchTableInterface(TableBase):
+    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
+        self.current_language = lang_state
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)
