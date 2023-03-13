@@ -1,80 +1,156 @@
 {
   "EN": {
     "labels": {
-      "password_usage_label":  "For what this password should be?: ",
+      "password_description_label": "For what this password should be?: ",
       "password_length_label": "Enter password length:",
-      "repeatable_label":      "Can be repeatable characters in password (y/n)?:",
+      "repeatable_label": "Can be repeatable characters in password (y/n)?:",
       "result_password_label": "GENERATED PASSWORD"
     },
     "radio_buttons_labels": {
-      "all_symbols_label":    "All symbols",
-      "only_letters_label":   "Only letters",
-      "only_digits_label":    "Only digits",
+      "all_symbols_label": "All symbols",
+      "only_letters_label": "Only letters",
+      "only_digits_label": "Only digits",
       "letters_digits_label": "Letters & digits",
-      "letters_signs_label":  "Letters & signs",
-      "digits_signs_label":   "Digits & signs"
+      "letters_signs_label": "Letters & signs",
+      "digits_signs_label": "Digits & signs"
     },
     "buttons": {
-      "generate_btn":         "Generate",
-      "copy_btn":             "Copy password",
-      "clear_btn":            "Clear all",
-      "write_to_db_btn":      "Write to database",
-      "move_to_table_btn":    "Show table >>>>",
+      "generate_btn": "Generate",
+      "copy_btn": "Copy password",
+      "clear_btn": "Clear all",
+      "write_to_db_btn": "Write to database",
+      "move_to_table_btn": "Show table >>>>",
       "synchronize_data_btn": "Synchronization",
-      "change_token_btn":     "Change token",
-      "return_to_main_btn":   "<<<< Back",
-      "reload_table_btn":     "Reload",
-      "update_table_btn":     "Update record",
-      "delete_record_btn":    "Delete",
-      "ukrainian_lang_btn":   "UA",
-      "english_lang_btn":     "EN",
-      "quit_btn":             "Quit"
+      "change_token_btn": "Change token",
+      "return_to_main_btn": "<<<< Back",
+      "reload_table_btn": "Reload",
+      "update_table_btn": "Update record",
+      "delete_record_btn": "Delete",
+      "ukrainian_lang_btn": "UA",
+      "english_lang_btn": "EN",
+      "quit_btn": "Quit"
     },
     "table_column_names": {
-      "id":             "UNIQUE IDENTIFIER",
-      "description":    "PASSWORD DESCRIPTION",
-      "password":       "PASSWORD",
-      "length":         "PASSWORD LENGTH",
+      "id": "UNIQUE IDENTIFIER",
+      "description": "PASSWORD DESCRIPTION",
+      "password": "PASSWORD",
+      "length": "PASSWORD LENGTH",
       "has_repeatable": "CONTAIN REPEATED CHARACTERS?"
+    },
+    "messages": {
+      "invalid_password_description": {
+        "title": "Invalid input",
+        "message": "Length of password description field have to be in range from 1 to 384!"
+      },
+      "password_integer": {
+        "title": "Invalid input",
+        "message": "Password length should be integer number!"
+      },
+      "invalid_password_length": {
+        "title": "Invalid input",
+        "message": "Password length have to be in range from 1 to 384"
+      },
+      "nothing_to_copy": {
+        "title": "Copy",
+        "message": "Nothing to copy!"
+      },
+      "empty_password_field": {
+        "title": "Field is unfilled",
+        "message": "No password in result field!"
+      },
+      "write_to_database": {
+        "title": "Writing to database...",
+        "message": "Would you like to write this data to database?"
+      },
+      "repeatable_description": {
+        "title": "Accept or decline writing...",
+        "message": "A record with such description already exists. Are you sure you want to change the password associated with this record?"
+      },
+      "database_error": {
+        "title": "Database error",
+        "message": "Unexpected error while writing to database!"
+      },
+      "successful_write_to_db": {
+        "title": "Database info",
+        "message": "All password data was written to database!"
+      }
     }
   },
   "UA": {
     "labels": {
-      "password_usage_label":  "Яке призначення цього пароля?: ",
+      "password_description_label": "Яке призначення цього пароля?: ",
       "password_length_label": "Введіть, якої довжини має бути пароль:",
-      "repeatable_label":      "Чи можуть бути повторювані символи в паролі (т/н)?:",
+      "repeatable_label": "Чи можуть бути повторювані символи в паролі (т/н)?:",
       "result_password_label": "ЗГЕНЕРОВАНИЙ ПАРОЛЬ"
     },
     "radio_buttons_labels": {
-      "all_symbols_label":    "Усі символи",
-      "only_letters_label":   "Тільки букви",
-      "only_digits_label":    "Тільки цифри",
+      "all_symbols_label": "Усі символи",
+      "only_letters_label": "Тільки букви",
+      "only_digits_label": "Тільки цифри",
       "letters_digits_label": "Букви і цифри",
-      "letters_signs_label":  "Букви і знаки",
-      "digits_signs_label":   "Цифри і знаки"
+      "letters_signs_label": "Букви і знаки",
+      "digits_signs_label": "Цифри і знаки"
     },
     "buttons": {
-      "generate_btn":         "Згенерувати пароль",
-      "copy_btn":             "Скопіювати пароль",
-      "clear_btn":            "Очистити всі поля",
-      "write_to_db_btn":      "Записати до бази даних",
-      "move_to_table_btn":    "Показати таблицю >>>>",
+      "generate_btn": "Згенерувати пароль",
+      "copy_btn": "Скопіювати пароль",
+      "clear_btn": "Очистити всі поля",
+      "write_to_db_btn": "Записати до бази даних",
+      "move_to_table_btn": "Показати таблицю >>>>",
       "synchronize_data_btn": "Синхронізація",
-      "change_token_btn":     "Змінити токен",
-      "return_to_main_btn":   "<<<< Назад",
-      "reload_table_btn":     "Оновити",
-      "update_table_btn":     "Змінити запис",
-      "delete_record_btn":    "Видалити",
-      "ukrainian_lang_btn":   "УКР",
-      "english_lang_btn":     "АНГЛ",
-      "quit_btn":             "Вихід"
+      "change_token_btn": "Змінити токен",
+      "return_to_main_btn": "<<<< Назад",
+      "reload_table_btn": "Оновити",
+      "update_table_btn": "Змінити запис",
+      "delete_record_btn": "Видалити",
+      "ukrainian_lang_btn": "УКР",
+      "english_lang_btn": "АНГЛ",
+      "quit_btn": "Вихід"
     },
     "table_column_names": {
-      "id":             "УНІКАЛЬНИЙ ІДЕНТИФІКАТОР",
-      "description":    "ОПИС ПАРОЛЯ",
-      "password":       "ПАРОЛЬ",
-      "length":         "ДОВЖИНА ПАРОЛЯ",
+      "id": "УНІКАЛЬНИЙ ІДЕНТИФІКАТОР",
+      "description": "ОПИС ПАРОЛЯ",
+      "password": "ПАРОЛЬ",
+      "length": "ДОВЖИНА ПАРОЛЯ",
       "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?"
+    },
+    "messages": {
+      "invalid_password_description": {
+        "title": "Некоректний ввід",
+        "message": "Кількість символів в полі призначення має знаходитись в межах від 1 до 384!"
+      },
+      "password_integer": {
+        "title": "Некоректний ввід",
+        "message": "Значення довжини пароля повинно бути цілим числом!"
+      },
+      "invalid_password_length": {
+        "title": "Некоректний ввід",
+        "message": "начення довжини має знаходитись в межах від 1 до 384!"
+      },
+      "nothing_to_copy": {
+        "title": "Копіювання",
+        "message": "Дані для копіювання відсутні!"
+      },
+      "empty_password_field": {
+        "title": "Незаповнене поле",
+        "message": "Пароль відсутній!"
+      },
+      "write_to_database": {
+        "title": "Запис до бази даних...",
+        "message": "Ви хочете записати дані до бази даних?"
+      },
+      "repeatable_description": {
+        "title": "Прийняти або відхилити записування...",
+        "message": "Запис з таким описом вже існує. Ви впевнені, що хочете змінити пароль, який відноситься до цього запису?"
+      },
+      "database_error": {
+        "title": "Помилка бази даних",
+        "message": "Неочікувана помилка під час запису даних до бази!"
+      },
+      "successful_write_to_db": {
+        "title": "Інформація про базу даних",
+        "message": "Дані успішно записано до бази даних!"
+      }
     }
   }
 }

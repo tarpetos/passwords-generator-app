@@ -2,32 +2,34 @@ import sqlite3
 
 from additional_modules.base_table_interface import TableBase
 from additional_modules.encryption_decryption import encrypt
-from app_translation.messagebox_with_lang_change import invalid_password_usage_message, invalid_password_value_message
-from create_app.inputs_and_buttons_processing import \
-    check_if_repeatable_characters_is_present, update_record_in_table, duplicate_usage_in_table, \
+from create_app.inputs_and_buttons_processing import update_record_in_table, duplicate_usage_in_table, \
     nothing_to_update_in_table, successful_update_in_table, retrieve_data_for_build_table_interface
 from create_app.store_user_passwords import PasswordStore
+from create_app.inputs_and_buttons_processing import database_search
 
 
 class TableInterface(TableBase):
-    def __init__(self, root, lang_state, search_func, frame_width, frame_height, treeview_height):
+    def __init__(self, root, current_language: str, frame_width, frame_height, treeview_height):
         super().__init__(root, frame_width, frame_height, treeview_height)
         # self.data_from_storage = PasswordStore()
         # self.input_table_cell = None
         # self.table_header = None
 
-        self.data_list = retrieve_data_for_build_table_interface(lang_state)
+        self.current_language = current_language
+        self.data_list = retrieve_data_for_build_table_interface(current_language)
 
-        self.table_tree_frame.bind('<Control-f>', search_func)
-        self.table_tree_frame.bind('<Control-F>', search_func)
+        self.table_tree_frame.bind('<Control-f>', self.shortcut_search)
+        self.table_tree_frame.bind('<Control-F>', self.shortcut_search)
         self.table_tree_frame.bind('<Enter>', lambda event: self.full_frame.focus_set())
 
         # self.text_cells_list = []
 
+    def shortcut_search(self, event: str) -> None:
+        database_search(event, self.current_language)
 
-    def reload_table(self, root, search_func, lang_state):
+    def reload_table(self, root, lang_state):
         self.full_frame.destroy()
-        self.__init__(root, lang_state, search_func, 800, 430, 20)
+        self.__init__(root, lang_state, 800, 430, 20)
         self.get_data_from_db(lang_state)
 
     def update_data_using_table_interface(self, lang_state):
