@@ -4,7 +4,6 @@ import mysql
 import mysql.connector
 
 from dotenv import load_dotenv, find_dotenv
-from passwords_generator_app.user_actions_processing.encryption_decryption import decrypt
 
 
 class RemoteDB:
@@ -28,7 +27,7 @@ class RemoteDB:
         )
 
         all_tokens_tuple_lst = self.cur.fetchall()
-        all_tokens_lst = [decrypt(token_tuple[0]) for token_tuple in all_tokens_tuple_lst]
+        all_tokens_lst = [token_tuple[0] for token_tuple in all_tokens_tuple_lst]
 
         self.con.commit()
 
@@ -52,7 +51,7 @@ class RemoteDB:
     def select_pass_gen_table_without_id(self, user_table_name: str) -> list[tuple, ...]:
         self.cur.execute(
             '''
-            SELECT password_description, generated_password, password_length, has_repetetive FROM `%s`
+            SELECT password_description, generated_password, password_length, has_repetitive FROM `%s`
             ORDER BY id;
             ''', (user_table_name,)
         )
@@ -72,10 +71,10 @@ class RemoteDB:
             has_repetitive: bool
     ):
         self.cur.execute(
-            f'''
-            INSERT INTO `%s` (password_description, generated_password, password_length, has_repetetive) 
+            '''
+            INSERT INTO `%s` (password_description, generated_password, password_length, has_repetitive) 
             VALUES (%s, %s, %s, %s)
-            ON DUPLICATE KEY UPDATE generated_password  = %s, password_length = %s, has_repetetive = %s
+            ON DUPLICATE KEY UPDATE generated_password  = %s, password_length = %s, has_repetitive = %s
             ''',
             (user_id, user_desc, generated_pass, password_length,
              has_repetitive, generated_pass, password_length, has_repetitive)

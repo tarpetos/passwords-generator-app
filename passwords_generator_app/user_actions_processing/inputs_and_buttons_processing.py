@@ -9,7 +9,7 @@ import requests
 from string import digits, ascii_letters, punctuation
 
 from ..user_actions_processing.encryption_decryption import encrypt, decrypt
-from ..application_graphical_interface.toplevel_windows import app_loading_screen, password_strength_screen
+from ..application_graphical_interface.toplevel_windows import app_loading_screen
 
 from ..user_actions_processing.password_strength_score import (
     strength_rating,
@@ -89,7 +89,9 @@ def write_to_database(lang_state, password_description, result_password):
         if user_choice:
             yes_no_choice = follow_user_if_record_repeats(lang_state, database_user_data, (f'{password_description}',))
             encrypted_password = encrypt(result_password)
-            write_data_to_db_conditions(lang_state, yes_no_choice, password_description, encrypted_password, result_password)
+            write_data_to_db_conditions(
+                lang_state, yes_no_choice, password_description, encrypted_password, result_password
+            )
 
     except sqlite3.OperationalError:
         unexpected_database_error_message(lang_state)
@@ -419,7 +421,7 @@ def check_for_id(remote_connection, saved_token, user_token):
     if saved_token:
         user_id = decrypt(saved_token[0])
     else:
-        user_id = remote_connection.select_id_by_token(encrypt(user_token))
+        user_id = remote_connection.select_id_by_token(user_token)
 
     return user_id
 

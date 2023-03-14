@@ -1,19 +1,14 @@
-import os
 import sqlite3
 import pandas as pd
 
 from typing import Iterator
 
-
-def create_directory():
-    if not os.path.exists('.passwords'):
-        os.mkdir('.passwords')
+from passwords_generator_app.app_translation.load_data_for_localization import ROOT_PATH
 
 
 class PasswordStore:
     def __init__(self):
-        create_directory()
-        self.con = sqlite3.connect('.passwords/data')
+        self.con = sqlite3.connect(f'{ROOT_PATH}data.db')
         self.cur = self.con.cursor()
         self.create_table()
         self.create_token_id_table()

@@ -2,8 +2,8 @@ from typing import Iterator, Any
 
 from pandas import DataFrame
 
-from ..app_translation.load_data_for_localization import all_json_localization_data
 from ..database_connections.local_db_connection import PasswordStore
+from ..app_translation.load_data_for_localization import all_json_localization_data
 
 
 database_user_data = PasswordStore()
