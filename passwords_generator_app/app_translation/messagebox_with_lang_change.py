@@ -3,7 +3,7 @@ from tkinter import messagebox
 from customtkinter import CTkInputDialog
 
 
-def invalid_password_usage_message(lang_state_check):
+def invalid_password_description_message(lang_state_check):
     if lang_state_check:
         messagebox.showerror('Invalid input', 'Length of password usage field have to be in range from 1 to 500!')
     else:

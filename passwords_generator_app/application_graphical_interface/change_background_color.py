@@ -81,17 +81,9 @@ def change_pop_up_color(box, label) -> str:
     box_font_color = pop_up_colors[1]
 
     box.configure(bg=box_bg_color)
-    label.configure(foreground=box_font_color, background=box_bg_color)
+    label.configure(text_color=box_font_color, fg_color=box_bg_color)
 
     return box_bg_color
-
-
-def change_search_box_color(canvas_widget):
-    current_mode = get_current_color()
-
-    search_box_color = get_bg_for_dialogs(current_mode)
-    new_background = search_box_color[0]
-    canvas_widget.configure(background=new_background)
 
 
 def change_background_color(btn):

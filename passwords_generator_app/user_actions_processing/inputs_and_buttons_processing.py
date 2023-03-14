@@ -54,7 +54,7 @@ from ..app_translation.messagebox_with_lang_change import (
 
 from ..user_actions_processing.main_checks import (
     check_if_description_existing,
-    check_password_usage_input,
+    check_password_description_input,
     check_password_result_input,
     check_if_repeatable_characters_is_present,
     check_repeatable_input,
@@ -68,16 +68,16 @@ from ..database_connections.remote_db_connection import RemoteDB
 database_user_data = PasswordStore()
 
 
-def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool | int:
-    if check_if_description_existing(description_store, password_usage):
+def follow_user_if_record_repeats(lang_state, description_store, password_description) -> bool | int:
+    if check_if_description_existing(description_store, password_description):
         user_choice = ask_if_record_exist_message(lang_state)
         return user_choice
 
     return -1
 
 
-def write_to_database(lang_state, password_usage, result_password):
-    if not check_password_usage_input(lang_state, password_usage):
+def write_to_database(lang_state, password_description, result_password):
+    if not check_password_description_input(lang_state, password_description):
         return
 
     if not check_password_result_input(lang_state, result_password):
@@ -87,18 +87,18 @@ def write_to_database(lang_state, password_usage, result_password):
 
     try:
         if user_choice:
-            yes_no_choice = follow_user_if_record_repeats(lang_state, database_user_data, (f'{password_usage}',))
+            yes_no_choice = follow_user_if_record_repeats(lang_state, database_user_data, (f'{password_description}',))
             encrypted_password = encrypt(result_password)
-            write_data_to_db_conditions(lang_state, yes_no_choice, password_usage, encrypted_password, result_password)
+            write_data_to_db_conditions(lang_state, yes_no_choice, password_description, encrypted_password, result_password)
 
     except sqlite3.OperationalError:
         unexpected_database_error_message(lang_state)
 
 
-def write_data_to_db_conditions(lang_state, user_choice, password_usage, encrypted_password, result_password):
+def write_data_to_db_conditions(lang_state, user_choice, password_description, encrypted_password, result_password):
     if user_choice == -1:
         database_user_data.insert_into_tb(
-            password_usage,
+            password_description,
             encrypted_password,
             len(result_password),
             check_if_repeatable_characters_is_present(result_password)
@@ -109,7 +109,7 @@ def write_data_to_db_conditions(lang_state, user_choice, password_usage, encrypt
             encrypted_password,
             len(result_password),
             check_if_repeatable_characters_is_present(result_password),
-            password_usage
+            password_description
         )
         successful_write_to_database_message(lang_state)
 
@@ -142,7 +142,7 @@ def generate_password(lang_state, pass_usage_entry, pass_length_slider, repeatab
     pass_alphabet = get_radiobtn_option(var)
 
     pass_usage = pass_usage_entry.get()
-    if not check_password_usage_input(lang_state, pass_usage):
+    if not check_password_description_input(lang_state, pass_usage):
         return
 
     pass_length = pass_length_slider.get()
@@ -222,8 +222,8 @@ def copy_password(lang_state, result_password_entry):
         # copy_successful_message(lang_state) # uncomment this if you want to see a message after a successful copy
 
 
-def clear_entries(password_usage_entry, result_password_entry):
-    password_usage_entry.delete(0, 'end')
+def clear_entries(password_description_entry, result_password_entry):
+    password_description_entry.delete(0, 'end')
     result_password_entry.delete(0, 'end')
     # clear_all_fields_message(lang_state) # uncomment this if you want to see a message after clearing the fields
 
@@ -258,10 +258,12 @@ def remove_record_from_table(lang_state):
 
             if chosen_id == -1:
                 if remake_table_message(lang_state):
+                    load_screen = app_loading_screen(lang_state)
                     database_user_data.drop_table()
                     database_user_data.create_table()
+                    load_screen.destroy()
                     successful_remake_table_message(lang_state)
-                return
+                return 0
 
             if chosen_id not in id_list:
                 input_dialog_error_message(lang_state)
@@ -484,7 +486,3 @@ def try_token_change(language, remote_ids, remote_tokens):
         return 'Exit from token dialog box'
     else:
         input_token_error_message(language)
-
-
-def password_strength_checker(event, lang_state):
-    password_strength_screen(lang_state)

@@ -1,7 +1,7 @@
 {
   "EN": {
     "labels": {
-      "password_usage_label":  "For what this password should be?: ",
+      "password_description_label":  "For what this password should be?: ",
       "password_length_label": "Enter password length:",
       "repeatable_label":      "Can be repeatable characters in password (y/n)?:",
       "result_password_label": "GENERATED PASSWORD",
@@ -38,7 +38,10 @@
       "description":    "PASSWORD DESCRIPTION",
       "password":       "PASSWORD",
       "length":         "PASSWORD LENGTH",
-      "has_repeatable": "CONTAIN REPEATED CHARACTERS?"
+      "has_repeatable": "CONTAIN REPEATED CHARACTERS?",
+      "add_date":       "RECORD ADDITION DATE",
+      "update_date":    "RECORD CHANGE DATE",
+      "delete_date":    "RECORD DELETION DATE"
     },
     "switches": {
       "write_to_db_switch": "Write to database?"
@@ -60,7 +63,7 @@
   },
   "UA": {
     "labels": {
-      "password_usage_label":  "Яке призначення цього пароля?: ",
+      "password_description_label":  "Яке призначення цього пароля?: ",
       "password_length_label": "Введіть, якої довжини має бути пароль:",
       "repeatable_label":      "Чи можуть бути повторювані символи в паролі (т/н)?:",
       "result_password_label": "ЗГЕНЕРОВАНИЙ ПАРОЛЬ",
@@ -97,7 +100,10 @@
       "description":    "ОПИС ПАРОЛЯ",
       "password":       "ПАРОЛЬ",
       "length":         "ДОВЖИНА ПАРОЛЯ",
-      "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?"
+      "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?",
+      "add_date":       "ДАТА ДОДАВАННЯ ЗАПИСУ",
+      "update_date":    "ДАТА ЗМІНИ ЗАПИСУ",
+      "delete_date":    "ДАТА ВИДАЛЕННЯ ЗАПИСУ"
     },
     "switches": {
       "write_to_db_switch": "Записати до бази даних?"

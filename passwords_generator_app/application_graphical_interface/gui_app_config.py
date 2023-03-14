@@ -136,9 +136,9 @@ class MainPage(BasePage):
 
         main_frame = ctk.CTkFrame(self)
 
-        self.password_usage_label = ctk.CTkLabel(
+        self.password_description_label = ctk.CTkLabel(
             main_frame,
-            text=self.language_options['EN']['labels']['password_usage_label']
+            text=self.language_options['EN']['labels']['password_description_label']
         )
         self.password_length_label = ctk.CTkLabel(
             main_frame,
@@ -153,7 +153,7 @@ class MainPage(BasePage):
             text=self.language_options['EN']['labels']['result_password_label'],
         )
 
-        self.password_usage_entry = ctk.CTkEntry(main_frame)
+        self.password_description_entry = ctk.CTkEntry(main_frame)
 
         self.slider_frame = ctk.CTkFrame(main_frame)
 
@@ -261,7 +261,7 @@ class MainPage(BasePage):
             text_color='black',
             command=lambda: generate_password(
                 self.current_language_state_bool,
-                self.password_usage_entry,
+                self.password_description_entry,
                 self.password_length_slider,
                 self.repeatable_segment_btn,
                 self.result_password_entry,
@@ -281,7 +281,7 @@ class MainPage(BasePage):
             text=self.language_options['EN']['buttons']['clear_btn'],
             text_color='black',
             command=lambda: clear_entries(
-                self.password_usage_entry,
+                self.password_description_entry,
                 self.result_password_entry
             ),
         )
@@ -292,7 +292,7 @@ class MainPage(BasePage):
             text_color='black',
             command=lambda: write_to_database(
                 self.current_language_state_bool,
-                self.password_usage_entry.get(),
+                self.password_description_entry.get(),
                 self.result_password_entry.get()
             ),
         )
@@ -343,8 +343,8 @@ class MainPage(BasePage):
             command=lambda: app.destroy(),
         )
 
-        self.password_usage_label.grid(row=0, column=0, columnspan=3, sticky='w', pady=(30, 10), padx=15)
-        self.password_usage_entry.grid(row=0, column=3, columnspan=3, sticky='we', pady=(30, 10), padx=(0, 15))
+        self.password_description_label.grid(row=0, column=0, columnspan=3, sticky='w', pady=(30, 10), padx=15)
+        self.password_description_entry.grid(row=0, column=3, columnspan=3, sticky='we', pady=(30, 10), padx=(0, 15))
 
         self.password_length_label.grid(row=1, column=0, columnspan=3, sticky='w', pady=5, padx=15)
         self.slider_frame.grid(row=1, column=3, columnspan=3, sticky='we', pady=5, padx=(0, 15))
@@ -405,9 +405,9 @@ class SimplePage(BasePage):
 
         main_frame = ctk.CTkFrame(self)
 
-        self.password_usage_label = ctk.CTkLabel(
+        self.password_description_label = ctk.CTkLabel(
             main_frame,
-            text=self.language_options['EN']['labels']['password_usage_label']
+            text=self.language_options['EN']['labels']['password_description_label']
         )
         self.result_password_label = ctk.CTkLabel(
             main_frame,
@@ -418,7 +418,7 @@ class SimplePage(BasePage):
             text=self.language_options['EN']['labels']['option_menu_label'],
         )
 
-        self.password_usage_entry = ctk.CTkEntry(main_frame)
+        self.password_description_entry = ctk.CTkEntry(main_frame)
         self.result_password_entry = ctk.CTkEntry(main_frame)
 
         def option_menu_callback(choice):
@@ -457,7 +457,7 @@ class SimplePage(BasePage):
                 self.current_language_state_bool,
                 self.result_password_entry,
                 self.symbols_option_menu,
-                self.password_usage_entry,
+                self.password_description_entry,
                 self.switch_state
             ),
         )
@@ -487,8 +487,8 @@ class SimplePage(BasePage):
             command=lambda: app.destroy(),
         )
 
-        self.password_usage_label.grid(row=0, column=0, sticky='w', pady=(30, 0), padx=15)
-        self.password_usage_entry.grid(row=0, column=1, columnspan=2, sticky='we', pady=(30, 0), padx=(0, 15))
+        self.password_description_label.grid(row=0, column=0, sticky='w', pady=(30, 0), padx=15)
+        self.password_description_entry.grid(row=0, column=1, columnspan=2, sticky='we', pady=(30, 0), padx=(0, 15))
 
         self.option_menu_label.grid(row=1, column=0, sticky='w', pady=(5, 0), padx=15)
         self.symbols_option_menu.grid(row=1, column=1, sticky='we', pady=(5, 0), padx=15)

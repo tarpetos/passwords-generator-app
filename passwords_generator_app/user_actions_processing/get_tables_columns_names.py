@@ -25,9 +25,13 @@ def retrieve_data_for_build_table_interface(
     en_table_lst = column_name_localization[0][:column_number]
     uk_table_lst = column_name_localization[1][:column_number]
 
-    if user_query:
+    if column_number == 3:
         full_list_of_data = database_user_data.select_search_data_by_desc(user_query)
-    else:
+    elif column_number == 5:
         full_list_of_data = database_user_data.select_full_table()
+    else:
+        en_table_lst = en_table_lst[:3] + en_table_lst[5:]
+        uk_table_lst = uk_table_lst[:3] + uk_table_lst[5:]
+        full_list_of_data = database_user_data.select_full_history_table()
 
     return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}

@@ -11,9 +11,9 @@ from ..database_connections.local_db_connection import PasswordStore
 
 
 class TableBase:
-    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height, database_connector):
+    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
-        self.database_connector = database_connector()
+        self.database_connector = PasswordStore()
         self.full_frame = Frame(root, width=frame_width, height=frame_height)
         self.full_frame.pack(side='top')
 
@@ -43,19 +43,19 @@ class TableBase:
 
         column_box = self.table_tree_frame.bbox(selected_element_iid, column_clicked)
 
-        edit_cell_entry = Entry(self.full_frame, width=column_box[2], style='EntryStyle.TEntry')
+        self.edit_cell_entry = Entry(self.full_frame, width=column_box[2], style='EntryStyle.TEntry')
 
-        edit_cell_entry.editing_column_index = column_index
-        edit_cell_entry.editing_item_iid = selected_element_iid
+        self.edit_cell_entry.editing_column_index = column_index
+        self.edit_cell_entry.editing_item_iid = selected_element_iid
 
-        edit_cell_entry.insert(0, selected_text)
-        edit_cell_entry.select_range(0, 'end')
-        edit_cell_entry.focus()
+        self.edit_cell_entry.insert(0, selected_text)
+        self.edit_cell_entry.select_range(0, 'end')
+        self.edit_cell_entry.focus()
 
-        edit_cell_entry.bind('<FocusOut>', self.on_focus_out)
-        edit_cell_entry.bind('<Return>', self.on_enter_pressed)
+        self.edit_cell_entry.bind('<FocusOut>', self.on_focus_out)
+        self.edit_cell_entry.bind('<Return>', self.on_enter_pressed)
 
-        edit_cell_entry.place(
+        self.edit_cell_entry.place(
             x=column_box[0],
             y=column_box[1],
             w=column_box[2],
@@ -106,7 +106,7 @@ class TableBase:
 class TableInterface(TableBase):
     def __init__(self, root, lang_state, search_func, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
-        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
 
         self.data_list = retrieve_data_for_build_table_interface(lang_state)
 
@@ -123,4 +123,18 @@ class TableInterface(TableBase):
 class SearchTableInterface(TableBase):
     def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
-        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height, PasswordStore)
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
+
+
+class HistoryTableInterface(TableBase):
+    def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
+        self.current_language = lang_state
+        super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
+
+        self.data_list = retrieve_data_for_build_table_interface(lang_state, column_number=8)
+
+    def get_data_from_db(self, lang_state, search_data_list=None):
+        make_table_for_page_and_search(lang_state, self.data_list, self.table_tree_frame, self.full_frame)
+
+    def on_enter_pressed(self, event):
+        pass

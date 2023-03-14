@@ -1,7 +1,7 @@
 from random import choices, sample
 
 from ..app_translation.messagebox_with_lang_change import (
-    invalid_password_usage_message,
+    invalid_password_description_message,
     invalid_value_if_no_repeatable_characters_message,
     invalid_value_for_repeatable_or_not_message,
     empty_result_input_message,
@@ -26,11 +26,11 @@ def check_if_repeatable_characters_is_present(result_password) -> bool:
             return False
 
 
-def check_password_usage_input(lang_state, user_input) -> bool:
+def check_password_description_input(lang_state, user_input) -> bool:
     if 0 < len(user_input) <= MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
         return True
 
-    invalid_password_usage_message(lang_state)
+    invalid_password_description_message(lang_state)
     return False
 
 

@@ -1,9 +1,18 @@
-from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel, CTkCanvas
+from customtkinter import (
+    CTkLabel,
+    CTkFrame,
+    CTkEntry,
+    CTk,
+    CTkToplevel,
+    CTkCanvas,
+    CTkProgressBar,
+    get_appearance_mode,
+    CTkTextbox
+)
 
-from tkinter import Label, ttk, StringVar
+from tkinter import ttk, StringVar
 
-from .create_sql_table import retrieve_data_for_build_table_interface, SearchTableInterface
-from .wait_flowbox_style import round_rectangle
+from .create_sql_table import retrieve_data_for_build_table_interface, SearchTableInterface, HistoryTableInterface
 from .change_background_color import change_pop_up_color
 
 from ..app_translation.messagebox_with_lang_change import (
@@ -27,22 +36,54 @@ def app_loading_screen(lang_state) -> CTk:
     loading_screen.eval('tk::PlaceWindow . center')
     loading_screen.title('Loading')
     loading_screen.geometry('400x100')
+    loading_screen.wm_attributes('-alpha', 0.9)
 
     canvas = CTkCanvas(loading_screen, bg='#292929', highlightthickness=0)
     canvas.pack(fill='both', expand=True)
 
-    load_label = Label(
+    load_label = CTkLabel(
         canvas, text='Please wait...' if lang_state else 'Очікуйте, будь ласка...',
-        font=('Arial bold', 24), foreground='#D9D9D9', background='#292929'
+        font=('Arial bold', 30), text_color='#D9D9D9', fg_color='#292929'
     )
-    load_label.pack(pady=30)
+    load_label.pack(pady=(30, 0))
 
     main_pop_up_bg = change_pop_up_color(canvas, load_label)
-    round_rectangle(0, 0, 400, 100, canvas, main_pop_up_bg, radius=70)
+    canvas.create_rectangle(-1, -1, 400, 100, fill=main_pop_up_bg)
 
     loading_screen.update()
 
     return loading_screen
+
+
+def generator_history_screen(lang_state):
+    history_window = CTkToplevel()
+    history_window.grab_set()
+    history_window.title('Password Generator: generation history')
+    history_window.geometry('900x502')
+    history_window.resizable(False, False)
+
+    history_frame = CTkFrame(history_window)
+
+    info_textbox = CTkTextbox(history_frame, width=600, height=50)
+    info_textbox.insert(
+        'end',
+        text=''
+        'This table is updated automatically. When the number of records reaches 5000, then the oldest 2500 among '
+        'all records will be deleted. Changes to this table have no effect on the main table.'
+        if lang_state else
+        'Ця таблиця оновлюється автоматично. Коли кількість записів досягає 5000, то 2500 старіших серед усіх записів '
+        'будуть видалені. Зміни в цій таблиці ніяк не впливають на головну таблицю.'
+    )
+    info_textbox.configure(wrap='word', state='disabled')
+
+    info_textbox.pack(side='top', expand=True, fill='both')
+
+    data_for_table = HistoryTableInterface(history_frame, lang_state, 200, 200, 20)
+    data_for_table.get_data_from_db(lang_state)
+
+    history_frame.pack(pady=10, padx=10)
+
+    history_window.mainloop()
 
 
 def password_strength_screen(lang_state):
@@ -101,7 +142,13 @@ def password_strength_screen(lang_state):
     str_var_modifier.trace('w', lambda name, index, mode, sv=str_var_modifier: entry_modified(sv))
     password_input_entry = CTkEntry(strength_frame, textvariable=str_var_modifier, width=300)
 
-    canvas = CTkCanvas(strength_frame, height=20, background='gray', highlightthickness=0)
+    def set_progress_default_color():
+        current_mode = get_appearance_mode()
+        return '#939BA2' if current_mode == 'Light' else '#4A4D50'
+
+    default_progress_bar_color = set_progress_default_color()
+    strength_bar = CTkProgressBar(strength_frame, height=20, progress_color=default_progress_bar_color)
+    strength_bar.set(0)
 
     separator = ttk.Separator(strength_frame, orient='horizontal')
 
@@ -117,22 +164,21 @@ def password_strength_screen(lang_state):
     average_score_value_label.grid(column=1, row=4, sticky='w', pady=10)
     reliability_label.grid(column=0, row=5, sticky='w', pady=10, padx=10)
     reliability_value_label.grid(column=1, row=5, sticky='w', pady=10)
-    canvas.grid(column=0, row=6, columnspan=2, sticky='we', pady=(30, 20), padx=50)
-    canvas.update_idletasks()
-    canvas_width = canvas.winfo_width()
+
+    strength_bar.grid(column=0, row=6, columnspan=2, sticky='we', pady=(30, 20), padx=50)
+
+    strength_bar.update_idletasks()
 
     strength_frame.pack(pady=10, padx=10)
 
-    inner_rect = canvas.create_rectangle(0, 0, 0, 20, fill='red', outline='')
-
     def update_rectangle(rating):
-        inner_rect_width = int(canvas_width * rating / 100)
-        canvas.coords(inner_rect, 0, 0, inner_rect_width, 20)
+        progress = rating / 100
+        strength_bar.set(progress)
         gradient = ['#FF0000', '#FF4D00', '#FF9900', '#FFFF00', '#BFFF00', '#00FF00']
-        color_index = int(inner_rect_width / canvas_width * (len(gradient)))
+        color_index = int(progress * len(gradient))
         color_index = min(color_index, 5)
         color = gradient[color_index]
-        canvas.itemconfigure(inner_rect, fill=color)
+        strength_bar.configure(progress_color=default_progress_bar_color if rating == 0 else color)
 
     def on_close():
         strength_window.destroy()
@@ -166,7 +212,7 @@ def strength_check(str_var_modifier, lang_state: bool, strength_labels: tuple) -
     return int(average_score)
 
 
-def search_screen(lang_state, search_query, data_list, interface_object):
+def search_screen(lang_state, search_query, data_list):
     search_window = CTkToplevel()
     search_window.grab_set()
     search_window.title('Password Generator: search')
@@ -176,7 +222,7 @@ def search_screen(lang_state, search_query, data_list, interface_object):
     search_frame = CTkFrame(search_window)
 
     table_frame = CTkFrame(search_frame)
-    data_for_table = interface_object(table_frame, lang_state, 800, 500, 12)
+    data_for_table = SearchTableInterface(table_frame, lang_state, 800, 500, 12)
     data_for_table.get_data_from_db(lang_state, data_list)
 
     label = CTkLabel(
@@ -219,4 +265,4 @@ def database_search(event, lang_state):
         no_matches_for_search_message(lang_state, user_search)
         return
 
-    search_screen(lang_state, user_search, data_list, SearchTableInterface)
+    search_screen(lang_state, user_search, data_list)

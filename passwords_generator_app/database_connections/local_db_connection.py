@@ -267,26 +267,6 @@ class PasswordStore:
 
         return password_main_data_list
 
-    def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        main_data_list = pd.read_sql_query(
-            '''
-            SELECT id, description, password FROM passwords
-            WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
-            ORDER BY id
-            ''', self.con, params=[search_query, ]
-        )
-
-        self.con.commit()
-
-        return main_data_list
-
-    def select_full_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        password_data_list = pd.read_sql_query('SELECT * FROM passwords', self.con)
-
-        self.con.commit()
-
-        return password_data_list
-
     def select_id(self) -> list:
         self.cur.execute(
             '''
@@ -352,3 +332,30 @@ class PasswordStore:
         self.con.commit()
 
         self.history_delete(desc_and_pass[0], desc_and_pass[1])
+
+    def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
+        main_data_list = pd.read_sql_query(
+            '''
+            SELECT id, description, password FROM passwords
+            WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
+            ORDER BY id
+            ''', self.con, params=[search_query, ]
+        )
+
+        self.con.commit()
+
+        return main_data_list
+
+    def select_full_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
+        password_data_list = pd.read_sql_query('SELECT * FROM passwords', self.con)
+
+        self.con.commit()
+
+        return password_data_list
+
+    def select_full_history_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
+        password_data_list = pd.read_sql_query('SELECT * FROM generation_history ORDER BY description', self.con)
+
+        self.con.commit()
+
+        return password_data_list
