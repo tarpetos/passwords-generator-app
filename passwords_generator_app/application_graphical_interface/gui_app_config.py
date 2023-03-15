@@ -5,6 +5,7 @@ from tkinter.constants import TOP
 from tkinter.ttk import Separator
 from typing import Any
 
+from .modificated_tooltip import ToolTip
 from .toplevel_windows import database_search
 from .change_background_color import change_background_color, change_element_bg_color
 from .create_sql_table import TableInterface
@@ -101,6 +102,8 @@ class BasePage(ctk.CTkFrame):
             self.configure_elements_with_values_list(element, element_type, new_data)
         elif isinstance(element, ctk.CTkOptionMenu):
             self.configure_elements_with_values_list(element, element_type, new_data)
+        elif isinstance(element, ToolTip):
+            element.set_new_text_msg(msg=43253534)
         else:
             element.configure(text=new_data)
 
@@ -444,6 +447,12 @@ class SimplePage(BasePage):
             main_frame,
             text=self.language_options['EN']['switches']['write_to_db_switch'],
             command=switch_callback,
+        )
+
+        self.write_to_db_switch_tip = ToolTip(
+            self.write_to_db_switch,
+            msg=self.language_options['EN']['tooltips']['write_to_db_switch_tip'],
+            delay=0.5, follow=True
         )
 
         self.upper_separator = Separator(main_frame, orient='horizontal')

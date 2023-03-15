@@ -1,9 +1,7 @@
 import json
 import os
 
-
 ROOT_PATH = os.path.expanduser('~/.passwords/')
-
 
 LOCALIZATION_FILE = os.path.expanduser(f'{ROOT_PATH}localization.json')
 LOCALIZATION_DATA = {
@@ -67,7 +65,12 @@ LOCALIZATION_DATA = {
         "repeatable_segment_btn": [
             "Yes",
             "No"
-        ]
+        ],
+        "tooltips": {
+            "write_to_db_switch_tip": "Enable/disable writing to the database. "
+                                      "The password will be stored in the database "
+                                      "only if the description field is not empty.",
+        }
     },
     "UA": {
         "labels": {
@@ -129,7 +132,11 @@ LOCALIZATION_DATA = {
         "repeatable_segment_btn": [
             "Так",
             "Ні"
-        ]
+        ],
+        "tooltips": {
+            "write_to_db_switch_tip": "Ввімкнути/вимкнути запис до бази даних. "
+                                      "Пароль буде збережено до бази даних тільки, якщо поле опису не буде пустим."
+        }
     }
 }
 
