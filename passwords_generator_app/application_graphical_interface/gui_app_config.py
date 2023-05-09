@@ -63,7 +63,15 @@ class BasePage(ctk.CTkFrame):
     def __init__(self, parent, controller):
         ctk.CTkFrame.__init__(self, parent)
         self.controller = controller
+        self.previous_chosen_language = None
         self.current_chosen_language = 'EN'
+        self.language_options_dict = {
+            'EN': 'English',
+            'UA': 'Українська',
+            'PL': 'Poĺska'
+        }
+        self.language_options_list = [self.language_options_dict[key] for key in self.language_options_dict]
+        self.language_opt_menu_var = StringVar(value=self.language_options_list[0])
         self.language_options = json_localization_data  # get data for app localization
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme('green')  # set default app theme
@@ -86,11 +94,9 @@ class BasePage(ctk.CTkFrame):
 
     def configure_elements_with_values_list(self, element: Any, element_type: str, new_data: list):
         current_string_var_value = element.cget('variable').get()
-        default_value = ''
-        if self.current_chosen_language == 'EN':
-            default_value = new_data[self.default_value_index('UA', element_type, current_string_var_value)]
-        elif self.current_chosen_language == 'UA':
-            default_value = new_data[self.default_value_index('EN', element_type, current_string_var_value)]
+        default_value = new_data[
+            self.default_value_index(self.previous_chosen_language, element_type, current_string_var_value)
+        ]
         default_var = StringVar(value=default_value)
         element.configure(values=new_data, variable=default_var)
 
@@ -118,11 +124,13 @@ class BasePage(ctk.CTkFrame):
         for element_group, group_options in options.items():
             self.choose_between_dict_or_list(element_group, group_options)
 
-    def change_language(self, language):
+    def change_language(self, language: str):
         if language in self.language_options and self.current_chosen_language != language:
+            self.previous_chosen_language = self.current_chosen_language
             self.current_chosen_language = language
             options = self.language_options[language]
             self.parse_localization_json_data(options)
+            self.language_opt_menu_var.set(self.language_options_dict[language])
 
         return self.current_chosen_language
 
@@ -361,8 +369,24 @@ class MainPage(BasePage):
             ),
         )
 
+        language_and_bg_frame = ctk.CTkFrame(main_frame, fg_color='transparent')
+
+        def option_language_menu_callback(choice):
+            self.chosen_lang_opt_menu = choice
+            for key in self.language_options_dict:
+                if self.language_options_dict[key] == self.chosen_lang_opt_menu:
+                    controller.change_language(key)
+
+        self.language_change_menu = ctk.CTkOptionMenu(
+            language_and_bg_frame,
+            text_color='black',
+            values=self.language_options_list,
+            variable=self.language_opt_menu_var,
+            command=option_language_menu_callback
+        )
+
         self.change_bg_btn = ctk.CTkButton(
-            main_frame,
+            language_and_bg_frame,
             text=u'\u263E',
             text_color='black',
             command=lambda: change_background_color(self.change_bg_btn),
@@ -386,20 +410,6 @@ class MainPage(BasePage):
             command=lambda: controller.show_frame(TablePage),
         )
 
-        self.ukrainian_lang_btn = ctk.CTkButton(
-            main_frame,
-            text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
-            text_color='black',
-            command=lambda: controller.change_language('UA'),
-        )
-
-        self.english_lang_btn = ctk.CTkButton(
-            main_frame,
-            text=self.language_options['EN']['buttons']['english_lang_btn'],
-            text_color='black',
-            command=lambda: controller.change_language('EN')
-        )
-
         self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
@@ -419,9 +429,10 @@ class MainPage(BasePage):
         self.repeatable_segment_btn.grid(row=2, column=3, columnspan=3, sticky='we', padx=(0, 15))
 
         self.generate_btn.grid(row=3, column=0, columnspan=3, sticky='we', padx=(15, 2))
-        self.ukrainian_lang_btn.grid(row=3, column=3, sticky='we', padx=(2, 2))
-        self.change_bg_btn.grid(row=3, column=4, sticky='we', padx=(2, 2))
-        self.english_lang_btn.grid(row=3, column=5, sticky='we', padx=(2, 15))
+
+        language_and_bg_frame.grid(row=3, column=3, columnspan=3, sticky='we')
+        self.language_change_menu.pack(side='left', fill='both', expand=True, padx=(2, 2))
+        self.change_bg_btn.pack(side='right', fill='both', expand=True, padx=(2, 15))
 
         radiobutton_frame.grid(row=4, column=0, columnspan=6, padx=15, sticky='we')
 
@@ -649,18 +660,18 @@ class TablePage(BasePage):
             command=lambda: delete_record_and_refresh_table(),
         )
 
-        self.ukrainian_lang_btn = ctk.CTkButton(
-            upper_frame,
-            text=self.language_options['EN']['buttons']['ukrainian_lang_btn'],
-            text_color='black',
-            command=lambda: controller.change_language('UA'),
-        )
+        def table_pg_option_language_menu_callback(choice):
+            self.table_pg_chosen_lang_opt_menu = choice
+            for key in self.language_options_dict:
+                if self.language_options_dict[key] == self.table_pg_chosen_lang_opt_menu:
+                    controller.change_language(key)
 
-        self.english_lang_btn = ctk.CTkButton(
+        self.table_pg_language_change_menu = ctk.CTkOptionMenu(
             upper_frame,
-            text=self.language_options['EN']['buttons']['english_lang_btn'],
             text_color='black',
-            command=lambda: controller.change_language('EN'),
+            values=self.language_options_list,
+            variable=self.language_opt_menu_var,
+            command=table_pg_option_language_menu_callback
         )
 
         self.quit_btn = ctk.CTkButton(
@@ -670,10 +681,11 @@ class TablePage(BasePage):
             command=lambda: app.destroy(),
         )
 
-        self.ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        # self.ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
         # self.synchronize_data_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
         # self.change_token_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        self.english_lang_btn.pack(side='right', fill='both', expand=True, padx=(2, 0))
+        # self.english_lang_btn.pack(side='right', fill='both', expand=True, padx=(2, 0))
+        self.table_pg_language_change_menu.pack(fill='both', expand=True, padx=2)
         upper_frame.pack(fill='both')
 
         table_frame.pack(fill='both', expand=True, pady=10)

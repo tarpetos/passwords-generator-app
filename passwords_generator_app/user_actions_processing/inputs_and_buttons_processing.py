@@ -220,7 +220,6 @@ def remove_record_from_table(lang_state: str) -> None | int:
 
     while True:
         chosen_id = id_input_message(lang_state)
-        print(chosen_id)
 
         if chosen_id is None:
             return

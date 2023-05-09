@@ -8,7 +8,6 @@ def make_table_for_page_and_search(data, tree, main_frame):
     pandas_table_iterator.iloc[:, 2] = data_list_decrypted_column
 
     table_header = data['localized_columns']
-    print(table_header)
     tree['columns'] = table_header
 
     tree.column('#0', width=0, stretch='no')

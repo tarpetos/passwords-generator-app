@@ -197,6 +197,7 @@ LOCALIZATION_DATA = {
             }
         }
     },
+
     "UA": {
         "labels": {
             "password_description_label": "Введіть опис паролю: ",
@@ -383,6 +384,198 @@ LOCALIZATION_DATA = {
                 "ai_score_label": "Оцінка по шкалі від 0 до 100 (Алгоритм ChatGPT): ",
                 "average_score_label": "Середній показник: ",
                 "reliability_label": "Рівень надійності: ",
+            }
+        }
+    },
+
+    "PL": {
+        "labels": {
+            "password_description_label": "Wpisz opis hasła:",
+            "password_length_label": "Wybierz długość hasła:",
+            "repeatable_label": "Czy w haśle mogą występować powtarzające się znaki?:",
+            "result_password_label": "WYGENEROWANE HASŁO",
+            "option_menu_label": "Wybierz trudność hasła:"
+        },
+        "radio_buttons_labels": {
+            "all_symbols_label": "Wszystkie symbole",
+            "only_letters_label": "Tylko litery",
+            "only_digits_label": "Tylko cyfry",
+            "letters_digits_label": "Litery i cyfry",
+            "letters_signs_label": "Litery i znaki",
+            "digits_signs_label": "Cyfry i znaki"
+        },
+        "buttons": {
+            "generate_btn": "Generuj",
+            "copy_btn": "Kopiuj hasło",
+            "clear_btn": "Wyczyść wszystko",
+            "write_to_db_btn": "Zapisz do bazy danych",
+            "simple_mode_btn": "Tryb prosty",
+            "hard_mode_btn": "Tryb zaawansowany",
+            "move_to_table_btn": "Pokaż tabelę >>>>",
+            "synchronize_data_btn": "Synchronizuj",
+            "change_token_btn": "Zmień token",
+            "return_to_main_btn": "<<<< Powrót",
+            "reload_table_btn": "Odśwież",
+            "update_table_btn": "Zaktualizuj rekord",
+            "delete_record_btn": "Usuń",
+            "ukrainian_lang_btn": "UA",
+            "english_lang_btn": "EN",
+            "quit_btn": "Wyjście"
+        },
+        "table_column_names": [
+            "UNIKALNY IDENTYFIKATOR",
+            "OPIS HASŁA",
+            "HASŁO",
+            "DŁUGOŚĆ HASŁA",
+            "ZAWIERA POWTARZAJĄCE SIĘ ZNAKI?",
+            "DATA DODANIA REKORDU",
+            "DATA ZMIANY REKORDU",
+            "DATA USUNIĘCIA REKORDU"
+        ],
+        "switches": {
+            "write_to_db_switch": "Zapisać do bazy danych?"
+        },
+        "symbols_option_menu": [
+            "Ekstremalnie niesolidne",
+            "Bardzo łatwe",
+            "Łatwe",
+            "Poniżej przeciętnej",
+            "Przeciętne",
+            "Silne",
+            "Bardzo silne",
+            "Ekstremalnie solidne"
+        ],
+        "repeatable_segment_btn": [
+            "Tak",
+            "Nie"
+        ],
+        "tooltips": {
+            "all_symbols_radio_btn_tip": "Możliwe litery: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n"
+                                         "Możliwe cyfry: 0123456789\n"
+                                         "Możliwe znaki: !#$%()*+,-./:;=?@[\]^_{|}~",
+            "only_letters_radio_btn_tip": "Możliwe litery: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+            "only_digits_radio_btn_tip": "Możliwe cyfry: 012345678",
+            "letters_digits_radio_btn_tip": "Możliwe litery: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n"
+                                            "Możliwe cyfry: 0123456789",
+            "letters_signs_radio_btn_tip": "Możliwe litery: ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\n"
+                                           "Możliwe znaki: !#$%()+,-./:;=?@[]^_{|}~",
+            "digits_signs_radio_btn_tip": "Możliwe cyfry: 0123456789\n"
+                                          "Możliwe znaki: !#$%()+,-./:;=?@[]^_{|}~",
+            "write_to_db_switch_tip": "Włącz/wyłącz zapisywanie do bazy danych. "
+                                      "Hasło będzie przechowywane w bazie danych "
+                                      "tylko jeśli pole opis nie będzie puste.",
+        },
+        "messageboxes": {
+            "ok_button_value": "Ok",
+            "error_message": {
+                "invalid_password_description": {
+                    "title": "Nieprawidłowe dane wejściowe",
+                    "text": "Długość pola opis hasła musi zawierać się w przedziale od 1 do 500!"
+                },
+                "empty_result_input": {
+                    "title": "Nie wypełnione pole",
+                    "text": "Brak hasła w polu wyniku!!!\nWygeneruj lub wpisz hasło, a następnie zapisz je w bazie danych."
+                },
+                "unexpected_database_error": {
+                    "title": "Błąd bazy danych",
+                    "text": "Nieoczekiwany błąd podczas zapisywania w bazie danych!"
+                },
+                "duplicate_description": {
+                    "title": "Nieprawidłowe dane wejściowe",
+                    "text": "Hasło o takim opisie już istnieje!\n"
+                            "Spróbuj wprowadzić inny opis lub zmień istniejący i spróbuj ponownie."
+                },
+            },
+            "warning_message": {
+                "nothing_to_copy": {
+                    "title": "Kopiowanie",
+                    "text": "Pole hasła jest puste. Nic do skopiowania!"
+                },
+                "empty_table": {
+                    "title": "Pusta tabela",
+                    "text": "W tabeli lokalnej nie ma żadnych rekordów!"
+                },
+                "invalid_id_input": {
+                    "title": "Nieprawidłowe dane wejściowe",
+                    "text": "Nie ma ID o takiej wartości w tabeli! Spróbuj ponownie."
+                },
+                "invalid_search_query": {
+                    "title": "Nieprawidłowe zapytanie",
+                    "text": "Zapytanie nie może składać się wyłącznie z pustych spacji lub mieć więcej niż 500 znaków! Spróbuj ponownie."
+                },
+            },
+            "yes_no_message": {
+                "ask_write_to_database": {
+                    "title": "Zapisywanie w bazie danych...",
+                    "text": "Czy chcesz zapisać te dane w bazie danych?"
+                },
+                "ask_if_record_exist": {
+                    "title": "Akceptuj lub odrzuć zapisywanie...",
+                    "text": "Rekord o takim opisie już istnieje.",
+                }
+            },
+            "yes_no_message_options": (
+                "Tak",
+                "Nie"
+            ),
+            "info_message": {
+                "successful_write_to_database": {
+                    "title": "Informacja o bazie danych",
+                    "text": "Wszystkie dane hasła zostały zapisane do bazy danych!"
+                },
+                "successful_update": {
+                    "title": "Aktualizacja tabeli",
+                    "text": "Zmieniłeś dane w tabeli!\nZmiany zostały pomyślnie zapisane."
+                },
+                "successful_delete": {
+                    "title": "Usuwanie rekordu",
+                    "text": "TRekord o określonym ID został pomyślnie usunięty!"
+                },
+                "successful_remake_table": {
+                    "title": "Regeneracja tabeli",
+                    "text": "Tabela została pomyślnie zregenerowana! "
+                            "Przeładuj tabelę, aby odzwierciedlić zmiany."
+                },
+                "no_matches_for_search": {
+                    "title": "Brak wyników",
+                    "text": "Brak wyników dla zapytania: "
+                },
+            },
+            "ok_cancel_message": {
+                "remake_table": {
+                    "title": "Resetuj tabelę",
+                    "text": "Czy na pewno chcesz zregenerować tabelę (wszystkie lokalne dane zostaną utracone)?"
+                },
+            },
+            "ok_cancel_message_options": (
+                "Ok",
+                "Anuluj"
+            ),
+            "input_message": {
+                "id_input": {
+                    "title": "Wprowadź ID",
+                    "text": "Wprowadź ID rekordu, który chcesz usunąć..."
+                },
+                "search_query_input": {
+                    "title": "Szukaj",
+                    "text": "Wprowadź zapytanie wyszukiwania (opis hasła, którego szukasz).\n"
+                            "Wyszukiwanie jest niezależne od wielkości liter.\n"
+                },
+            },
+        },
+        "toplevel_windows": {
+            "loading_window_data": "Proszę czekać...",
+            "history_window_data": "Ta tabela jest aktualizowana automatycznie. "
+                                   "Kiedy liczba rekordów osiągnie 5000, najstarsze 2500 spośród "
+                                   "wszystkich rekordów zostaną usunięte.\n"
+                                   "Zmiany w tej tabeli nie mają wpływu na główną tabelę.",
+            "search_window_data": "Wyniki wyszukiwania dla zapytania: ",
+            "strength_window_data": {
+                "enter_label": "Wprowadź hasło, które chcesz sprawdzić pod kątem siły: ",
+                "shanon_score_label": "Wynik w skali od 0 do 100 (Entropia Shannona): ",
+                "ai_score_label": "Wynik w skali od 0 do 100 (Algorytm ChatGPT): ",
+                "average_score_label": "Średni wynik: ",
+                "reliability_label": "Poziom niezawodności: ",
             }
         }
     },
