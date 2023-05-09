@@ -1,37 +1,34 @@
-from typing import Iterator, Any
-
+from typing import Iterator, Dict, List
 from pandas import DataFrame
 
 from ..database_connections.local_db_connection import PasswordStore
-from ..app_translation.load_data_for_localization import all_json_localization_data
+from ..app_translation.load_data_for_localization import json_localization_data
 
 
 database_user_data = PasswordStore()
 
 
-def table_column_names() -> tuple[list, list]:
-    en_table_columns_names = [column for column in all_json_localization_data['EN']['table_column_names'].values()]
-    uk_table_columns_names = [column for column in all_json_localization_data['UA']['table_column_names'].values()]
+def table_column_names(lang_state: str) -> List[str]:
+    get_table_column_names = json_localization_data[lang_state]['table_column_names']
 
-    return en_table_columns_names, uk_table_columns_names
+    return get_table_column_names
 
 
 def retrieve_data_for_build_table_interface(
-        lang_state,
-        column_number=5,
-        user_query=None
-) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
-    column_name_localization = table_column_names()
-    en_table_lst = column_name_localization[0][:column_number]
-    uk_table_lst = column_name_localization[1][:column_number]
+        lang_state: str,
+        column_number: int = 5,
+        user_query: str = None
+) -> Dict[str, List[str] | Iterator[DataFrame] | DataFrame]:
+    column_names_localized = table_column_names(lang_state)
 
     if column_number == 3:
+        column_names_localized = column_names_localized[:3]
         full_list_of_data = database_user_data.select_search_data_by_desc(user_query)
     elif column_number == 5:
+        column_names_localized = column_names_localized[:5]
         full_list_of_data = database_user_data.select_full_table()
     else:
-        en_table_lst = en_table_lst[:3] + en_table_lst[5:]
-        uk_table_lst = uk_table_lst[:3] + uk_table_lst[5:]
+        column_names_localized = column_names_localized[:3] + column_names_localized[5:]
         full_list_of_data = database_user_data.select_full_history_table()
 
-    return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
+    return {'localized_columns': column_names_localized, 'data': full_list_of_data}

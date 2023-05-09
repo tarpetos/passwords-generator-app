@@ -47,6 +47,7 @@ def change_element_bg_color():
     treeview_style.configure(
         'TreeviewStyle.Treeview',
         borderwidth=0,
+        font=('Consolas', 12),
         background=messagebox_bg_color,
         foreground=messagebox_font_color,
         fieldbackground=field_color,

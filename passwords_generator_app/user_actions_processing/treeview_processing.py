@@ -36,7 +36,3 @@ def sort_column(tree, column, reverse):
     tree.heading(
         '#{}'.format(column), command=lambda col=column: sort_column(tree, col, not reverse)
     )
-
-
-def get_table_col_header(lang_state, col_names) -> dict:
-    return col_names['english_lst'] if lang_state else col_names['ukrainian_lst']

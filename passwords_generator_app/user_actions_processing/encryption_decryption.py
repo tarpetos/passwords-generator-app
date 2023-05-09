@@ -26,28 +26,28 @@ def load_key() -> bytes:
     else:
         generate_key(
             'This is your unique encryption and decryption key created by the '
-            'Password Generator application. DO NOT delete or change it.\n# '
-            'If you want to move data.db, then also move this file along with data.db.'
+            'Password Generator application. DO NOT delete or change it.\n'
+            '# If you want to move data.db, then also move this file along with data.db.'
         )
         return load_key()
 
 
-def encrypt(data: str) -> str:
+def encrypt(data: str) -> str | None:
     try:
         if data is not None:
             encryption_object = Fernet(load_key())
             encrypted = encryption_object.encrypt(data.encode())
             return base64.urlsafe_b64encode(encrypted).decode()
     except ValueError:
-        sys.exit('Decryption error!!!')
+        sys.exit('Encryption error!!!')
 
 
-def decrypt(data: str) -> str:
+def decrypt(data: str) -> str | None:
     try:
         decryption_object = Fernet(load_key())
         decrypted = decryption_object.decrypt(base64.urlsafe_b64decode(data)).decode()
         return decrypted
     except cryptography.fernet.InvalidToken:
         sys.exit('You are using invalid token!!!')
-    # except ValueError:
-    #     sys.exit('Encryption error!!!')
+    except ValueError:
+        sys.exit('Decryption error!!!')

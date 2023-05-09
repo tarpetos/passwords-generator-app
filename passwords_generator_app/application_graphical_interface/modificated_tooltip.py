@@ -23,6 +23,8 @@ class ToolTip(ctk.CTkToplevel):
         self.withdraw()
         self.overrideredirect(True)
 
+        self.config(highlightthickness=5, highlightbackground='#808080')
+
         self.msg_var = ctk.StringVar()
         self.msg = msg
         self.delay = delay
@@ -62,10 +64,10 @@ class ToolTip(ctk.CTkToplevel):
         self.status = 'outside'
         self.withdraw()
 
-    def set_new_text_msg(self, msg):
-        self.msg = msg
+    def configure(self, text) -> None:
+        self.msg = text
 
-    def check_message_type(self, msg):
+    def check_message_type(self, msg) -> None:
         if not isinstance(msg, str):
             raise TypeError(
                 'ToolTip `msg` must be a string or string returning '

@@ -6,7 +6,7 @@ from ..user_actions_processing.get_tables_columns_names import retrieve_data_for
 from ..user_actions_processing.encryption_decryption import encrypt
 from ..user_actions_processing.make_table import make_table_for_page_and_search
 from ..user_actions_processing.main_checks import check_if_repeatable_characters_is_present
-from ..app_translation.messagebox_with_lang_change import duplicate_usage_error_message, successful_update_message
+from ..app_translation.messagebox_with_lang_change import duplicate_description_message, successful_update_message
 from ..database_connections.local_db_connection import PasswordStore
 
 
@@ -15,16 +15,21 @@ class TableBase:
         self.current_language = lang_state
         self.database_connector = PasswordStore()
         self.full_frame = Frame(root, width=frame_width, height=frame_height)
-        self.full_frame.pack(side='top')
+        self.full_frame.pack(side='top', fill='both', expand=True)
 
         self.data_list = None
+        self.edit_cell_entry = None
+        self.new_treeview_height = treeview_height
+        self.new_treeview_cell_width = None
 
         self.table_tree_frame = Treeview(self.full_frame, height=treeview_height, style='TreeviewStyle.Treeview')
         self.table_tree_frame.bind('<Double-1>', self.on_double_click)
 
+        root.bind('<Configure>', self.on_window_resize)
+
     def get_data_from_db(self, lang_state, search_data_list=None):
         data_for_table = search_data_list if search_data_list else self.data_list
-        make_table_for_page_and_search(lang_state, data_for_table, self.table_tree_frame, self.full_frame)
+        make_table_for_page_and_search(data_for_table, self.table_tree_frame, self.full_frame)
 
     def on_double_click(self, event):
         region_clicked = self.table_tree_frame.identify_region(event.x, event.y)
@@ -95,15 +100,28 @@ class TableBase:
             self.table_tree_frame.item(selected_iid, values=current_values)
             successful_update_message(self.current_language)
         except sqlite3.IntegrityError:
-            duplicate_usage_error_message(self.current_language)
+            duplicate_description_message(self.current_language)
             return
+
+    def on_window_resize(self, event=None):
+        widget_height = event.height
+        widget_width = event.width
+        self.new_treeview_height = int(widget_height / 21.6)
+        self.table_tree_frame.configure(height=self.new_treeview_height)
+
+        self.new_treeview_cell_width = int(widget_width / 4)
+
+        for column in self.table_tree_frame['columns']:
+            self.table_tree_frame.column(
+                column, minwidth=self.new_treeview_cell_width, width=self.new_treeview_cell_width
+            )
 
     @staticmethod
     def on_focus_out(event):
         event.widget.destroy()
 
 
-class TableInterface(TableBase):
+class MainTable(TableBase):
     def __init__(self, root, lang_state, search_func, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
         super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
@@ -116,17 +134,18 @@ class TableInterface(TableBase):
 
     def reload_table(self, root, search_func, lang_state):
         self.full_frame.destroy()
-        self.__init__(root, lang_state, search_func, 200, 200, 20)
+        self.__init__(root, lang_state, search_func, 200, 200, self.new_treeview_height)
         self.get_data_from_db(lang_state)
+        root.bind('Configure', self.on_window_resize)
 
 
-class SearchTableInterface(TableBase):
+class SearchTable(TableBase):
     def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
         super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
 
 
-class HistoryTableInterface(TableBase):
+class HistoryTable(TableBase):
     def __init__(self, root, lang_state, frame_width, frame_height, treeview_height):
         self.current_language = lang_state
         super().__init__(root, self.current_language, frame_width, frame_height, treeview_height)
@@ -134,7 +153,7 @@ class HistoryTableInterface(TableBase):
         self.data_list = retrieve_data_for_build_table_interface(lang_state, column_number=8)
 
     def get_data_from_db(self, lang_state, search_data_list=None):
-        make_table_for_page_and_search(lang_state, self.data_list, self.table_tree_frame, self.full_frame)
+        make_table_for_page_and_search(self.data_list, self.table_tree_frame, self.full_frame)
 
     def on_enter_pressed(self, event):
         pass

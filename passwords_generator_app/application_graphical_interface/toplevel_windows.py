@@ -1,3 +1,5 @@
+from typing import Dict, Iterator, Any
+
 from customtkinter import (
     CTkLabel,
     CTkFrame,
@@ -7,13 +9,15 @@ from customtkinter import (
     CTkCanvas,
     CTkProgressBar,
     get_appearance_mode,
-    CTkTextbox
 )
 
 from tkinter import ttk, StringVar
 
-from .create_sql_table import retrieve_data_for_build_table_interface, SearchTableInterface, HistoryTableInterface
+from pandas import DataFrame
+
+from .create_sql_table import retrieve_data_for_build_table_interface, SearchTable, HistoryTable
 from .change_background_color import change_pop_up_color
+from ..app_translation.load_data_for_localization import json_localization_data
 
 from ..app_translation.messagebox_with_lang_change import (
     search_query_input_message,
@@ -21,13 +25,14 @@ from ..app_translation.messagebox_with_lang_change import (
     invalid_search_query_message
 )
 
-from ..user_actions_processing.main_checks import MAX_AUTO_PASSWORD_AND_DESC_LENGTH
 from ..user_actions_processing.password_strength_score import (
     password_strength,
     make_score_proportion,
     strength_rating,
     password_strength_chat_gpt,
 )
+
+MAX_SEARCH_QUERY_LENGTH = 500
 
 
 def app_loading_screen(lang_state) -> CTk:
@@ -42,7 +47,7 @@ def app_loading_screen(lang_state) -> CTk:
     canvas.pack(fill='both', expand=True)
 
     load_label = CTkLabel(
-        canvas, text='Please wait...' if lang_state else 'Очікуйте, будь ласка...',
+        canvas, text=json_localization_data[lang_state]['toplevel_windows']['loading_window_data'],
         font=('Arial bold', 30), text_color='#D9D9D9', fg_color='#292929'
     )
     load_label.pack(pady=(30, 0))
@@ -57,28 +62,22 @@ def app_loading_screen(lang_state) -> CTk:
 
 def generator_history_screen(lang_state):
     history_window = CTkToplevel()
-    history_window.grab_set()
     history_window.title('Password Generator: generation history')
     history_window.geometry('900x502')
-    history_window.resizable(False, False)
+    history_window.minsize(900, 502)
+    history_window.wait_visibility()
+    history_window.grab_set()
 
     history_frame = CTkFrame(history_window)
 
-    info_textbox = CTkTextbox(history_frame, width=600, height=50)
-    info_textbox.insert(
-        'end',
-        text=''
-        'This table is updated automatically. When the number of records reaches 5000, then the oldest 2500 among '
-        'all records will be deleted. Changes to this table have no effect on the main table.'
-        if lang_state else
-        'Ця таблиця оновлюється автоматично. Коли кількість записів досягає 5000, то 2500 старіших серед усіх записів '
-        'будуть видалені. Зміни в цій таблиці ніяк не впливають на головну таблицю.'
+    info_label = CTkLabel(
+        history_frame,
+        text=json_localization_data[lang_state]['toplevel_windows']['history_window_data']
     )
-    info_textbox.configure(wrap='word', state='disabled')
 
-    info_textbox.pack(side='top', expand=True, fill='both')
+    info_label.pack(side='top', expand=True, fill='both', pady=10)
 
-    data_for_table = HistoryTableInterface(history_frame, lang_state, 200, 200, 20)
+    data_for_table = HistoryTable(history_frame, lang_state, 200, 200, 20)
     data_for_table.get_data_from_db(lang_state)
 
     history_frame.pack(pady=10, padx=10)
@@ -88,41 +87,37 @@ def generator_history_screen(lang_state):
 
 def password_strength_screen(lang_state):
     strength_window = CTkToplevel()
-    strength_window.grab_set()
     strength_window.title('Password Generator: strength checker')
-    strength_window.geometry('700x350')
-    strength_window.resizable(False, False)
+    strength_window.geometry('750x350')
+    strength_window.minsize(750, 350)
+    strength_window.wait_visibility()
+    strength_window.grab_set()
 
     strength_frame = CTkFrame(strength_window)
 
     enter_label = CTkLabel(
         strength_frame,
-        text='Enter password that you want to check for strength: '
-        if lang_state else 'Введіть пароль, який ви хочете перевірити на надійність: ',
+        text=json_localization_data[lang_state]['toplevel_windows']['strength_window_data']['enter_label']
     )
 
     shanon_score_label = CTkLabel(
         strength_frame,
-        text='Score on a scale from 0 to 100 (Shannon Entropy): '
-        if lang_state else 'Оцінка по шкалі від 0 до 100 (Ентропія Шенона): '
+        text=json_localization_data[lang_state]['toplevel_windows']['strength_window_data']['shanon_score_label']
     )
 
     ai_score_label = CTkLabel(
         strength_frame,
-        text='Score on a scale from 0 to 100 (ChatGPT Algorithm): '
-        if lang_state else 'Оцінка по шкалі від 0 до 100 (Алгоритм ChatGPT): '
+        text=json_localization_data[lang_state]['toplevel_windows']['strength_window_data']['ai_score_label']
     )
 
     average_score_label = CTkLabel(
         strength_frame,
-        text='Average score: '
-        if lang_state else 'Середній показник: '
+        text=json_localization_data[lang_state]['toplevel_windows']['strength_window_data']['average_score_label']
     )
 
     reliability_label = CTkLabel(
         strength_frame,
-        text='Reliability level: '
-        if lang_state else 'Рівень надійності: '
+        text=json_localization_data[lang_state]['toplevel_windows']['strength_window_data']['reliability_label']
     )
 
     shanon_score_value_label = CTkLabel(strength_frame, text='—')
@@ -152,24 +147,28 @@ def password_strength_screen(lang_state):
 
     separator = ttk.Separator(strength_frame, orient='horizontal')
 
-    enter_label.grid(column=0, row=0, sticky='w', padx=10, pady=(20, 10))
-    password_input_entry.grid(column=1, row=0, sticky='we', padx=(0, 10), pady=(20, 10))
-    separator.grid(column=0, row=1, columnspan=2, sticky='we', padx=10, pady=(0, 10))
+    enter_label.grid(column=0, row=0, sticky='w', padx=10)
+    password_input_entry.grid(column=1, row=0, sticky='we', padx=(0, 10))
+    separator.grid(column=0, row=1, columnspan=2, sticky='we', padx=10)
 
-    shanon_score_label.grid(column=0, row=2, sticky='w', pady=10, padx=10)
-    shanon_score_value_label.grid(column=1, row=2, sticky='w', pady=10)
-    ai_score_label.grid(column=0, row=3, sticky='w', pady=10, padx=10)
-    ai_score_value_label.grid(column=1, row=3, sticky='w', pady=10)
-    average_score_label.grid(column=0, row=4, sticky='w', pady=10, padx=10)
-    average_score_value_label.grid(column=1, row=4, sticky='w', pady=10)
-    reliability_label.grid(column=0, row=5, sticky='w', pady=10, padx=10)
-    reliability_value_label.grid(column=1, row=5, sticky='w', pady=10)
+    shanon_score_label.grid(column=0, row=2, sticky='w', padx=10)
+    shanon_score_value_label.grid(column=1, row=2, sticky='w')
+    ai_score_label.grid(column=0, row=3, sticky='w', padx=10)
+    ai_score_value_label.grid(column=1, row=3, sticky='w')
+    average_score_label.grid(column=0, row=4, sticky='w', padx=10)
+    average_score_value_label.grid(column=1, row=4, sticky='w')
+    reliability_label.grid(column=0, row=5, sticky='w', padx=10)
+    reliability_value_label.grid(column=1, row=5, sticky='w')
 
-    strength_bar.grid(column=0, row=6, columnspan=2, sticky='we', pady=(30, 20), padx=50)
+    strength_bar.grid(column=0, row=6, columnspan=2, sticky='we', padx=50)
 
     strength_bar.update_idletasks()
 
-    strength_frame.pack(pady=10, padx=10)
+    strength_frame_column_number = strength_frame.grid_size()[0]
+    strength_frame_row_number = strength_frame.grid_size()[1]
+    set_equal_grid_segments_size(strength_frame, strength_frame_column_number, strength_frame_row_number)
+
+    strength_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
     def update_rectangle(rating):
         progress = rating / 100
@@ -194,7 +193,7 @@ def loop_trough_scores_tuple(strength_tpl: tuple, tpl=('—', '—', '—', '—
         strength_tpl[tuple_index].configure(text=tuple_value)
 
 
-def strength_check(str_var_modifier, lang_state: bool, strength_labels: tuple) -> int:
+def strength_check(str_var_modifier, lang_state: str, strength_labels: tuple) -> int:
     user_input = str_var_modifier.get()
 
     if not user_input:
@@ -203,7 +202,7 @@ def strength_check(str_var_modifier, lang_state: bool, strength_labels: tuple) -
 
     shannon_pass = password_strength(user_input)
     chat_gpt_pass = make_score_proportion(password_strength_chat_gpt(user_input))
-    average_score = round(((shannon_pass + chat_gpt_pass) / 2), 2)
+    average_score = int(round(((shannon_pass + chat_gpt_pass) / 2), 2))
     result_rating = strength_rating(lang_state, average_score)
 
     text_tuple = (shannon_pass, chat_gpt_pass, average_score, result_rating)
@@ -212,34 +211,35 @@ def strength_check(str_var_modifier, lang_state: bool, strength_labels: tuple) -
     return int(average_score)
 
 
-def search_screen(lang_state, search_query, data_list):
+def search_screen(
+        lang_state: str,
+        search_query: str,
+        data_list: Dict[str, list | Iterator[DataFrame] | DataFrame | Any]
+):
     search_window = CTkToplevel()
-    search_window.grab_set()
     search_window.title('Password Generator: search')
     search_window.geometry('700x385')
-    search_window.resizable(False, False)
+    search_window.minsize(700, 385)
+    search_window.wait_visibility()
+    search_window.grab_set()
 
-    search_frame = CTkFrame(search_window)
-
-    table_frame = CTkFrame(search_frame)
-    data_for_table = SearchTableInterface(table_frame, lang_state, 800, 500, 12)
-    data_for_table.get_data_from_db(lang_state, data_list)
-
+    top_frame = CTkFrame(search_window)
     label = CTkLabel(
-        search_frame, text='Search results for query: ' if lang_state else 'Результати пошуку на запит: ',
+        top_frame, text=json_localization_data[lang_state]['toplevel_windows']['search_window_data'],
     )
 
-    query_cell = CTkEntry(search_frame)
+    query_cell = CTkEntry(top_frame)
     query_cell.insert('end', search_query)
     query_cell.configure(state='disabled')
 
-    label.grid(column=0, row=0, sticky='w', padx=10, pady=10)
-    query_cell.grid(column=1, row=0, sticky='we', padx=10, pady=10)
-    table_frame.grid(column=0, row=1, columnspan=2, sticky='we', pady=10, padx=10)
+    table_frame = CTkFrame(search_window)
+    data_for_table = SearchTable(table_frame, lang_state, 800, 500, 12)
+    data_for_table.get_data_from_db(lang_state, data_list)
 
-    search_frame.columnconfigure(0, weight=1, uniform='equal')
-    search_frame.columnconfigure(1, weight=1, uniform='equal')
-    search_frame.pack(pady=20, padx=10)
+    label.pack(side='left', padx=10, pady=10)
+    query_cell.pack(side='left', expand=True, fill='both', padx=10, pady=10)
+    top_frame.pack(expand=True, fill='both', pady=(10, 0), padx=10)
+    table_frame.pack(expand=True, fill='both', padx=10, pady=10)
 
     def on_close():
         search_window.destroy()
@@ -250,12 +250,12 @@ def search_screen(lang_state, search_query, data_list):
     search_window.mainloop()
 
 
-def database_search(event, lang_state):
+def database_search(event: Any, lang_state: str) -> None:
     user_search = search_query_input_message(lang_state)
 
     if user_search is None:
         return
-    elif user_search == '' or len(user_search) > MAX_AUTO_PASSWORD_AND_DESC_LENGTH:
+    elif user_search == '' or len(user_search) > MAX_SEARCH_QUERY_LENGTH:
         invalid_search_query_message(lang_state)
         return
 
@@ -266,3 +266,10 @@ def database_search(event, lang_state):
         return
 
     search_screen(lang_state, user_search, data_list)
+
+
+def set_equal_grid_segments_size(frame: CTkFrame, column_number: int, row_number: int):
+    for column in range(column_number):
+        frame.columnconfigure(column, weight=1, uniform='equal')
+    for row in range(row_number):
+        frame.rowconfigure(row, weight=1, uniform='equal')
