@@ -2,10 +2,8 @@ from customtkinter import CTkLabel, CTkFrame, CTkEntry, CTk, CTkToplevel
 
 from tkinter import Canvas, Label, ttk, StringVar
 
-from additional_modules.base_table_interface import TableBase
 from additional_modules.password_strength_score import password_strength, make_score_proportion, strength_rating, \
     password_strength_chat_gpt
-from change_interface_look.change_background_color import change_pop_up_color
 from change_interface_look.wait_flowbox_style import round_rectangle
 
 
@@ -36,99 +34,99 @@ def app_loading_screen(lang_state) -> CTk:
 def password_strength_screen(lang_state):
     strength_window = CTkToplevel()
     strength_window.grab_set()
-    strength_window.title('Password Generator: strength checker')
-    strength_window.geometry('700x350')
-    strength_window.resizable(False, False)
-
-    strength_frame = CTkFrame(strength_window)
-
-    enter_label = CTkLabel(
-        strength_frame,
-        text='Enter password that you want to check for strength: '
-        if lang_state else 'Введіть пароль, який ви хочете перевірити на надійність: ',
-    )
-
-    shanon_score_label = CTkLabel(
-        strength_frame,
-        text='Score on a scale from 0 to 100 (Shannon Entropy): '
-        if lang_state else 'Оцінка по шкалі від 0 до 100 (Ентропія Шенона): '
-    )
-
-    ai_score_label = CTkLabel(
-        strength_frame,
-        text='Score on a scale from 0 to 100 (ChatGPT Algorithm): '
-        if lang_state else 'Оцінка по шкалі від 0 до 100 (Алгоритм ChatGPT): '
-    )
-
-    average_score_label = CTkLabel(
-        strength_frame,
-        text='Average score: '
-        if lang_state else 'Середній показник: '
-    )
-
-    reliability_label = CTkLabel(
-        strength_frame,
-        text='Reliability level: '
-        if lang_state else 'Рівень надійності: '
-    )
-
-    shanon_score_value_label = CTkLabel(strength_frame, text='—')
-    ai_score_value_label = CTkLabel(strength_frame, text='—')
-    average_score_value_label = CTkLabel(strength_frame, text='—')
-    reliability_value_label = CTkLabel(strength_frame, text='—')
-
-    strength_labels = (
-        shanon_score_value_label, ai_score_value_label, average_score_value_label, reliability_value_label
-    )
-
-    def entry_modified(str_var):
-        rating = strength_check(str_var, lang_state, strength_labels)
-        update_rectangle(rating)
-
-    str_var_modifier = StringVar()
-    str_var_modifier.trace('w', lambda name, index, mode, sv=str_var_modifier: entry_modified(sv))
-    password_input_entry = CTkEntry(strength_frame, textvariable=str_var_modifier, width=300)
-
-    canvas = Canvas(strength_frame, height=20, background='gray', highlightthickness=0)
-
-    separator = ttk.Separator(strength_frame, orient='horizontal')
-
-    enter_label.grid(column=0, row=0, sticky='w', padx=10, pady=(20, 10))
-    password_input_entry.grid(column=1, row=0, sticky='we', padx=(0, 10), pady=(20, 10))
-    separator.grid(column=0, row=1, columnspan=2, sticky='we', padx=10, pady=(0, 10))
-
-    shanon_score_label.grid(column=0, row=2, sticky='w', pady=10, padx=10)
-    shanon_score_value_label.grid(column=1, row=2, sticky='w', pady=10)
-    ai_score_label.grid(column=0, row=3, sticky='w', pady=10, padx=10)
-    ai_score_value_label.grid(column=1, row=3, sticky='w', pady=10)
-    average_score_label.grid(column=0, row=4, sticky='w', pady=10, padx=10)
-    average_score_value_label.grid(column=1, row=4, sticky='w', pady=10)
-    reliability_label.grid(column=0, row=5, sticky='w', pady=10, padx=10)
-    reliability_value_label.grid(column=1, row=5, sticky='w', pady=10)
-    canvas.grid(column=0, row=6, columnspan=2, sticky='we', pady=(30, 20), padx=50)
-    canvas.update_idletasks()
-    canvas_width = canvas.winfo_width()
-
-    strength_frame.pack(pady=10, padx=10)
-
-    inner_rect = canvas.create_rectangle(0, 0, 0, 20, fill='red', outline='')
-
-    def update_rectangle(rating):
-        inner_rect_width = int(canvas_width * rating / 100)
-        canvas.coords(inner_rect, 0, 0, inner_rect_width, 20)
-        gradient = ['#FF0000', '#FF4D00', '#FF9900', '#FFFF00', '#BFFF00', '#00FF00']
-        color_index = int(inner_rect_width / canvas_width * (len(gradient)))
-        color_index = min(color_index, 5)
-        color = gradient[color_index]
-        canvas.itemconfigure(inner_rect, fill=color)
-
-    def on_close():
-        strength_window.destroy()
-        strength_window.quit()
-
-    strength_window.wm_protocol('WM_DELETE_WINDOW', on_close)
-
-    strength_window.mainloop()
+    # strength_window.title('Password Generator: strength checker')
+    # strength_window.geometry('700x350')
+    # strength_window.resizable(False, False)
+    #
+    # strength_frame = CTkFrame(strength_window)
+    #
+    # enter_label = CTkLabel(
+    #     strength_frame,
+    #     text='Enter password that you want to check for strength: '
+    #     if lang_state else 'Введіть пароль, який ви хочете перевірити на надійність: ',
+    # )
+    #
+    # shanon_score_label = CTkLabel(
+    #     strength_frame,
+    #     text='Score on a scale from 0 to 100 (Shannon Entropy): '
+    #     if lang_state else 'Оцінка по шкалі від 0 до 100 (Ентропія Шенона): '
+    # )
+    #
+    # ai_score_label = CTkLabel(
+    #     strength_frame,
+    #     text='Score on a scale from 0 to 100 (ChatGPT Algorithm): '
+    #     if lang_state else 'Оцінка по шкалі від 0 до 100 (Алгоритм ChatGPT): '
+    # )
+    #
+    # average_score_label = CTkLabel(
+    #     strength_frame,
+    #     text='Average score: '
+    #     if lang_state else 'Середній показник: '
+    # )
+    #
+    # reliability_label = CTkLabel(
+    #     strength_frame,
+    #     text='Reliability level: '
+    #     if lang_state else 'Рівень надійності: '
+    # )
+    #
+    # shanon_score_value_label = CTkLabel(strength_frame, text='—')
+    # ai_score_value_label = CTkLabel(strength_frame, text='—')
+    # average_score_value_label = CTkLabel(strength_frame, text='—')
+    # reliability_value_label = CTkLabel(strength_frame, text='—')
+    #
+    # strength_labels = (
+    #     shanon_score_value_label, ai_score_value_label, average_score_value_label, reliability_value_label
+    # )
+    #
+    # def entry_modified(str_var):
+    #     rating = strength_check(str_var, lang_state, strength_labels)
+    #     update_rectangle(rating)
+    #
+    # str_var_modifier = StringVar()
+    # str_var_modifier.trace('w', lambda name, index, mode, sv=str_var_modifier: entry_modified(sv))
+    # password_input_entry = CTkEntry(strength_frame, textvariable=str_var_modifier, width=300)
+    #
+    # canvas = Canvas(strength_frame, height=20, background='gray', highlightthickness=0)
+    #
+    # separator = ttk.Separator(strength_frame, orient='horizontal')
+    #
+    # enter_label.grid(column=0, row=0, sticky='w', padx=10, pady=(20, 10))
+    # password_input_entry.grid(column=1, row=0, sticky='we', padx=(0, 10), pady=(20, 10))
+    # separator.grid(column=0, row=1, columnspan=2, sticky='we', padx=10, pady=(0, 10))
+    #
+    # shanon_score_label.grid(column=0, row=2, sticky='w', pady=10, padx=10)
+    # shanon_score_value_label.grid(column=1, row=2, sticky='w', pady=10)
+    # ai_score_label.grid(column=0, row=3, sticky='w', pady=10, padx=10)
+    # ai_score_value_label.grid(column=1, row=3, sticky='w', pady=10)
+    # average_score_label.grid(column=0, row=4, sticky='w', pady=10, padx=10)
+    # average_score_value_label.grid(column=1, row=4, sticky='w', pady=10)
+    # reliability_label.grid(column=0, row=5, sticky='w', pady=10, padx=10)
+    # reliability_value_label.grid(column=1, row=5, sticky='w', pady=10)
+    # canvas.grid(column=0, row=6, columnspan=2, sticky='we', pady=(30, 20), padx=50)
+    # canvas.update_idletasks()
+    # canvas_width = canvas.winfo_width()
+    #
+    # strength_frame.pack(pady=10, padx=10)
+    #
+    # inner_rect = canvas.create_rectangle(0, 0, 0, 20, fill='red', outline='')
+    #
+    # def update_rectangle(rating):
+    #     inner_rect_width = int(canvas_width * rating / 100)
+    #     canvas.coords(inner_rect, 0, 0, inner_rect_width, 20)
+    #     gradient = ['#FF0000', '#FF4D00', '#FF9900', '#FFFF00', '#BFFF00', '#00FF00']
+    #     color_index = int(inner_rect_width / canvas_width * (len(gradient)))
+    #     color_index = min(color_index, 5)
+    #     color = gradient[color_index]
+    #     canvas.itemconfigure(inner_rect, fill=color)
+    #
+    # def on_close():
+    #     strength_window.destroy()
+    #     strength_window.quit()
+    #
+    # strength_window.wm_protocol('WM_DELETE_WINDOW', on_close)
+    #
+    # strength_window.mainloop()
 
 
 def loop_trough_scores_tuple(strength_tpl: tuple, tpl=('—', '—', '—', '—')):
@@ -190,8 +188,3 @@ def search_screen(lang_state, search_query, data_list):
     search_window.wm_protocol('WM_DELETE_WINDOW', on_close)
 
     search_window.mainloop()
-
-
-class SearchTableInterface(TableBase):
-    def __init__(self, root, frame_width, frame_height, treeview_height):
-        super().__init__(root, frame_width, frame_height, treeview_height)

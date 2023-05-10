@@ -4,32 +4,15 @@ import re
 import customtkinter as ctk
 
 import sqlite3
-import mysql.connector
 import pyperclip
-import requests
 
 from random import choices, sample
 from string import digits, ascii_letters, punctuation
-from typing import Any, Iterator
-from pandas import DataFrame
-
+from typing import Any
 from create_app.store_user_passwords import password_store
-
-from additional_modules.encryption_decryption import encrypt, decrypt
-from additional_modules.toplevel_windows import app_loading_screen, search_screen, password_strength_screen
+from additional_modules.encryption_decryption import encrypt
+from additional_modules.toplevel_windows import search_screen, password_strength_screen
 from app_translation.load_data_for_localization import localization_data
-from app_translation.messagebox_with_lang_change import invalid_value_if_no_repeatable_characters_message, \
-    input_dialog_error_message, input_dialog_message, ask_to_update_record_message, \
-    duplicate_usage_error_message, no_update_warning_message, successful_update_message, ask_to_sync_message, \
-    successful_sync_message, error_sync_message, connection_error_message, connection_timeout_message, \
-    token_input_message, input_token_error_message, data_is_identical_message, ask_to_save_token_message, \
-    choose_between_duplicates_message, show_warn_by_regex_message, server_token_changed_message, remake_table_message, \
-    empty_table_warn, ask_to_save_new_token, successfully_changed_token_message, was_not_changed_token_message, \
-    search_query_input_message, invalid_search_query_message, \
-    no_matches_for_search_message, successful_delete_message, successful_remake_table_message
-
-# from create_app.sync_table import RemoteDB
-
 
 MAX_PASSWORD_DESCRIPTION_LENGTH = 384
 MAX_PASSWORD_LENGTH = 384
@@ -47,13 +30,13 @@ OPPOSITE_THEMES = {
 
 
 def set_equal_column_width(widget: tk.BaseWidget, column_number: int) -> None:
-    for column in range(column_number):
-        widget.columnconfigure(column, weight=1, uniform='equal')
+    for i in range(column_number):
+        widget.grid_columnconfigure(i, weight=1, uniform='equal')
 
 
 def set_equal_row_height(widget: tk.BaseWidget, row_number: int) -> None:
     for i in range(row_number):
-        widget.rowconfigure(i, weight=1, uniform='equal')
+        widget.grid_rowconfigure(i, weight=1, uniform='equal')
 
 
 class MessageBox(ctk.CTkToplevel):
@@ -180,7 +163,7 @@ def extract_message_body(current_language: str, message_name: str) -> tuple[Opti
 
 
 def is_valid_password_length(password_length: int) -> bool:
-    return 0 < password_length <= MAX_PASSWORD_DESCRIPTION_LENGTH
+    return 0 < password_length <= MAX_PASSWORD_LENGTH
 
 
 def clear_entry(entry: ctk.CTkEntry) -> None:
@@ -245,10 +228,12 @@ def write_to_database(current_language: str, password_description: str, password
     if is_repeatable_password_description(password_description, password_store.fetch_passwords_descriptions()):
         replaceable = generate_ask_message(current_language, 'repeatable_description').answer
     encrypted_password = encrypt(password)
+    password_length = len(password)
+    repeatable = has_repeated_chars(password)
     if replaceable:
-        replace_password(current_language, password_description, encrypted_password)
+        replace_password(current_language, password_description, encrypted_password, password_length, repeatable)
     else:
-        insert_password(current_language, password_description, encrypted_password)
+        insert_password(current_language, password_description, encrypted_password, password_length, repeatable)
 
 
 def generate_ask_message(current_language: str, message_type: str) -> AskMessageBox:
@@ -259,13 +244,16 @@ def is_repeatable_password_description(password_description: str, password_descr
     return password_description in password_descriptions
 
 
-def replace_password(current_language: str, password_description: str, encrypted_password: str) -> None:
+def replace_password(
+        current_language: str,
+        password_description: str,
+        encrypted_password: str,
+        password_length: int,
+        repeatable: bool
+) -> None:
     try:
         password_store.change_password_by_description(
-            password_description,
-            encrypted_password,
-            len(encrypted_password),
-            has_repeated_chars(encrypted_password)
+            password_description, encrypted_password, password_length, repeatable
         )
         generate_info_message(current_language, 'successful_write_to_db')
     except sqlite3.OperationalError:
@@ -273,21 +261,22 @@ def replace_password(current_language: str, password_description: str, encrypted
 
 
 def has_repeated_chars(string: str) -> bool:
-    return len(set(string)) == len(string)
+    return len(set(string)) != len(string)
 
 
 def generate_info_message(current_language: str, message_type: str) -> InfoMessageBox:
     return InfoMessageBox(*extract_message_body(current_language, message_type))
 
 
-def insert_password(current_language: str, password_description: str, encrypted_password: str) -> None:
+def insert_password(
+        current_language: str,
+        password_description: str,
+        encrypted_password: str,
+        password_length: int,
+        repeatable: bool
+) -> None:
     try:
-        password_store.insert_password(
-            password_description,
-            encrypted_password,
-            len(encrypted_password),
-            has_repeated_chars(encrypted_password)
-        )
+        password_store.insert_password(password_description, encrypted_password, password_length, repeatable)
         generate_info_message(current_language, 'successful_write_to_db')
     except sqlite3.OperationalError:
         generate_error_message(current_language, 'database_error')
@@ -300,325 +289,38 @@ def change_background_color(btn):
     ctk.set_appearance_mode(opposite_theme.get('opposite_theme_name', 'Dark'))
 
 
-def table_column_names() -> tuple[list, list]:
-    en_table_columns_names = [column for column in localization_data['EN']['table_column_names'].values()]
-    uk_table_columns_names = [column for column in localization_data['UA']['table_column_names'].values()]
-
-    return en_table_columns_names, uk_table_columns_names
-
-
-def retrieve_data_for_build_table_interface(
-        lang_state,
-        column_number=5,
-        user_query=None
-) -> dict[str, list | Iterator[DataFrame] | DataFrame | Any]:
-    column_name_localization = table_column_names()
-    en_table_lst = column_name_localization[0][:column_number]
-    uk_table_lst = column_name_localization[1][:column_number]
-
-    if user_query:
-        full_list_of_data = password_store.select_search_data_by_desc(user_query)
-    else:
-        full_list_of_data = password_store.fetch_passwords()
-
-    return {'lang': lang_state, 'english_lst': en_table_lst, 'ukrainian_lst': uk_table_lst, 'data': full_list_of_data}
-
-
-def check_for_repeatable_characters(password_alphabet, password_length, check_if_repeatable_allowed) -> str:
-    if check_if_repeatable_allowed.capitalize() == 'Y' or check_if_repeatable_allowed.capitalize() == 'Т':
-        return ''.join(choices(password_alphabet, k=password_length))
-    elif check_if_repeatable_allowed.capitalize() == 'N' or check_if_repeatable_allowed.capitalize() == 'Н':
-        return ''.join(sample(password_alphabet, k=password_length))
-
-
-def check_repeatable_input(lang_state, user_input, pass_length_entry, pass_length, pass_alphabet) -> bool:
-    if (user_input.capitalize() == 'N' or user_input.capitalize() == 'Н') and int(pass_length) > len(pass_alphabet):
-        invalid_value_if_no_repeatable_characters_message(lang_state, pass_alphabet)
-        pass_length_entry.delete(0, 'end')
-        return True
-    elif user_input.capitalize() == 'Y' or user_input.capitalize() == 'N':
-        return False
-    elif user_input.capitalize() == 'Т' or user_input.capitalize() == 'Н':
-        return False
-    else:
-        invalid_value_for_repeatable_or_not_message(lang_state)
-        return True
-
-
-def check_if_description_existing(store_of_user_passwords, password_description):
-    list_of_descriptions = store_of_user_passwords.select_descriptions()
-    return password_description in list_of_descriptions
-
-
-def follow_user_if_record_repeats(lang_state, description_store, password_usage) -> bool | int:
-    if check_if_description_existing(description_store, password_usage):
-        user_choice = ask_if_record_exist_message(lang_state)
-        return user_choice
-    return -1
-
-
-def open_tuples_in_lst() -> list:
-    get_all_id = database_user_data.select_id()
-
-    without_tuples_lst = []
-
-    first_tuple_index_value = 0
-    for id_value in get_all_id:
-        without_tuples_lst.append(id_value[first_tuple_index_value])
-
-    return without_tuples_lst
-
-
-def remove_record_from_table(lang_state, application_window):
-    if database_user_data.select_full_table() is None:
-        empty_table_warn(lang_state)
-        return
-
-    id_list = open_tuples_in_lst()
-    chosen_id = input_dialog_message(lang_state, application_window)
-
-    if chosen_id == -1:
-        if remake_table_message(lang_state):
-            database_user_data.drop_table()
-            database_user_data.create_table()
-            successful_remake_table_message(lang_state)
-        return
-
+def delete_password(current_language: str) -> None:
+    passwords_ids = password_store.fetch_passwords_ids()
     while True:
-        if not chosen_id:
-            return
-
-        if chosen_id not in id_list:
-            input_dialog_error_message(lang_state)
-            chosen_id = input_dialog_message(lang_state, application_window)
+        chosen_id = generate_input_dialog(current_language, 'delete_password_by_id').get_input()
+        if chosen_id is None:
+            return None
+        if chosen_id.isdigit():
+            chosen_id = int(chosen_id)
+        if chosen_id not in passwords_ids:
+            generate_error_message(current_language, 'invalid_password_id')
         else:
-            database_user_data.delete_by_id(chosen_id)
-            successful_delete_message(lang_state)
-            return 0
+            password_store.delete_password(chosen_id)
+            generate_info_message(current_language, 'successful_password_delete').wait_window()
 
 
-def update_record_in_table(lang_state) -> bool:
-    return ask_to_update_record_message(lang_state)
+def generate_input_dialog(current_language: str, message_type: str) -> ctk.CTkInputDialog:
+    title, text = extract_message_body(current_language, message_type)
+    return ctk.CTkInputDialog(title=title, text=text)
 
 
-def duplicate_usage_in_table(lang_state):
-    duplicate_usage_error_message(lang_state)
-
-
-def nothing_to_update_in_table(lang_state):
-    no_update_warning_message(lang_state)
-
-
-def successful_update_in_table(lang_state):
-    successful_update_message(lang_state)
-
-
-# def sync_db_data(lang_state, application_window):
-#     remote_connection = result_of_connection(lang_state)
-#     if remote_connection is None:
-#         return
-#
-#     ask_to_sync = ask_to_sync_message(lang_state)
-#
-#     if ask_to_sync:
-#         full_list_of_tokens = remote_connection.select_all_tokens()
-#         saved_data = database_user_data.select_from_save_tb()
-#
-#         user_token = check_for_token(lang_state, application_window, saved_data)
-#         user_id = check_for_id(remote_connection, saved_data, user_token)
-#
-#         if user_token is None:
-#             return
-#
-#         while True:
-#             if user_token in full_list_of_tokens:
-#                 user_id = check_for_id(remote_connection, saved_data, user_token)
-#                 save_token(lang_state, saved_data, user_id, user_token, full_list_of_tokens)
-#
-#                 table_name = f'pass_gen_table_{user_id}'
-#                 local_full_table = database_user_data.select_without_id()
-#                 remote_full_table = remote_connection.select_pass_gen_table_without_id(table_name)
-#
-#                 lst_union = set(local_full_table) | set(remote_full_table)
-#
-#                 sorted_united_lst = sorted(lst_union)
-#                 sorted_local_table = sorted(local_full_table)
-#                 sorted_remote_table = sorted(remote_full_table)
-#
-#                 if sorted_local_table == sorted_united_lst and sorted_remote_table == sorted_united_lst:
-#                     data_is_identical_message(lang_state)
-#                     return
-#
-#                 temp_lst = local_full_table + remote_full_table
-#                 if check_if_has_duplicates_desc(temp_lst):
-#                     while True:
-#                         save_pass = choose_between_duplicates_message(lang_state, application_window)
-#
-#                         if save_pass == '' or save_pass:
-#                             local_choice_pattern = re.compile('^(local|локально)$', re.IGNORECASE)
-#                             remote_choice_pattern = re.compile('^(remote|сервер)$', re.IGNORECASE)
-#                             if re.match(local_choice_pattern, save_pass):
-#                                 load_screen = app_loading_screen(lang_state)
-#                                 local_full_table = correct_lst_unite(local_full_table, remote_full_table)
-#                                 sync_tables_loop(remote_connection, table_name, local_full_table)
-#                                 load_screen.destroy()
-#                                 successful_sync_message(lang_state)
-#                                 return
-#                             elif re.match(remote_choice_pattern, save_pass):
-#                                 load_screen = app_loading_screen(lang_state)
-#                                 remote_full_table = correct_lst_unite(remote_full_table, local_full_table)
-#                                 sync_tables_loop(remote_connection, table_name, remote_full_table)
-#                                 load_screen.destroy()
-#                                 successful_sync_message(lang_state)
-#                                 return
-#                             else:
-#                                 load_screen = app_loading_screen(lang_state)
-#                                 load_screen.destroy()
-#                                 show_warn_by_regex_message(lang_state)
-#                         else:
-#                             return
-#                 else:
-#                     load_screen = app_loading_screen(lang_state)
-#                     sync_tables_loop(remote_connection, table_name, temp_lst)
-#                     load_screen.destroy()
-#                     successful_sync_message(lang_state)
-#                     return
-#             else:
-#                 if saved_data:
-#                     server_token_changed_message(lang_state)
-#                     database_user_data.truncate_saved_token()
-#                     user_token = token_input_message(lang_state, application_window)
-#                     save_token(lang_state, saved_data, user_id, user_token, full_list_of_tokens)
-#                 else:
-#                     input_token_error_message(lang_state)
-#                     user_token = token_input_message(lang_state, application_window)
-#
-#                 if user_token is None:
-#                     return
-
-
-# def result_of_connection(lang_state) -> RemoteDB | None:
-#     load_screen = app_loading_screen(lang_state)
-#     remote_connection = control_mysql_connection(lang_state, load_screen)
-#     if remote_connection == 'MySQL connection error':
-#         return
-#
-#     if not check_internet_connection():
-#         connection_error_message(lang_state, load_screen)
-#         return
-#
-#     load_screen.destroy()
-#
-#     return remote_connection
-
-
-def update_columns_via_app_interface(lang_state, all_data_from_table):
-    all_data_from_table.update_data_using_table_interface(lang_state)
-
-
-# def control_mysql_connection(lang_state, load_screen) -> RemoteDB | str:
-#     try:
-#         remote_mysql_obj = RemoteDB()
-#         return remote_mysql_obj
-#     except mysql.connector.errors.OperationalError:
-#         connection_timeout_message(lang_state, load_screen)
-#         return 'MySQL connection error'
-#     except mysql.connector.errors.DatabaseError:
-#         error_sync_message(lang_state, load_screen)
-#         return 'MySQL connection error'
-#     except mysql.connector.errors.InterfaceError:
-#         error_sync_message(lang_state, load_screen)
-#         return 'MySQL connection error'
-
-
-def check_internet_connection():
-    try:
-        requests.get('http://google.com', timeout=5)
-        return True
-    except requests.ConnectionError:
-        return False
-
-
-def check_for_token(lang_state, app, saved_token):
-    if saved_token:
-        user_token = decrypt(saved_token[1])
-    else:
-        user_token = token_input_message(lang_state, app)
-
-    return user_token
-
-
-def check_for_id(remote_connection, saved_token, user_token):
-    if saved_token:
-        user_id = decrypt(saved_token[0])
-    else:
-        user_id = remote_connection.select_id_by_token(encrypt(user_token))
-
-    return user_id
-
-
-def save_token(lang_state, token_to_save, user_id, user_token, full_list_of_tokens):
-    if not token_to_save and user_token in full_list_of_tokens:
-        user_choice = ask_to_save_token_message(lang_state)
-        if user_choice:
-            database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
-
-
-def check_if_has_duplicates_desc(lst):
-    seen = set()
-    for item in lst:
-        if item[0] in seen:
-            return True
-        else:
-            seen.add(item[0])
-
-    return False
-
-
-def sync_tables_loop(remote_connection, table, lst):
-    for tuple_row in lst:
-        database_user_data.insert_update_into_tb(*tuple_row)
-        remote_connection.insert_update_password_data(table, *tuple_row)
-
-
-def correct_lst_unite(lst1, lst2):
-    lst1.extend([tuple_row for tuple_row in lst2 if tuple_row[0] not in [descr[0] for descr in lst1]])
-    return lst1
-
-
-# def change_local_token(lang_state, application_window):
-#     remote_connection = result_of_connection(lang_state)
-#
-#     if remote_connection is None:
-#         return
-#
-#     full_list_of_tokens = remote_connection.select_all_tokens()
-#
-#     while True:
-#         exit_status = try_token_change(lang_state, application_window, remote_connection, full_list_of_tokens)
-#
-#         if exit_status == 'Exit from token dialog box':
-#             return
-
-
-def try_token_change(language, app, remote_ids, remote_tokens):
-    user_token = token_input_message(language, app)
-
-    if user_token is None:
-        return 'Exit from token dialog box'
-
-    user_id = remote_ids.select_id_by_token(encrypt(user_token))
-
-    if user_token in remote_tokens:
-        if ask_to_save_new_token(language):
-            database_user_data.truncate_saved_token()
-            database_user_data.insert_into_save_tb(encrypt(str(user_id)), encrypt(user_token))
-            successfully_changed_token_message(language)
-        else:
-            was_not_changed_token_message(language)
-        return 'Exit from token dialog box'
-    else:
-        input_token_error_message(language)
+def search_passwords_by_description(event, current_language: str, table) -> None:
+    searched_description = generate_input_dialog(current_language, '').get_input()
+    passwords = password_store.fetch_passwords_by_description(searched_description)
+    if searched_description is None:
+        return None
+    elif searched_description == '' or not is_valid_password_description(searched_description):
+        generate_error_message(current_language, 'invalid_password_description')
+        return None
+    elif not passwords:
+        return None
+    table.build_treeview(current_language, passwords)
+    table.reload_table(table, table.current_language)
 
 
 def database_search(event, lang_state):

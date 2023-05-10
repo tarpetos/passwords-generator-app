@@ -6,6 +6,10 @@
       "repeatable_label": "Can be repeatable characters in password (y/n)?:",
       "result_password_label": "GENERATED PASSWORD"
     },
+    "repeatable_segment_btn": [
+      "Yes",
+      "No"
+    ],
     "radio_buttons_labels": {
       "all_symbols_label": "All symbols",
       "only_letters_label": "Only letters",
@@ -30,13 +34,13 @@
       "english_lang_btn": "EN",
       "quit_btn": "Quit"
     },
-    "table_column_names": {
-      "id": "UNIQUE IDENTIFIER",
-      "description": "PASSWORD DESCRIPTION",
-      "password": "PASSWORD",
-      "length": "PASSWORD LENGTH",
-      "has_repeatable": "CONTAIN REPEATED CHARACTERS?"
-    },
+    "table_column_names": [
+      "IDENTIFIER",
+      "DESCRIPTION",
+      "PASSWORD",
+      "LENGTH",
+      "REPEATABLE"
+    ],
     "messages": {
       "invalid_password_description": {
         "title": "Invalid input",
@@ -73,6 +77,22 @@
       "successful_write_to_db": {
         "title": "Database info",
         "message": "All password data was written to database!"
+      },
+      "delete_password_by_id": {
+        "title": "ID input",
+        "message": "Enter the ID of the record you want to delete..."
+      },
+      "invalid_password_id": {
+        "title": "Invalid input",
+        "message": "No ID with such value in the table! Try again."
+      },
+      "successful_password_delete": {
+        "title": "Record deleting",
+        "message": "The record with the specified ID has been deleted successfully!"
+      },
+      "invalid_description_search": {
+        "title": "Invalid search query",
+        "message": "Search query cannot be empty space or has more than 384 symbols in it! Try again."
       }
     }
   },
@@ -83,6 +103,10 @@
       "repeatable_label": "Чи можуть бути повторювані символи в паролі (т/н)?:",
       "result_password_label": "ЗГЕНЕРОВАНИЙ ПАРОЛЬ"
     },
+    "repeatable_segment_btn": [
+      "Так",
+      "Ні"
+    ],
     "radio_buttons_labels": {
       "all_symbols_label": "Усі символи",
       "only_letters_label": "Тільки букви",
@@ -107,13 +131,13 @@
       "english_lang_btn": "АНГЛ",
       "quit_btn": "Вихід"
     },
-    "table_column_names": {
-      "id": "УНІКАЛЬНИЙ ІДЕНТИФІКАТОР",
-      "description": "ОПИС ПАРОЛЯ",
-      "password": "ПАРОЛЬ",
-      "length": "ДОВЖИНА ПАРОЛЯ",
-      "has_repeatable": "МІСТИТЬ ПОВТОРЮВАНІ СИМВОЛИ?"
-    },
+    "table_column_names": [
+      "ІДЕНТИФІКАТОР",
+      "ОПИС",
+      "ПАРОЛЬ",
+      "ДОВЖИНА",
+      "ПОВТОРЮВАНІ СИМВОЛИ"
+    ],
     "messages": {
       "invalid_password_description": {
         "title": "Некоректний ввід",
@@ -150,6 +174,22 @@
       "successful_write_to_db": {
         "title": "Інформація про базу даних",
         "message": "Дані успішно записано до бази даних!"
+      },
+      "delete_password_by_id": {
+        "title": "Ввід ID",
+        "message": "Введіть ID запису, який ви хочете видалити..."
+      },
+      "invalid_password_id": {
+        "title": "Некоректний ввід",
+        "message": "ID таким значенням відсутній у таблиці. Спробуйте ще раз."
+      },
+      "successful_password_delete": {
+        "title": "Видалення запису",
+        "message": "Запис зі вказаним ID видалено успішно!"
+      },
+      "invalid_description_search": {
+        "title": "Некоректний пошуковий запит",
+        "message": "Пошуковий запит не можу бути пустим місцем або мати більше ніж 384 символи! Спробуйте ще раз."
       }
     }
   }

@@ -48,7 +48,7 @@ def password_strength(password):
 
 
 def strength_rating(lange_state, password_score):
-    if  0 <= password_score < 5:
+    if 0 <= password_score < 5:
         return 'Extremely unreliable' if lange_state else 'Мінімально надійний'
     elif 5 <= password_score < 20:
         return 'Very easy' if lange_state else 'Дуже простий'

@@ -1,9 +1,6 @@
 import os
-from typing import Any
+from typing import Any, Iterable
 import sqlite3
-import pandas as pd
-
-from typing import Iterator
 
 PASSWORD_STORE_QUERIES = {
     'create_passwords_table':
@@ -57,6 +54,12 @@ PASSWORD_STORE_QUERIES = {
     'fetch_passwords_descriptions':
         '''
         SELECT description FROM passwords
+        ORDER BY id
+        ''',
+    'fetch_passwords_by_description':
+        '''
+        SELECT * FROM passwords
+        WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
         ORDER BY id
         ''',
     'fetch_passwords': 'SELECT * FROM passwords',
@@ -131,24 +134,22 @@ class PasswordStore:
 
     def fetch_passwords_descriptions(self) -> list[tuple[str]]:
         password_descriptions = self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_descriptions'])
-        return [password_description for (password_description,) in password_descriptions]
+        return [
+            password_description
+            for (password_description,) in password_descriptions
+        ]
 
-    def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        main_data_list = pd.read_sql_query(
-            '''
-            SELECT id, description, password FROM passwords
-            WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
-            ORDER BY id
-            ''', self.con, params=[search_query, ]
-        )
-        self.con.commit()
-        return main_data_list
+    def fetch_passwords_by_description(self, description: str) -> list[tuple[Any]]:
+        return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_by_description'], description)
 
-    def fetch_passwords(self) -> list[tuple[Any]]:
+    def fetch_passwords(self) -> list[tuple[Any, ...]]:
         return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords'])
 
-    def fetch_passwords_ids(self) -> list[tuple[int]]:
-        return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_ids'])
+    def fetch_passwords_ids(self) -> list[int]:
+        return [
+            id
+            for (id,) in self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_ids'])
+        ]
 
     def fetch_passwords_no_ids(self) -> list[tuple[Any]]:
         return self.read_query(PASSWORD_STORE_QUERIES['fetch_passwords_no_ids'])
@@ -156,8 +157,8 @@ class PasswordStore:
     def delete_password(self, id: int) -> None:
         self.execute_query(PASSWORD_STORE_QUERIES['delete_password'], id)
 
-    def read_query(self, query: str) -> list[tuple[Any]]:
-        self.cur.execute(query)
+    def read_query(self, query: str, *options) -> list[tuple[Any]]:
+        self.cur.execute(query, options)
         result = self.cur.fetchall()
         self.con.commit()
         return result

@@ -5,6 +5,7 @@ import mysql.connector
 from additional_modules.encryption_decryption import decrypt
 from dotenv import load_dotenv, find_dotenv
 
+
 class RemoteDB:
     def __init__(self):
         load_dotenv(find_dotenv())
@@ -17,7 +18,6 @@ class RemoteDB:
         )
 
         self.cur = self.con.cursor()
-
 
     def select_all_tokens(self):
         self.cur.execute(
@@ -32,7 +32,6 @@ class RemoteDB:
         self.con.commit()
 
         return all_tokens_lst
-
 
     def select_id_by_token(self, entered_token):
         self.cur.execute(
@@ -50,7 +49,6 @@ class RemoteDB:
         if get_id:
             return get_id[0]
 
-
     def select_pass_gen_table_without_id(self, user_table_name):
         self.cur.execute(
             '''
@@ -64,7 +62,6 @@ class RemoteDB:
         self.con.commit()
 
         return table_rows
-
 
     def insert_update_password_data(self, user_id, user_desc, generated_pass, password_length, has_repetetive):
         self.cur.execute(
