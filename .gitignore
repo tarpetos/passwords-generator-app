@@ -1,12 +1,11 @@
 .idea
-venv/
+env/
 **/__pycache__/
 .passwords/
 build/
 dist/
 main.spec
 test.py
-.env
 license.txt
 readme.md
 readme.txt
