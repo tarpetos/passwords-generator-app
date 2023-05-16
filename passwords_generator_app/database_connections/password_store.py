@@ -1,20 +1,17 @@
-import sqlite3
 import pandas as pd
 
-from typing import Iterator
+from typing import Iterator, Tuple, List, Any
 
-from passwords_generator_app.app_translation.load_data_for_localization import ROOT_PATH
+from .local_db_connector import LocalDatabaseConnector
 
 
-class PasswordStore:
+class PasswordStore(LocalDatabaseConnector):
     def __init__(self):
-        self.con = sqlite3.connect(f'{ROOT_PATH}data.db')
-        self.cur = self.con.cursor()
-        self.create_table()
-        self.create_token_id_table()
+        super().__init__()
+        self.create_passwords_table()
         self.create_history_table()
 
-    def create_table(self):
+    def create_passwords_table(self):
         self.cur.execute(
             '''
             CREATE TABLE IF NOT EXISTS passwords (
@@ -24,17 +21,6 @@ class PasswordStore:
                 length INTEGER NOT NULL,
                 has_repeatable BOOLEAN NOT NULL,
                 CONSTRAINT unique_data UNIQUE(description)
-            )
-            '''
-        )
-        self.con.commit()
-
-    def create_token_id_table(self):
-        self.cur.execute(
-            '''
-            CREATE TABLE IF NOT EXISTS id_token (
-                saved_id INTEGER NOT NULL,
-                saved_token VARCHAR(384) NOT NULL
             )
             '''
         )
@@ -56,7 +42,7 @@ class PasswordStore:
         )
         self.con.commit()
 
-    def history_insert(self, description, password):
+    def history_insert(self, description: str, password: str):
         current_history_size = self.history_get_table_size()[0]
 
         if current_history_size >= 5000:
@@ -70,7 +56,7 @@ class PasswordStore:
         )
         self.con.commit()
 
-    def history_update(self, description, password):
+    def history_update(self, description: str, password: str):
         self.cur.execute(
             '''
             UPDATE generation_history
@@ -80,7 +66,7 @@ class PasswordStore:
         )
         self.con.commit()
 
-    def history_delete(self, description, password):
+    def history_delete(self, description: str, password: str):
         self.cur.execute(
             '''
             UPDATE generation_history
@@ -88,6 +74,7 @@ class PasswordStore:
             WHERE description = ? AND password = ?
             ''', (description, password)
         )
+
         self.con.commit()
 
     def history_remove_oldest_records(self):
@@ -104,7 +91,11 @@ class PasswordStore:
         )
         self.con.commit()
 
-    def history_get_table_size(self) -> tuple:
+    def history_clear(self):
+        self.cur.execute('DELETE FROM generation_history')
+        self.con.commit()
+
+    def history_get_table_size(self) -> Tuple[int]:
         self.cur.execute('SELECT COUNT(id) FROM generation_history')
 
         table_size = self.cur.fetchone()
@@ -125,7 +116,7 @@ class PasswordStore:
 
         self.history_insert(description, password)
 
-    def insert_update_into_tb(self, description, password, length, has_repeatable):
+    def insert_update_into_tb(self, description: str, password: str, length: int, has_repeatable: bool):
         self.cur.execute(
             '''
             SELECT description FROM passwords
@@ -141,17 +132,6 @@ class PasswordStore:
         else:
             self.insert_into_tb(description, password, length, has_repeatable)
 
-    def insert_into_save_tb(self, user_id, user_token):
-        self.cur.execute(
-            '''
-            INSERT INTO id_token(saved_id, saved_token)
-            VALUES (?, ?)
-            ''',
-            (user_id, user_token)
-        )
-
-        self.con.commit()
-
     def drop_table(self):
         select_all_desc_and_pass = self.select_descriptions_password()
 
@@ -161,19 +141,14 @@ class PasswordStore:
         self.cur.execute('DROP TABLE IF EXISTS passwords')
         self.con.commit()
 
-    def truncate_saved_token(self):
-        self.cur.execute('DELETE FROM id_token')
-        self.con.commit()
-
-    def select_from_save_tb(self) -> tuple[str, str] | None:
-        self.cur.execute('SELECT * FROM id_token')
-
-        result = self.cur.fetchone()
-        self.con.commit()
-
-        return result if result else None
-
-    def update_password_data_by_id(self, description, password, length, has_repeatable, table_id):
+    def update_password_data_by_id(
+            self,
+            description: str,
+            password: str,
+            length: int,
+            has_repeatable: bool,
+            table_id: int
+    ):
         old_password = self.select_password_by_description(description)
         old_values_tuple = self.select_description_password_by_id(table_id)
 
@@ -194,7 +169,7 @@ class PasswordStore:
             self.history_update(description, *old_password)
             self.history_insert(description, password)
 
-    def update_existing_password(self, password, length, has_repeatable, description):
+    def update_existing_password(self, password: str, length: int, has_repeatable: bool, description: str):
         old_password = self.select_password_by_description(description)
 
         self.cur.execute(
@@ -210,7 +185,18 @@ class PasswordStore:
         self.history_update(description, *old_password)
         self.history_insert(description, password)
 
-    def select_descriptions(self) -> list:
+    def update_password_by_description(self, description: str, password: str):
+        self.cur.execute(
+            '''
+            UPDATE passwords
+            SET password =  ?
+            WHERE description =  ?
+            ''',
+            (password, description)
+        )
+        self.con.commit()
+
+    def select_descriptions(self) -> List[Any]:
         self.cur.execute(
             '''
             SELECT description FROM passwords
@@ -223,25 +209,12 @@ class PasswordStore:
 
         return description_list
 
-    def select_description_by_id(self, row_id) -> tuple:
-        self.cur.execute(
-            '''
-            SELECT description FROM passwords
-            WHERE id = ?
-            ''', (row_id, )
-        )
-
-        description = self.cur.fetchone()
-        self.con.commit()
-
-        return description
-
-    def select_description_password_by_id(self, row_id) -> tuple:
+    def select_description_password_by_id(self, row_id: int) -> Tuple[int]:
         self.cur.execute(
             '''
             SELECT description, password FROM passwords
             WHERE id = ?
-            ''', (row_id, )
+            ''', (row_id,)
         )
 
         description = self.cur.fetchone()
@@ -249,7 +222,7 @@ class PasswordStore:
 
         return description
 
-    def select_descriptions_password(self) -> list:
+    def select_descriptions_password(self) -> List[Any]:
         self.cur.execute(
             '''
             SELECT description, password FROM passwords
@@ -262,7 +235,7 @@ class PasswordStore:
 
         return password_main_data_list
 
-    def select_id(self) -> list:
+    def select_id(self) -> List[Any]:
         self.cur.execute(
             '''
             SELECT id FROM passwords
@@ -275,38 +248,25 @@ class PasswordStore:
 
         return id_data_list
 
-    def select_without_id(self) -> list:
-        self.cur.execute(
-            '''
-            SELECT description, password, length, has_repeatable FROM passwords
-            ORDER BY id
-            '''
-        )
-
-        data_list = self.cur.fetchall()
-        self.con.commit()
-
-        return data_list
-
-    def select_record_by_id(self, table_id):
+    def select_record_by_id(self, table_id: int) -> Tuple[str]:
         self.cur.execute(
             '''
             SELECT description, password FROM passwords
             WHERE id = ?
-            ''', (table_id, )
+            ''', (table_id,)
         )
         get_values = self.cur.fetchone()
         self.con.commit()
 
         return get_values
 
-    def select_password_by_description(self, description):
+    def select_password_by_description(self, description: str) -> Any:
         self.cur.execute(
             '''
             SELECT password FROM passwords
             WHERE description = ?
             ORDER BY id
-            ''', (description, )
+            ''', (description,)
         )
 
         get_values = self.cur.fetchone()
@@ -314,7 +274,7 @@ class PasswordStore:
 
         return get_values
 
-    def delete_by_id(self, table_id):
+    def delete_by_id(self, table_id: int):
         desc_and_pass = self.select_record_by_id(table_id)
 
         self.cur.execute(

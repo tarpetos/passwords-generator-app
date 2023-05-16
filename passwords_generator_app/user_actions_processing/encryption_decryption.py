@@ -32,19 +32,24 @@ def load_key() -> bytes:
         return load_key()
 
 
-def encrypt(data: str) -> str | None:
+def revoke_key():
+    if os.path.exists(KEY_FILE):
+        os.remove(KEY_FILE)
+
+
+def encrypt(data: str, new_key: bytes = None) -> str | None:
     try:
         if data is not None:
-            encryption_object = Fernet(load_key())
+            encryption_object = Fernet(load_key() if new_key is None else new_key)
             encrypted = encryption_object.encrypt(data.encode())
             return base64.urlsafe_b64encode(encrypted).decode()
     except ValueError:
         sys.exit('Encryption error!!!')
 
 
-def decrypt(data: str) -> str | None:
+def decrypt(data: str, new_key: bytes = None) -> str | None:
     try:
-        decryption_object = Fernet(load_key())
+        decryption_object = Fernet(load_key() if new_key is None else new_key)
         decrypted = decryption_object.decrypt(base64.urlsafe_b64decode(data)).decode()
         return decrypted
     except cryptography.fernet.InvalidToken:

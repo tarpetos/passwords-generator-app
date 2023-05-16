@@ -19,8 +19,12 @@ def check_for_repeatable_characters(
 ) -> str:
     repeatable_allowed_check_value = json_localization_data[lang_state]['repeatable_segment_btn'][0]
     repeatable_not_allowed_check_value = json_localization_data[lang_state]['repeatable_segment_btn'][1]
+    print('alphabet:', password_alphabet)
+    print('alphabet_len:', len(password_alphabet))
+    print('length:', password_length)
+
     if check_if_repeatable_allowed == repeatable_allowed_check_value:
-        return ''.join(choices(password_alphabet, k=password_length))
+        return ''.join(choices(password_alphabet, k=password_length)) if len(password_alphabet) >= 1 else ''
     elif check_if_repeatable_allowed == repeatable_not_allowed_check_value:
         return ''.join(sample(password_alphabet, k=password_length))
 

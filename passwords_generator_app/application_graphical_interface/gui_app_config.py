@@ -18,8 +18,9 @@ from ..user_actions_processing.inputs_and_buttons_processing import (
     clear_entries,
     remove_record_from_table,
     simple_generate_password,
+    change_encryption_token, change_generation_alphabet,
 )
-from ..user_actions_processing.password_alphabet import get_password_alphabet, get_full_alphabet
+from ..user_actions_processing.password_alphabet import PasswordAlphabet
 
 
 class PasswordGeneratorApp(ctk.CTk):
@@ -73,6 +74,7 @@ class BasePage(ctk.CTkFrame):
         self.language_options_list = [self.language_options_dict[key] for key in self.language_options_dict]
         self.language_opt_menu_var = StringVar(value=self.language_options_list[0])
         self.language_options = json_localization_data  # get data for app localization
+        self.alphabet_retriever = PasswordAlphabet()
         ctk.set_appearance_mode('dark')
         ctk.set_default_color_theme('green')  # set default app theme
         change_element_bg_color()  # set default bg and font color to messageboxes
@@ -172,10 +174,19 @@ class MainPage(BasePage):
             self.slider_frame,
             from_=1, to=500,
             variable=self.default_pass_length,
-            command=show_current_slider_value
+            command=show_current_slider_value,
         )
         self.password_length_slider.set(50)
         self.password_length_slider_label = ctk.CTkLabel(self.slider_frame, text=str(self.default_pass_length.get()))
+
+        def check_for_alphabet_length():
+            alphabet = self.alphabet_retriever.get_password_alphabet(1)
+            if len(alphabet) == 0:
+                self.password_length_slider.configure(to=0, state='disabled')
+                self.password_length_slider.set(0)
+                self.password_length_slider_label.configure(text=self.default_pass_length.get())
+
+        check_for_alphabet_length()
 
         def slider_value_listener() -> int:
             current_slider_value = self.password_length_slider.get()
@@ -185,8 +196,14 @@ class MainPage(BasePage):
             initial_slider_value = slider_value_listener()
             not_repeatable_chosen = json_localization_data[self.current_chosen_language]['repeatable_segment_btn'][1]
             if self.chosen_button_menu == not_repeatable_chosen:
-                new_slider_max_value = len(get_password_alphabet(self.radiobutton_choice_option.get()))
+                new_slider_max_value = len(
+                    self.alphabet_retriever.get_password_alphabet(self.radiobutton_choice_option.get())
+                )
                 self.password_length_slider.configure(to=new_slider_max_value)
+                if new_slider_max_value == 0 or new_slider_max_value == 1:
+                    self.password_length_slider.configure(state='disabled')
+                else:
+                    self.password_length_slider.configure(state='normal')
                 if initial_slider_value > new_slider_max_value:
                     self.password_length_slider.set(new_slider_max_value)
                 else:
@@ -337,7 +354,7 @@ class MainPage(BasePage):
                 self.password_length_slider,
                 self.repeatable_segment_btn,
                 self.result_password_entry,
-                get_password_alphabet(self.radiobutton_choice_option.get())
+                self.alphabet_retriever.get_password_alphabet(self.radiobutton_choice_option.get())
             ),
         )
 
@@ -369,7 +386,12 @@ class MainPage(BasePage):
             ),
         )
 
-        language_and_bg_frame = ctk.CTkFrame(main_frame, fg_color='transparent')
+        self.new_alphabet_btn = ctk.CTkButton(
+            main_frame,
+            text=json_localization_data['EN']['buttons']['new_alphabet_btn'],
+            text_color='black',
+            command=lambda: change_generation_alphabet(self.current_chosen_language),
+        )
 
         def option_language_menu_callback(choice):
             self.chosen_lang_opt_menu = choice
@@ -378,7 +400,7 @@ class MainPage(BasePage):
                     controller.change_language(key)
 
         self.language_change_menu = ctk.CTkOptionMenu(
-            language_and_bg_frame,
+            main_frame,
             text_color='black',
             values=self.language_options_list,
             variable=self.language_opt_menu_var,
@@ -386,7 +408,7 @@ class MainPage(BasePage):
         )
 
         self.change_bg_btn = ctk.CTkButton(
-            language_and_bg_frame,
+            main_frame,
             text=u'\u263E',
             text_color='black',
             command=lambda: change_background_color(self.change_bg_btn),
@@ -430,9 +452,9 @@ class MainPage(BasePage):
 
         self.generate_btn.grid(row=3, column=0, columnspan=3, sticky='we', padx=(15, 2))
 
-        language_and_bg_frame.grid(row=3, column=3, columnspan=3, sticky='we')
-        self.language_change_menu.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        self.change_bg_btn.pack(side='right', fill='both', expand=True, padx=(2, 15))
+        self.new_alphabet_btn.grid(row=3, column=3, sticky='we', padx=(2, 2))
+        self.language_change_menu.grid(row=3, column=4, sticky='we', padx=(2, 2))
+        self.change_bg_btn.grid(row=3, column=5, sticky='we', padx=(2, 15))
 
         radiobutton_frame.grid(row=4, column=0, columnspan=6, padx=15, sticky='we')
 
@@ -541,7 +563,7 @@ class SimplePage(BasePage):
                 self.symbols_option_menu,
                 self.password_description_entry,
                 self.switch_state,
-                get_full_alphabet()
+                self.alphabet_retriever.get_full_alphabet()
             ),
         )
 
@@ -608,19 +630,13 @@ class TablePage(BasePage):
         data_table_obj.get_data_from_db(self.current_chosen_language)
 
         upper_frame = ctk.CTkFrame(full_frame, fg_color='transparent')
-        # self.synchronize_data_btn = ctk.CTkButton(
-        #     upper_frame,
-        #     text=self.language_options['EN']['buttons']['synchronize_data_btn'],
-        #     text_color='black',
-        #     command=lambda: sync_db_data(self.current_chosen_language),
-        # )
-        #
-        # self.change_token_btn = ctk.CTkButton(
-        #     upper_frame,
-        #     text=self.language_options['EN']['buttons']['change_token_btn'],
-        #     text_color='black',
-        #     command=lambda: change_local_token(self.current_chosen_language),
-        # )
+
+        self.change_encryption_token_btn = ctk.CTkButton(
+            upper_frame,
+            text=self.language_options['EN']['buttons']['change_encryption_token_btn'],
+            text_color='black',
+            command=lambda: change_encryption_token(self.current_chosen_language),
+        )
 
         bottom_frame = ctk.CTkFrame(full_frame, fg_color='transparent')
 
@@ -681,11 +697,8 @@ class TablePage(BasePage):
             command=lambda: app.destroy(),
         )
 
-        # self.ukrainian_lang_btn.pack(side='left', fill='both', expand=True, padx=(0, 2))
-        # self.synchronize_data_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        # self.change_token_btn.pack(side='left', fill='both', expand=True, padx=(2, 2))
-        # self.english_lang_btn.pack(side='right', fill='both', expand=True, padx=(2, 0))
-        self.table_pg_language_change_menu.pack(fill='both', expand=True, padx=2)
+        self.table_pg_language_change_menu.pack(side='left', fill='both', expand=True, padx=(0, 2))
+        self.change_encryption_token_btn.pack(side='right', fill='both', expand=True, padx=(2, 0))
         upper_frame.pack(fill='both')
 
         table_frame.pack(fill='both', expand=True, pady=10)

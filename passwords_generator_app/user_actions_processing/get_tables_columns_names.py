@@ -1,7 +1,7 @@
 from typing import Iterator, Dict, List
 from pandas import DataFrame
 
-from ..database_connections.local_db_connection import PasswordStore
+from ..database_connections.password_store import PasswordStore
 from ..app_translation.load_data_for_localization import json_localization_data
 
 

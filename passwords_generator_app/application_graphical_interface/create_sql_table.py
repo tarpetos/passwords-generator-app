@@ -7,7 +7,7 @@ from ..user_actions_processing.encryption_decryption import encrypt
 from ..user_actions_processing.make_table import make_table_for_page_and_search
 from ..user_actions_processing.main_checks import check_if_repeatable_characters_is_present
 from ..app_translation.messagebox_with_lang_change import duplicate_description_message, successful_update_message
-from ..database_connections.local_db_connection import PasswordStore
+from ..database_connections.password_store import PasswordStore
 
 
 class TableBase:

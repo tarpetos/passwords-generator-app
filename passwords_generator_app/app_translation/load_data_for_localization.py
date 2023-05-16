@@ -1,9 +1,9 @@
-import json
+# import json
 import os
 
 ROOT_PATH = os.path.expanduser('~/.passwords/')
 
-LOCALIZATION_FILE = os.path.expanduser(f'{ROOT_PATH}localization.json')
+# LOCALIZATION_FILE = os.path.expanduser(f'{ROOT_PATH}localization.json')
 LOCALIZATION_DATA = {
     "EN": {
         "labels": {
@@ -30,13 +30,12 @@ LOCALIZATION_DATA = {
             "hard_mode_btn": "Hard mode",
             "move_to_table_btn": "Show table >>>>",
             "synchronize_data_btn": "Synchronization",
-            "change_token_btn": "Change token",
+            "change_encryption_token_btn": "Change encryption key",
             "return_to_main_btn": "<<<< Back",
             "reload_table_btn": "Reload",
             "update_table_btn": "Update record",
             "delete_record_btn": "Delete",
-            "ukrainian_lang_btn": "UA",
-            "english_lang_btn": "EN",
+            "new_alphabet_btn": "Custom alphabet",
             "quit_btn": "Quit"
         },
         "table_column_names": [
@@ -154,6 +153,10 @@ LOCALIZATION_DATA = {
                     "text": "Table was successfully completely was regenerated! "
                             "Reload the table to reflect the changes."
                 },
+                "successful_key_change": {
+                    "title": "Key changed",
+                    "text": "Encryption key was successfully changed! All passwords were re-encrypted."
+                },
                 "no_matches_for_search": {
                     "title": "No matches",
                     "text": "No mathes for query: "
@@ -163,6 +166,12 @@ LOCALIZATION_DATA = {
                 "remake_table": {
                     "title": "Reset table",
                     "text": "Are you sure you want to regenerate the table (all local data will be lost)?"
+                },
+                "change_encryption_key": {
+                    "title": "Key change",
+                    "text": "Are you sure you want to change the encryption key for passwords? "
+                            "The data in the current table will first be decrypted using the old key, and then encrypted "
+                            "again. After that, the old key will be deleted. History of generation will be cleared."
                 },
             },
             "ok_cancel_message_options": (
@@ -194,6 +203,18 @@ LOCALIZATION_DATA = {
                 "ai_score_label": "Score on a scale from 0 to 100 (ChatGPT Algorithm): ",
                 "average_score_label": "Average score: ",
                 "reliability_label": "Reliability level: ",
+            },
+            "alphabet_window_data": {
+                "labels": {
+                    "letters_label": "Enter letters: ",
+                    "digits_label": "Enter digits: ",
+                    "punctuation_label": "Enter punctuation or signs:",
+                },
+                "buttons": {
+                    "close": "Close",
+                    "save_alphabet_btn": "Save new alphabet",
+                    "reset_alphabet_btn": "Reset to default alphabet",
+                }
             }
         }
     },
@@ -223,13 +244,12 @@ LOCALIZATION_DATA = {
             "hard_mode_btn": "Складний режим",
             "move_to_table_btn": "Показати таблицю >>>>",
             "synchronize_data_btn": "Синхронізація",
-            "change_token_btn": "Змінити токен",
+            "change_encryption_token_btn": "Змінити ключ шифрування",
             "return_to_main_btn": "<<<< Назад",
             "reload_table_btn": "Оновити",
             "update_table_btn": "Змінити запис",
             "delete_record_btn": "Видалити",
-            "ukrainian_lang_btn": "УКР",
-            "english_lang_btn": "АНГЛ",
+            "new_alphabet_btn": "Власний алфавіт",
             "quit_btn": "Вихід"
         },
         "table_column_names": [
@@ -346,6 +366,10 @@ LOCALIZATION_DATA = {
                     "title": "Регенерація таблиці",
                     "text": "Таблиця була успішно повністю перегенерована! Оновіть таблицю для відображення змін. "
                 },
+                "successful_key_change": {
+                    "title": "Ключ змінено",
+                    "text": "Ключ шифрування успішно змінено! Всі паролі було перешифровано."
+                },
                 "no_matches_for_search": {
                     "title": "Відсутні збіги",
                     "text": "Збіги відсутні на запит: "
@@ -355,6 +379,12 @@ LOCALIZATION_DATA = {
                 "remake_table": {
                     "title": "Скидання таблиці",
                     "text": "Ви впевнені, що хочете перегенерувати таблицю (усі локальні дані буде втрачено)?"
+                },
+                "change_encryption_key": {
+                    "title": "Зміна ключа",
+                    "text": "Ви впевнені, що хочете змінити ключ шифрування паролів? "
+                            "Дані у поточній таблиці спочатку будуть дешифровані за старим ключем, а потім зашифровані "
+                            "знову. Після цього старий ключ буде видалено. Історія генерації буде очищена"
                 },
             },
             "ok_cancel_message_options": (
@@ -384,6 +414,18 @@ LOCALIZATION_DATA = {
                 "ai_score_label": "Оцінка по шкалі від 0 до 100 (Алгоритм ChatGPT): ",
                 "average_score_label": "Середній показник: ",
                 "reliability_label": "Рівень надійності: ",
+            },
+            "alphabet_window_data": {
+                "labels": {
+                    "letters_label": "Введіть букви: ",
+                    "digits_label": "Введіть цифри: ",
+                    "punctuation_label": "Введіть пунктуацію або знаки:",
+                },
+                "buttons": {
+                    "close": "Закрити",
+                    "save_alphabet_btn": "Зберегти новий алфавіт",
+                    "reset_alphabet_btn": "Відновити то стандартного алфавіту",
+                }
             }
         }
     },
@@ -413,13 +455,12 @@ LOCALIZATION_DATA = {
             "hard_mode_btn": "Tryb zaawansowany",
             "move_to_table_btn": "Pokaż tabelę >>>>",
             "synchronize_data_btn": "Synchronizuj",
-            "change_token_btn": "Zmień token",
+            "change_encryption_token_btn": "Zmień klucz szyfrowania",
             "return_to_main_btn": "<<<< Powrót",
             "reload_table_btn": "Odśwież",
             "update_table_btn": "Zaktualizuj rekord",
             "delete_record_btn": "Usuń",
-            "ukrainian_lang_btn": "UA",
-            "english_lang_btn": "EN",
+            "new_alphabet_btn": "Własny alfabet",
             "quit_btn": "Wyjście"
         },
         "table_column_names": [
@@ -529,12 +570,16 @@ LOCALIZATION_DATA = {
                 },
                 "successful_delete": {
                     "title": "Usuwanie rekordu",
-                    "text": "TRekord o określonym ID został pomyślnie usunięty!"
+                    "text": "Rekord o określonym ID został pomyślnie usunięty!"
                 },
                 "successful_remake_table": {
                     "title": "Regeneracja tabeli",
                     "text": "Tabela została pomyślnie zregenerowana! "
                             "Przeładuj tabelę, aby odzwierciedlić zmiany."
+                },
+                "successful_key_change": {
+                    "title": "Klucz zmieniony",
+                    "text": "Klucz szyfrowania został pomyślnie zmieniony! Wszystkie hasła zostały ponownie zaszyfrowane."
                 },
                 "no_matches_for_search": {
                     "title": "Brak wyników",
@@ -545,6 +590,12 @@ LOCALIZATION_DATA = {
                 "remake_table": {
                     "title": "Resetuj tabelę",
                     "text": "Czy na pewno chcesz zregenerować tabelę (wszystkie lokalne dane zostaną utracone)?"
+                },
+                "change_encryption_key": {
+                    "title": "Zmień klucz",
+                    "text": "Czy na pewno chcesz zmienić klucz szyfrowania haseł? "
+                            "Dane w bieżącej tabeli zostaną najpierw odszyfrowane za pomocą starego klucza, a następnie zaszyfrowane "
+                            "ponownie. Po tym stary klucz zostanie usunięty. Historia generacji zostanie wyczyszczona."
                 },
             },
             "ok_cancel_message_options": (
@@ -576,27 +627,39 @@ LOCALIZATION_DATA = {
                 "ai_score_label": "Wynik w skali od 0 do 100 (Algorytm ChatGPT): ",
                 "average_score_label": "Średni wynik: ",
                 "reliability_label": "Poziom niezawodności: ",
+            },
+            "alphabet_window_data": {
+                "labels": {
+                    "letters_label": "Wprowadź litery: ",
+                    "digits_label": "Wprowadź cyfry: ",
+                    "punctuation_label": "Wprowadź interpunkcję lub znaki: ",
+                },
+                "buttons": {
+                    "close": "Zamknij",
+                    "save_alphabet_btn": "Zapisz nowy alfabet",
+                    "reset_alphabet_btn": "Przywróć domyślny alfabet",
+                }
             }
         }
     },
 }
 
 
-def create_directory():
-    if not os.path.exists(ROOT_PATH):
-        os.mkdir(os.path.join(ROOT_PATH))
-
-
-def load_json_localization_data():
-    create_directory()
-    if os.path.exists(LOCALIZATION_FILE):
-        with open(LOCALIZATION_FILE) as translation_file:
-            saved_data = json.load(translation_file)
-            return saved_data
-
-    with open(LOCALIZATION_FILE, 'w') as translation_file:
-        json.dump(LOCALIZATION_DATA, translation_file, indent=4)
-    return LOCALIZATION_DATA
+# def create_directory():
+#     if not os.path.exists(ROOT_PATH):
+#         os.mkdir(os.path.join(ROOT_PATH))
+#
+#
+# def load_json_localization_data():
+#     create_directory()
+#     if os.path.exists(LOCALIZATION_FILE):
+#         with open(LOCALIZATION_FILE) as translation_file:
+#             saved_data = json.load(translation_file)
+#             return saved_data
+#
+#     with open(LOCALIZATION_FILE, 'w') as translation_file:
+#         json.dump(LOCALIZATION_DATA, translation_file, indent=4)
+#     return LOCALIZATION_DATA
 
 
 json_localization_data = LOCALIZATION_DATA

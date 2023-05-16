@@ -1,5 +1,6 @@
 import random
 import sqlite3
+import time
 
 import pyperclip
 
@@ -7,8 +8,8 @@ from typing import Tuple, List
 from customtkinter import CTkEntry, CTkOptionMenu, CTkSlider, CTkSegmentedButton
 
 from ..app_translation.load_data_for_localization import json_localization_data
-from ..user_actions_processing.encryption_decryption import encrypt
-from ..application_graphical_interface.toplevel_windows import app_loading_screen
+from ..user_actions_processing.encryption_decryption import encrypt, load_key, decrypt, revoke_key
+from ..application_graphical_interface.toplevel_windows import app_loading_screen, alphabet_screen
 
 from ..user_actions_processing.password_strength_score import (
     strength_rating,
@@ -24,6 +25,8 @@ from ..app_translation.messagebox_with_lang_change import (
     empty_table_message,
     successful_delete_message,
     successful_remake_table_message,
+    change_encryption_key_message,
+    successful_key_change_message,
 )
 
 from ..app_translation.messagebox_with_lang_change import (
@@ -42,7 +45,7 @@ from ..user_actions_processing.main_checks import (
     check_for_repeatable_characters,
 )
 
-from ..database_connections.local_db_connection import PasswordStore
+from ..database_connections.password_store import PasswordStore
 
 
 database_user_data = PasswordStore()
@@ -146,6 +149,7 @@ def get_password_with_necessary_difficulty(lang_state: str, pass_alphabet: str, 
     actual_result = None
     generated_pass = None
 
+    start_time = time.time()
     while actual_result != expected_result:
         pass_length = get_menu_option(lang_state, expected_result)
 
@@ -158,6 +162,11 @@ def get_password_with_necessary_difficulty(lang_state: str, pass_alphabet: str, 
         average_score = int(round(((shannon_pass + chat_gpt_pass) / 2), 2))
 
         actual_result = strength_rating(lang_state, average_score)
+
+        generation_time = time.time()
+        if generation_time - start_time > 3:
+            print('The generation lasted too long! Expand the alphabet or restore default alphabet settings.')
+            return ''
 
     return generated_pass
 
@@ -231,7 +240,7 @@ def remove_record_from_table(lang_state: str) -> None | int:
                 if remake_table_message(lang_state):
                     load_screen = app_loading_screen(lang_state)
                     database_user_data.drop_table()
-                    database_user_data.create_table()
+                    database_user_data.create_passwords_table()
                     load_screen.destroy()
                     successful_remake_table_message(lang_state)
                 return 0
@@ -245,3 +254,34 @@ def remove_record_from_table(lang_state: str) -> None | int:
                 return 0
         except ValueError:
             invalid_id_input_message(lang_state)
+
+
+def change_encryption_token(lang_state: str):
+    user_choice: bool = change_encryption_key_message(lang_state)
+
+    if not user_choice:
+        return
+
+    data_list = database_user_data.select_descriptions_password()
+    database_user_data.history_clear()
+
+    old_key = load_key()
+    revoke_key()
+    new_key = load_key()
+
+    new_data_list = []
+    for tuple_row in data_list:
+        row_list = [
+            encrypt(decrypt(table_element, old_key), new_key) if count == 1 else table_element
+            for count, table_element in enumerate(tuple_row)
+        ]
+        new_data_list.append(row_list)
+
+    for list_row in new_data_list:
+        database_user_data.update_password_by_description(*list_row)
+
+    successful_key_change_message(lang_state)
+
+
+def change_generation_alphabet(lang_state: str):
+    alphabet_screen(lang_state)

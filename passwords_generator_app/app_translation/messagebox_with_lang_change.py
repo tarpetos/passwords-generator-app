@@ -1,5 +1,5 @@
 from ..app_translation.load_data_for_localization import json_localization_data
-from ..application_graphical_interface.ctk_input_dialog import MyCTkInputDialog
+from ..application_graphical_interface.expanded_ctk_input_dialog import ExpandedCTkInputDialog
 from ..application_graphical_interface.custom_messagebox import (
     show_error, 
     ask_yes_no, 
@@ -108,6 +108,14 @@ def successful_remake_table_message(lang_state: str):
     )
 
 
+def successful_key_change_message(lang_state: str):
+    show_info(
+        json_localization_data[lang_state]['messageboxes']['info_message']['successful_key_change']['title'],
+        json_localization_data[lang_state]['messageboxes']['info_message']['successful_key_change']['text'],
+        json_localization_data[lang_state]['messageboxes']['ok_button_value']
+    )
+
+
 def no_matches_for_search_message(lang_state, search_query):
     show_info(
         json_localization_data[lang_state]['messageboxes']['info_message']['no_matches_for_search']['title'],
@@ -150,9 +158,20 @@ def remake_table_message(lang_state: str):
     return user_choice
 
 
+def change_encryption_key_message(lang_state: str):
+    user_choice = ask_ok_cancel(
+        json_localization_data[lang_state]['messageboxes']['ok_cancel_message']['change_encryption_key']['title'],
+        json_localization_data[lang_state]['messageboxes']['ok_cancel_message']['change_encryption_key']['text'],
+        json_localization_data[lang_state]['messageboxes']['ok_cancel_message_options'],
+        wrap_length=350
+    )
+
+    return user_choice
+
+
 # ################################################### INPUT DIALOG ################################################### #
 def id_input_message(lang_state: str) -> str:
-    user_input_choice = MyCTkInputDialog(
+    user_input_choice = ExpandedCTkInputDialog(
         title=json_localization_data[lang_state]['messageboxes']['input_message']['id_input']['title'],
         text=json_localization_data[lang_state]['messageboxes']['input_message']['id_input']['text'],
         button_options=json_localization_data[lang_state]['messageboxes']['ok_cancel_message_options']
@@ -162,7 +181,7 @@ def id_input_message(lang_state: str) -> str:
 
 
 def search_query_input_message(lang_state: str) -> str:
-    user_input_choice = MyCTkInputDialog(
+    user_input_choice = ExpandedCTkInputDialog(
         title=json_localization_data[lang_state]['messageboxes']['input_message']['search_query_input']['title'],
         text=json_localization_data[lang_state]['messageboxes']['input_message']['search_query_input']['text'],
         button_options=json_localization_data[lang_state]['messageboxes']['ok_cancel_message_options']
