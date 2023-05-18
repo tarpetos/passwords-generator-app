@@ -9,7 +9,7 @@ from customtkinter import CTkEntry, CTkOptionMenu, CTkSlider, CTkSegmentedButton
 
 from ..app_translation.load_data_for_localization import json_localization_data
 from ..user_actions_processing.encryption_decryption import encrypt, load_key, decrypt, revoke_key
-from ..application_graphical_interface.toplevel_windows import alphabet_screen
+from ..application_graphical_interface.toplevel_windows_gui import alphabet_screen
 
 from ..user_actions_processing.password_strength_score import (
     strength_rating,

@@ -6,7 +6,7 @@ from tkinter.ttk import Separator
 from typing import Any
 
 from .modificated_tooltip import ToolTip
-from .toplevel_windows import database_search
+from .toplevel_windows_gui import database_search
 from .change_background_color import change_appearance_mode, change_treeview_frame_elements_color
 from .create_sql_table import MainTable
 
@@ -58,6 +58,9 @@ class PasswordGeneratorApp(ctk.CTk):
         for frame in self.frames.values():
             if isinstance(frame, BasePage):
                 self.current_language = frame.change_language(language)
+
+    def destroy_app(self):
+        self.destroy()
 
 
 class BasePage(ctk.CTkFrame):
@@ -426,7 +429,7 @@ class MainPage(BasePage):
         self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            command=lambda: app.destroy(),
+            command=lambda: controller.destroy_app(),
         )
 
         self.password_description_label.grid(row=0, column=0, columnspan=3, sticky='w', padx=15)
@@ -574,7 +577,7 @@ class SimplePage(BasePage):
         self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            command=lambda: app.destroy(),
+            command=lambda: controller.destroy_app(),
         )
 
         self.password_description_label.grid(row=0, column=0, sticky='w', padx=15)
@@ -673,7 +676,7 @@ class TablePage(BasePage):
         self.quit_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            command=lambda: app.destroy(),
+            command=lambda: controller.destroy_app(),
         )
 
         self.table_pg_language_change_menu.pack(side='left', fill='both', expand=True, padx=(0, 2))
@@ -693,6 +696,3 @@ class TablePage(BasePage):
     def shortcut_search(self, event):
         current_lang = self.controller.current_language
         database_search(event, current_lang)
-
-
-app = PasswordGeneratorApp()

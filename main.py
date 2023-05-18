@@ -1,8 +1,10 @@
-from passwords_generator_app.application_graphical_interface.gui_app_config import app
-from passwords_generator_app.application_graphical_interface.toplevel_windows import (
+from passwords_generator_app.application_graphical_interface.main_app_gui import PasswordGeneratorApp
+from passwords_generator_app.application_graphical_interface.toplevel_windows_gui import (
     password_strength_screen,
     generator_history_screen
 )
+
+app = PasswordGeneratorApp()
 
 
 def shortcut_strength(event):
