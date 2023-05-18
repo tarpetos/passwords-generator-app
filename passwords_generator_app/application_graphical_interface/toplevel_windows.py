@@ -1,5 +1,3 @@
-from typing import Dict, Iterator, Any, Tuple
-
 from customtkinter import (
     CTkLabel,
     CTkFrame,
@@ -8,14 +6,15 @@ from customtkinter import (
     CTkToplevel,
     CTkCanvas,
     CTkProgressBar,
-    get_appearance_mode, CTkButton,
+    CTkButton,
+    get_appearance_mode,
 )
 
 from tkinter import ttk, StringVar
 from pandas import DataFrame
+from typing import Dict, Iterator, Any, Tuple
 
 from .create_sql_table import retrieve_data_for_build_table_interface, SearchTable, HistoryTable
-from .change_background_color import change_pop_up_color
 from ..app_translation.load_data_for_localization import json_localization_data
 
 from ..app_translation.messagebox_with_lang_change import (
@@ -37,29 +36,56 @@ from ..user_actions_processing.default_alphabet import DEFAULT_LETTERS, DEFAULT_
 MAX_SEARCH_QUERY_LENGTH = 500
 
 
-def app_loading_screen(lang_state: str) -> CTk:
-    loading_screen = CTk()
-    loading_screen.overrideredirect(True)
-    loading_screen.eval('tk::PlaceWindow . center')
-    loading_screen.title('Loading')
-    loading_screen.geometry('400x100')
-    loading_screen.wm_attributes('-alpha', 0.9)
-
-    canvas = CTkCanvas(loading_screen, bg='#292929', highlightthickness=0)
-    canvas.pack(fill='both', expand=True)
-
-    load_label = CTkLabel(
-        canvas, text=json_localization_data[lang_state]['toplevel_windows']['loading_window_data'],
-        font=('Arial bold', 30), text_color='#D9D9D9', fg_color='#292929'
-    )
-    load_label.pack(pady=(30, 0))
-
-    main_pop_up_bg = change_pop_up_color(canvas, load_label)
-    canvas.create_rectangle(-1, -1, 400, 100, fill=main_pop_up_bg)
-
-    loading_screen.update()
-
-    return loading_screen
+# class ToplevelWindow(CTkToplevel):
+#     DEFAULT_TOPLEVEL_WIDTH = 700
+#     DEFAULT_TOPLEVEL_HEIGHT = 300
+#
+#     def __init__(self, *args, **kwargs):
+#         super().__init__(*args, **kwargs)
+#         self.wait_visibility()
+#         self.grab_set()
+#         # self.dark = 'dark'
+#         # self.light = 'light'
+#         # self.black = 'black'
+#         # self.white = 'white'
+#         # self.current_appearance_mode = get_appearance_mode()
+#
+#     @staticmethod
+#     def label_builder(
+#             root: CTkFrame | CTkCanvas | CTkToplevel | CTk,
+#             text: str,
+#             text_color: str = None,
+#             fg_color: str = None,
+#             font: Tuple[str, int] = None
+#     ) -> CTkLabel:
+#         return CTkLabel(root, text=text, text_color=text_color, fg_color=fg_color, font=font)
+#
+#     @staticmethod
+#     def entry_builder(root: CTkFrame | CTkCanvas | CTkToplevel | CTk) -> CTkEntry:
+#         return CTkEntry(root)
+#
+#     @staticmethod
+#     def button_builder(root: CTkFrame | CTkCanvas | CTkToplevel | CTk) -> CTkButton:
+#         return CTkButton(root)
+#
+#     @staticmethod
+#     def frame_builder(root: CTkFrame | CTkCanvas | CTkToplevel | CTk) -> CTkFrame:
+#         return CTkFrame(root)
+#
+#     @staticmethod
+#     def progress_bar_builder(root: CTkFrame | CTkCanvas | CTkToplevel | CTk) -> CTkProgressBar:
+#         return CTkProgressBar(root)
+#
+#     @staticmethod
+#     def canvas_builder(root: CTkFrame | CTkCanvas | CTkToplevel | CTk) -> CTkCanvas:
+#         return CTkCanvas(root)
+#
+#     def set_window_title(self, second_part: str = 'additional window') -> None:
+#         self.title(f'Password Generator: {second_part}')
+#
+#     def set_window_size(self, width: int = DEFAULT_TOPLEVEL_WIDTH, height: int = DEFAULT_TOPLEVEL_HEIGHT) -> None:
+#         self.geometry(f'{width}x{height}')
+#         self.minsize(width, height)
 
 
 def generator_history_screen(lang_state: str):
@@ -307,14 +333,12 @@ def alphabet_screen(lang_state: str):
 
     quit_btn = CTkButton(
         alphabet_window,
-        text_color='black',
         text=json_localization_data[lang_state]['toplevel_windows']['alphabet_window_data']['buttons']['close'],
         command=lambda: alphabet_window.destroy()
     )
 
     save_alphabet_btn = CTkButton(
         alphabet_window,
-        text_color='black',
         text=json_localization_data[lang_state]['toplevel_windows'][
             'alphabet_window_data']['buttons']['save_alphabet_btn'],
         command=lambda: save_custom_alphabet(
@@ -324,7 +348,6 @@ def alphabet_screen(lang_state: str):
 
     reset_alphabet_btn = CTkButton(
         alphabet_window,
-        text_color='black',
         text=json_localization_data[lang_state]['toplevel_windows'][
             'alphabet_window_data']['buttons']['reset_alphabet_btn'],
         command=lambda: back_to_default_alphabet(

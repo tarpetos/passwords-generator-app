@@ -9,7 +9,7 @@ from customtkinter import CTkEntry, CTkOptionMenu, CTkSlider, CTkSegmentedButton
 
 from ..app_translation.load_data_for_localization import json_localization_data
 from ..user_actions_processing.encryption_decryption import encrypt, load_key, decrypt, revoke_key
-from ..application_graphical_interface.toplevel_windows import app_loading_screen, alphabet_screen
+from ..application_graphical_interface.toplevel_windows import alphabet_screen
 
 from ..user_actions_processing.password_strength_score import (
     strength_rating,
@@ -238,10 +238,8 @@ def remove_record_from_table(lang_state: str) -> None | int:
 
             if chosen_id == -1:
                 if remake_table_message(lang_state):
-                    load_screen = app_loading_screen(lang_state)
                     database_user_data.drop_table()
                     database_user_data.create_passwords_table()
-                    load_screen.destroy()
                     successful_remake_table_message(lang_state)
                 return 0
 

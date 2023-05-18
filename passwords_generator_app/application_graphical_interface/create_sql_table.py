@@ -109,7 +109,7 @@ class TableBase:
         self.new_treeview_height = int(widget_height / 21.6)
         self.table_tree_frame.configure(height=self.new_treeview_height)
 
-        self.new_treeview_cell_width = int(widget_width / 4)
+        self.new_treeview_cell_width = int(widget_width / 2)
 
         for column in self.table_tree_frame['columns']:
             self.table_tree_frame.column(

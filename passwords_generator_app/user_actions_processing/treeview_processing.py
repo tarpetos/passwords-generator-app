@@ -14,7 +14,7 @@ def treeview_scrollbars(root, tree):
 
 def insert_table_data(tree, table_header, pandas_iterator):
     for column_number, column in enumerate(tree['columns']):
-        tree.column(column, anchor=W, minwidth=300, width=300, stretch=NO)
+        tree.column(column, anchor=W, minwidth=500, width=500, stretch=NO)
         tree.heading(
             column, text=table_header[column_number], anchor=CENTER,
             command=lambda col=column_number: sort_column(tree, col, False)

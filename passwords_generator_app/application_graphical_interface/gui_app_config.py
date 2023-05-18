@@ -7,7 +7,7 @@ from typing import Any
 
 from .modificated_tooltip import ToolTip
 from .toplevel_windows import database_search
-from .change_background_color import change_background_color, change_element_bg_color
+from .change_background_color import change_appearance_mode, change_treeview_frame_elements_color
 from .create_sql_table import MainTable
 
 from ..app_translation.load_data_for_localization import json_localization_data
@@ -76,8 +76,8 @@ class BasePage(ctk.CTkFrame):
         self.language_options = json_localization_data  # get data for app localization
         self.alphabet_retriever = PasswordAlphabet()
         ctk.set_appearance_mode('dark')
-        ctk.set_default_color_theme('green')  # set default app theme
-        change_element_bg_color()  # set default bg and font color to messageboxes
+        ctk.set_default_color_theme('dark-blue')
+        change_treeview_frame_elements_color()  # set default bg and font color to messageboxes
 
     @staticmethod
     def get_lst_index(element: str, lst: list) -> int | None:
@@ -347,7 +347,6 @@ class MainPage(BasePage):
         self.generate_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['generate_btn'],
-            text_color='black',
             command=lambda: generate_password(
                 self.current_chosen_language,
                 self.password_description_entry,
@@ -361,14 +360,12 @@ class MainPage(BasePage):
         self.copy_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['copy_btn'],
-            text_color='black',
             command=lambda: copy_password(self.current_chosen_language, self.result_password_entry),
         )
 
         self.clear_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['clear_btn'],
-            text_color='black',
             command=lambda: clear_entries(
                 self.password_description_entry,
                 self.result_password_entry
@@ -378,7 +375,6 @@ class MainPage(BasePage):
         self.write_to_db_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['write_to_db_btn'],
-            text_color='black',
             command=lambda: write_to_database(
                 self.current_chosen_language,
                 self.password_description_entry.get(),
@@ -389,7 +385,6 @@ class MainPage(BasePage):
         self.new_alphabet_btn = ctk.CTkButton(
             main_frame,
             text=json_localization_data['EN']['buttons']['new_alphabet_btn'],
-            text_color='black',
             command=lambda: change_generation_alphabet(self.current_chosen_language),
         )
 
@@ -401,7 +396,6 @@ class MainPage(BasePage):
 
         self.language_change_menu = ctk.CTkOptionMenu(
             main_frame,
-            text_color='black',
             values=self.language_options_list,
             variable=self.language_opt_menu_var,
             command=option_language_menu_callback
@@ -410,8 +404,7 @@ class MainPage(BasePage):
         self.change_bg_btn = ctk.CTkButton(
             main_frame,
             text=u'\u263E',
-            text_color='black',
-            command=lambda: change_background_color(self.change_bg_btn),
+            command=lambda: change_appearance_mode(self.change_bg_btn),
         )
 
         def save_page_state():
@@ -421,21 +414,18 @@ class MainPage(BasePage):
         self.simple_mode_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['simple_mode_btn'],
-            text_color='black',
             command=save_page_state,
         )
 
         self.move_to_table_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
-            text_color='black',
             command=lambda: controller.show_frame(TablePage),
         )
 
         self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            text_color='black',
             command=lambda: app.destroy(),
         )
 
@@ -528,7 +518,6 @@ class SimplePage(BasePage):
         self.default_opt_menu_var = StringVar(value=self.chosen_opt_menu)
         self.symbols_option_menu = ctk.CTkOptionMenu(
             main_frame,
-            text_color='black',
             values=values_list,
             variable=self.default_opt_menu_var,
             command=option_menu_callback
@@ -556,7 +545,6 @@ class SimplePage(BasePage):
         self.generate_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['generate_btn'],
-            text_color='black',
             command=lambda: simple_generate_password(
                 self.current_chosen_language,
                 self.result_password_entry,
@@ -574,21 +562,18 @@ class SimplePage(BasePage):
         self.hard_mode_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['hard_mode_btn'],
-            text_color='black',
             command=save_page_state,
         )
 
         self.move_to_table_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
-            text_color='black',
             command=lambda: controller.show_frame(TablePage),
         )
 
         self.quit_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            text_color='black',
             command=lambda: app.destroy(),
         )
 
@@ -634,7 +619,6 @@ class TablePage(BasePage):
         self.change_encryption_token_btn = ctk.CTkButton(
             upper_frame,
             text=self.language_options['EN']['buttons']['change_encryption_token_btn'],
-            text_color='black',
             command=lambda: change_encryption_token(self.current_chosen_language),
         )
 
@@ -646,14 +630,12 @@ class TablePage(BasePage):
         self.return_to_main_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['return_to_main_btn'],
-            text_color='black',
             command=back_to_parent_page
         )
 
         self.reload_table_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['reload_table_btn'],
-            text_color='black',
             command=lambda: data_table_obj.reload_table(
                 table_frame,
                 self.shortcut_search,
@@ -672,7 +654,6 @@ class TablePage(BasePage):
         self.delete_record_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['delete_record_btn'],
-            text_color='black',
             command=lambda: delete_record_and_refresh_table(),
         )
 
@@ -684,7 +665,6 @@ class TablePage(BasePage):
 
         self.table_pg_language_change_menu = ctk.CTkOptionMenu(
             upper_frame,
-            text_color='black',
             values=self.language_options_list,
             variable=self.language_opt_menu_var,
             command=table_pg_option_language_menu_callback
@@ -693,7 +673,6 @@ class TablePage(BasePage):
         self.quit_btn = ctk.CTkButton(
             bottom_frame,
             text=self.language_options['EN']['buttons']['quit_btn'],
-            text_color='black',
             command=lambda: app.destroy(),
         )
 

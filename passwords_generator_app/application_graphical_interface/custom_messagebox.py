@@ -1,4 +1,6 @@
+import warnings
 import tkinter
+
 from typing import Tuple
 
 from customtkinter import CTkToplevel, CTkFrame, CTkLabel, CTkButton
@@ -7,8 +9,12 @@ from customtkinter import CTkToplevel, CTkFrame, CTkLabel, CTkButton
 class BaseMessageBox(CTkToplevel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        warnings.filterwarnings('ignore', category=UserWarning)  # ignore warning about using not CTkImage
+        self.MIN_MESSAGEBOX_WIDTH = 200
+        self.MIN_MESSAGEBOX_HEIGHT = 100
+
         self.resizable(False, False)
-        self.minsize(200, 100)
+        self.minsize(self.MIN_MESSAGEBOX_WIDTH, self.MIN_MESSAGEBOX_HEIGHT)
         self.wait_visibility()
         self.grab_set()
 

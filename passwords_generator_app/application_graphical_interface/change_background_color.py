@@ -1,100 +1,86 @@
 import customtkinter
 
+from customtkinter import CTkButton
 from tkinter.ttk import Style
-from enum import Enum
+
+from typing import Dict
 
 
-class BackgroundTheme(Enum):
-    LIGHT = 'Light'
-    DARK = 'Dark'
+class ColorConfig:
+    LIGHT: str = 'Light'
+    DARK: str = 'Dark'
+
+    COLORS_LIGHT: Dict[str, str] = {
+        'general_app_bg': LIGHT,
+        'change_bg_button': '\u263C',
+        'treeview_cell_bg_color': '#292929',
+        'treeview_cell_font_color': '#D9D9D9',
+        'treeview_scrollbar_bg': '#202020',
+        'treeview_scrollbar_trough_color': '#484848',
+        'treeview_scrollbar_arrow_color': '#D9D9D9',
+        'treeview_input_bg': '#404040',
+        'treeview_insert_color': '#007FFF',
+    }
+
+    COLORS_DARK: Dict[str, str] = {
+        'general_app_bg': DARK,
+        'change_bg_button': '\u263E',
+        'treeview_cell_bg_color': '#D9D9D9',
+        'treeview_cell_font_color': '#292929',
+        'treeview_scrollbar_bg': '#686868',
+        'treeview_scrollbar_trough_color': '#9B9B9B',
+        'treeview_scrollbar_arrow_color': '#000000',
+        'treeview_input_bg': '#E0E0E0',
+        'treeview_insert_color': '#007FFF',
+    }
+
+    @classmethod
+    def get_colors(cls, current_color: str = LIGHT) -> Dict[str, str]:
+        return cls.COLORS_DARK if current_color == cls.LIGHT else cls.COLORS_LIGHT
 
 
-def get_current_color() -> str:
-    current_mode = customtkinter.get_appearance_mode()
-    return current_mode
+def change_treeview_frame_elements_color():
+    current_mode: str = customtkinter.get_appearance_mode()
+    all_colors: Dict[str, str] = ColorConfig.get_colors(current_mode)
 
+    treeview_style: Style = Style()
+    treeview_style.configure(
+        '.', background=all_colors['treeview_cell_bg_color'],
+        foreground=all_colors['treeview_cell_font_color']
+    )
 
-def get_general_background(current_color: str) -> tuple[str, str]:
-    return ('\u263E', BackgroundTheme.DARK.value) \
-        if current_color == BackgroundTheme.LIGHT.value else ('\u263C', BackgroundTheme.LIGHT.value)
-
-
-def get_bg_for_dialogs(current_color: str) -> tuple[str, str]:
-    return ('#D9D9D9', '#292929') if current_color == BackgroundTheme.LIGHT.value else ('#292929', '#D9D9D9')
-
-
-def get_bg_for_scrollbars(current_color: str) -> tuple[str, str, str]:
-    return ('#686868', '#9B9B9B', '#000000') \
-        if current_color == BackgroundTheme.LIGHT.value else ('#202020', '#484848', '#D9D9D9')
-
-
-def treeview_field_background(current_color: str) -> str:
-    return '#E0E0E0' if current_color == BackgroundTheme.LIGHT.value else '#404040'
-
-
-def change_element_bg_color():
-    current_mode = get_current_color()
-
-    messagebox_style = Style()
-    messagebox_colors = get_bg_for_dialogs(current_mode)
-
-    messagebox_bg_color = messagebox_colors[0]
-    messagebox_font_color = messagebox_colors[1]
-    messagebox_style.configure('.', background=messagebox_bg_color, foreground=messagebox_font_color)
-
-    treeview_style = Style()
-    field_color = treeview_field_background(current_mode)
     treeview_style.configure(
         'TreeviewStyle.Treeview',
         borderwidth=0,
         font=('Consolas', 12),
-        background=messagebox_bg_color,
-        foreground=messagebox_font_color,
-        fieldbackground=field_color,
+        background=all_colors['treeview_cell_bg_color'],
+        foreground=all_colors['treeview_cell_font_color'],
+        fieldbackground=all_colors['treeview_input_bg'],
     )
 
-    edit_cell_entry_style = Style()
-    edit_cell_entry_style.configure(
+    treeview_style.configure(
         'EntryStyle.TEntry',
-        foreground=messagebox_font_color,
-        fieldbackground=messagebox_bg_color,
+        foreground=all_colors['treeview_cell_font_color'],
+        fieldbackground=all_colors['treeview_cell_bg_color'],
         insertwidth=2,
-        insertcolor='#007FFF',
+        insertcolor=all_colors['treeview_insert_color'],
     )
 
-    scrollbar_style = Style()
-    scrollbar_colors = get_bg_for_scrollbars(current_mode)
-    scrollbar_style.configure(
+    treeview_style.configure(
         'TScrollbar',
         gripcount=0,
         borderwidth=0,
-        background=scrollbar_colors[0],
-        troughcolor=scrollbar_colors[1],
-        arrowcolor=scrollbar_colors[2],
+        background=all_colors['treeview_scrollbar_bg'],
+        troughcolor=all_colors['treeview_scrollbar_trough_color'],
+        arrowcolor=all_colors['treeview_scrollbar_arrow_color'],
     )
 
 
-def change_pop_up_color(box, label) -> str:
-    current_mode = get_current_color()
+def change_appearance_mode(change_bg_button: CTkButton):
+    current_mode: str = customtkinter.get_appearance_mode()
+    all_colors: Dict[str, str] = ColorConfig.get_colors(current_mode)
 
-    pop_up_colors = get_bg_for_dialogs(current_mode)
-    box_bg_color = pop_up_colors[0]
-    box_font_color = pop_up_colors[1]
+    change_bg_button.configure(text=all_colors['change_bg_button'])
+    customtkinter.set_appearance_mode(all_colors['general_app_bg'])
 
-    box.configure(bg=box_bg_color)
-    label.configure(text_color=box_font_color, fg_color=box_bg_color)
-
-    return box_bg_color
-
-
-def change_background_color(btn):
-    current_mode = get_current_color()
-
-    bg_colors = get_general_background(current_mode)
-    new_btn_content = bg_colors[0]
-    btn.configure(text=new_btn_content)
-
-    new_app_theme = bg_colors[1]
-    customtkinter.set_appearance_mode(new_app_theme)
-
-    change_element_bg_color()
+    change_treeview_frame_elements_color()
