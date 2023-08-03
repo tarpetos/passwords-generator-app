@@ -1,7 +1,8 @@
 FROM python:3.10-alpine
+ENV PYTHONUNBUFFERED 1
 RUN apk add build-base alpine-sdk tk-dev
-RUN apk update && apk add mariadb-dev gcc musl-dev python3-dev libffi-dev openssl-dev g++
-WORKDIR /password_generator
-COPY . /password_generator
+WORKDIR /password_generator/
+COPY requirements.txt requirements.txt
 RUN pip install -r requirements.txt
+COPY . .
 CMD ["python", "main.py"]

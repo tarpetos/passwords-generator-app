@@ -1,17 +1,8 @@
 version: '3'
 services:
-  database:
-    build:
-      context: .
-      dockerfile: Dockerfile_db
-    volumes:
-      - .:/passwords
-
-  password_generator:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  app:
+    build: .
     volumes:
       - .:/password_generator
-    environment:
-      - DATABASE_PATH=passwords/data.db
+  sqlite:
+    image: nouchka/sqlite3:latest

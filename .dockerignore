@@ -1,0 +1,6 @@
+dist
+data.db
+.env
+test.py
+records_inserter.py
+main.spec
