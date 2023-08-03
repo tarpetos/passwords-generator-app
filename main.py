@@ -19,8 +19,8 @@ def shortcut_history(event):
 
 def main():
     app.title('Password Generator')
-    app.geometry('900x550')
-    app.minsize(900, 550)
+    app.geometry('900x600')
+    app.minsize(280, 40)
     app.bind('<Control-s>', shortcut_strength)
     app.bind('<Control-S>', shortcut_strength)
     app.bind('<Control-h>', shortcut_history)

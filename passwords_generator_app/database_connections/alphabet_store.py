@@ -46,7 +46,6 @@ class AlphabetStore(LocalDatabaseConnector):
             '''
             UPDATE custom_alphabet
             SET letters = ?, digits = ?, punctuation = ?
-            WHERE id == 1
             ''', (letters, digits, punctuation)
         )
         self.con.commit()

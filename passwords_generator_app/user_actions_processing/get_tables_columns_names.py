@@ -1,5 +1,4 @@
-from typing import Iterator, Dict, List
-from pandas import DataFrame
+from typing import Dict, List, Tuple
 
 from ..database_connections.password_store import PasswordStore
 from ..app_translation.load_data_for_localization import json_localization_data
@@ -18,7 +17,7 @@ def retrieve_data_for_build_table_interface(
         lang_state: str,
         column_number: int = 5,
         user_query: str = None
-) -> Dict[str, List[str] | Iterator[DataFrame] | DataFrame]:
+) -> Dict[str, List[Tuple[int | str]]]:
     column_names_localized = table_column_names(lang_state)
 
     if column_number == 3:

@@ -9,8 +9,7 @@ from customtkinter import (
 )
 
 from tkinter import ttk, StringVar
-from pandas import DataFrame
-from typing import Dict, Iterator, Any, Tuple
+from typing import Dict, Any, Tuple, List
 
 from .create_sql_table import retrieve_data_for_build_table_interface, SearchTable, HistoryTable
 from ..app_translation.load_data_for_localization import json_localization_data
@@ -29,7 +28,8 @@ from ..user_actions_processing.password_strength_score import (
     password_strength_chat_gpt,
 )
 
-from ..user_actions_processing.default_alphabet import DEFAULT_LETTERS, DEFAULT_DIGITS, DEFAULT_PUNCTUATION
+from ..user_actions_processing.default_alphabet import DEFAULT_LETTERS, \
+    DEFAULT_DIGITS, DEFAULT_PUNCTUATION, NOT_ALLOWED_PUNCTUATION
 
 MAX_SEARCH_QUERY_LENGTH = 500
 
@@ -244,7 +244,7 @@ def strength_check(
 def search_screen(
         lang_state: str,
         search_query: str,
-        data_list: Dict[str, list | Iterator[DataFrame] | DataFrame | Any]
+        data_list: Dict[str, List[Tuple[int | str]]]
 ):
     search_window = CTkToplevel()
     search_window.title('Password Generator: search')
@@ -290,10 +290,15 @@ def database_search(event: Any, lang_state: str) -> None:
         return
 
     data_list = retrieve_data_for_build_table_interface(lang_state, column_number=3, user_query=user_search)
+    print(data_list)
 
-    if data_list['data'].empty:
+    if not data_list['data']:
         no_matches_for_search_message(lang_state, user_search)
         return
+
+    # if data_list['data'].empty:
+    #     no_matches_for_search_message(lang_state, user_search)
+    #     return
 
     search_screen(lang_state, user_search, data_list)
 
@@ -382,13 +387,57 @@ def insert_alphabet_to_entries(
     alphabet_data = db_connector.select_alphabet()
 
     if alphabet_data is not None:
-        letter_entry.insert(0, alphabet_data[1])
-        digits_entry.insert(0, alphabet_data[2])
-        punctuation_entry.insert(0, alphabet_data[3])
+        insert_to_entries(
+            letter_entry, digits_entry, punctuation_entry, alphabet_data[1], alphabet_data[2], alphabet_data[3]
+        )
     else:
-        letter_entry.insert(0, DEFAULT_LETTERS)
-        digits_entry.insert(0, DEFAULT_DIGITS)
-        punctuation_entry.insert(0, DEFAULT_PUNCTUATION)
+        insert_to_entries(
+            letter_entry, digits_entry, punctuation_entry, DEFAULT_LETTERS, DEFAULT_DIGITS, DEFAULT_PUNCTUATION
+        )
+
+
+def insert_to_entries(
+        letter_entry: CTkEntry,
+        digits_entry: CTkEntry,
+        punctuation_entry: CTkEntry,
+        digits_data: str,
+        letters_data: str,
+        punctuation_data: str,
+):
+    letter_entry.insert(0, digits_data)
+    digits_entry.insert(0, letters_data)
+    punctuation_entry.insert(0, punctuation_data)
+
+
+def clear_entries(letter_entry: CTkEntry, digits_entry: CTkEntry, punctuation_entry: CTkEntry):
+    letter_entry.delete(0, 'end')
+    digits_entry.delete(0, 'end')
+    punctuation_entry.delete(0, 'end')
+
+
+def check_for_repeated_characters(user_input: str) -> bool:
+    for char in user_input:
+        if user_input.count(char) > 1:
+            return False
+    return True
+
+
+def check_for_letters(user_input: str) -> bool:
+    return user_input.isalpha()
+
+
+def check_for_digits(user_input: str) -> bool:
+    return user_input.isnumeric()
+
+
+def check_for_punctuation(user_input: str) -> bool:
+    if not user_input:
+        return False
+
+    for char in user_input:
+        if char in NOT_ALLOWED_PUNCTUATION or char.isdigit() or char.isalpha() or char.isspace():
+            return False
+    return True
 
 
 def save_custom_alphabet(
@@ -398,11 +447,30 @@ def save_custom_alphabet(
         punctuation_entry: CTkEntry
 ):
     alphabet_data = db_connector.select_alphabet()
-    print(alphabet_data)
 
     new_letters = letter_entry.get()
     new_digits = digits_entry.get()
     new_punctuation = punctuation_entry.get()
+
+    if not check_for_repeated_characters(new_letters) or \
+            not check_for_repeated_characters(new_digits) or \
+            not check_for_repeated_characters(new_punctuation):
+        print('Repeated symbols detected!')
+        return
+
+    if not check_for_letters(new_letters):
+        print('Invalid letter input!')
+        return
+
+    print(new_digits)
+
+    if not check_for_digits(new_digits):
+        print('Invalid digits input!')
+        return
+
+    if not check_for_punctuation(new_punctuation):
+        print('Invalid punctuation input!')
+        return
 
     if (alphabet_data is None) and (
             new_letters == DEFAULT_LETTERS and
@@ -431,27 +499,21 @@ def back_to_default_alphabet(
 ):
     alphabet_data = db_connector.select_alphabet()
 
-    new_letters = letter_entry.get()
-    new_digits = digits_entry.get()
-    new_punctuation = punctuation_entry.get()
-
-    if alphabet_data is None:
-        print('Already default alphabet!')
-    elif (alphabet_data is not None) and (
-            new_letters == alphabet_data[1] and
-            new_digits == alphabet_data[2] and
-            new_punctuation == alphabet_data[3]
+    if (alphabet_data is None) or (
+            (alphabet_data is not None) and (
+            alphabet_data[1] == DEFAULT_LETTERS and
+            alphabet_data[2] == DEFAULT_DIGITS and
+            alphabet_data[3] == DEFAULT_PUNCTUATION)
     ):
-        print('Fields are the same that is was!')
+        print('Already is default!')
     else:
         db_connector.update_alphabet(DEFAULT_LETTERS, DEFAULT_DIGITS, DEFAULT_PUNCTUATION)
+        print('Set to default successfully!')
 
-    letter_entry.delete(0, 'end')
-    letter_entry.insert(0, DEFAULT_LETTERS)
-    digits_entry.delete(0, 'end')
-    digits_entry.insert(0, DEFAULT_DIGITS)
-    punctuation_entry.delete(0, 'end')
-    punctuation_entry.insert(0, DEFAULT_PUNCTUATION)
+    clear_entries(letter_entry, digits_entry, punctuation_entry)
+    insert_to_entries(
+        letter_entry, digits_entry, punctuation_entry, DEFAULT_LETTERS, DEFAULT_DIGITS, DEFAULT_PUNCTUATION
+    )
 
 
 def set_equal_grid_segments_size(frame: CTkFrame | CTkToplevel, column_number: int, row_number: int):

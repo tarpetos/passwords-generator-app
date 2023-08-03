@@ -20,8 +20,12 @@ def insert_table_data(tree, table_header, pandas_iterator):
             command=lambda col=column_number: sort_column(tree, col, False)
         )
 
-    for row_number, row in enumerate(pandas_iterator.values):
-        tree.insert('', END, text=str(row_number), values=row.tolist())
+    print(pandas_iterator)
+    # for row_number, row in enumerate(pandas_iterator.values):
+    #     tree.insert('', END, text=str(row_number), values=row.tolist())
+
+    for row_number, row in enumerate(pandas_iterator):
+        tree.insert('', END, text=str(row_number), values=row)
 
 
 def sort_column(tree, column, reverse):

@@ -1,7 +1,4 @@
 # import json
-import os
-
-ROOT_PATH = os.path.expanduser('~/.passwords/')
 
 # LOCALIZATION_FILE = os.path.expanduser(f'{ROOT_PATH}localization.json')
 LOCALIZATION_DATA = {
@@ -643,7 +640,6 @@ LOCALIZATION_DATA = {
         }
     },
 }
-
 
 # def create_directory():
 #     if not os.path.exists(ROOT_PATH):

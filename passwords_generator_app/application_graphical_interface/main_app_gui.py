@@ -1,7 +1,6 @@
 import customtkinter as ctk
 
-from tkinter import StringVar
-from tkinter.constants import TOP
+from tkinter import StringVar, PanedWindow
 from tkinter.ttk import Separator
 from typing import Any
 
@@ -28,7 +27,7 @@ class PasswordGeneratorApp(ctk.CTk):
         ctk.CTk.__init__(self, *args, **kwargs)
 
         container = ctk.CTkFrame(self)
-        container.pack(side=TOP, fill='both', expand=True)
+        container.pack(side='top', fill='both', expand=True)
 
         container.grid_rowconfigure(0, weight=1)
         container.grid_columnconfigure(0, weight=1)
@@ -87,7 +86,7 @@ class BasePage(ctk.CTkFrame):
         return lst.index(element) if element in lst else None
 
     @staticmethod
-    def set_equal_grid_segments_size(frame, column_number, row_number):
+    def set_equal_grid_segments_size(frame: ctk.CTkFrame | ctk.CTkToplevel, column_number: int, row_number: int):
         for column in range(column_number):
             frame.columnconfigure(column, weight=1, uniform='equal')
 
@@ -144,7 +143,76 @@ class MainPage(BasePage):
     def __init__(self, parent, controller):
         BasePage.__init__(self, parent, controller)
 
-        main_frame = ctk.CTkFrame(self)
+        alphabet_window = PanedWindow(self)
+        alphabet_window.pack(fill='both', expand=True)
+
+        alphabet_frame = ctk.CTkFrame(alphabet_window)
+        alphabet_window.add(alphabet_frame)
+
+        letters_label = ctk.CTkLabel(
+            alphabet_frame,
+            text=json_localization_data['EN']['toplevel_windows']['alphabet_window_data']['labels'][
+                'letters_label']
+        )
+        letters_entry = ctk.CTkTextbox(alphabet_frame)
+
+        digits_label = ctk.CTkLabel(
+            alphabet_frame,
+            text=json_localization_data['EN']['toplevel_windows']['alphabet_window_data']['labels']['digits_label']
+        )
+        digits_entry = ctk.CTkTextbox(alphabet_frame)
+
+        punctuation_label = ctk.CTkLabel(
+            alphabet_frame,
+            text=json_localization_data['EN']['toplevel_windows']['alphabet_window_data']['labels']['punctuation_label']
+        )
+        punctuation_entry = ctk.CTkTextbox(alphabet_frame)
+
+        save_alphabet_btn = ctk.CTkButton(
+            alphabet_frame,
+            text=json_localization_data['EN']['toplevel_windows']['alphabet_window_data']['buttons']['save_alphabet_btn'],
+            # command=lambda: save_custom_alphabet(
+            #     alphabet_store_connector, letters_entry, digits_entry, punctuation_entry
+            # )
+        )
+
+        reset_alphabet_btn = ctk.CTkButton(
+            alphabet_frame,
+            text=json_localization_data['EN']['toplevel_windows'][
+                'alphabet_window_data']['buttons']['reset_alphabet_btn'],
+            # command=lambda: back_to_default_alphabet(
+            #     alphabet_store_connector, letters_entry, digits_entry, punctuation_entry
+            # )
+        )
+        #         self.password_description_label.grid(row=0, column=0, columnspan=3, sticky='w', padx=15)
+        #         self.password_description_entry.grid(row=0, column=3, columnspan=3, sticky='we', padx=(0, 15))
+        #
+        #         self.password_length_label.grid(row=1, column=0, columnspan=3, sticky='w', padx=15)
+        #         self.slider_frame.grid(row=1, column=3, columnspan=3, sticky='we', padx=(0, 15))
+        #         self.password_length_slider.pack(fill='both')
+        #         self.password_length_slider_label.pack(fill='both')
+
+        letters_label.grid(row=0, column=0, sticky='w')
+        letters_entry.grid(row=0, column=1, sticky='we')
+
+        digits_label.grid(row=1, column=0, sticky='w')
+        digits_entry.grid(row=1, column=1, sticky='we')
+
+        punctuation_label.grid(row=2, column=0, sticky='w')
+        punctuation_entry.grid(row=2, column=1, sticky='we')
+
+        save_alphabet_btn.grid(row=3, column=0, sticky='we')
+        reset_alphabet_btn.grid(row=3, column=1, sticky='we')
+
+        alphabet_frame_column_number = alphabet_frame.grid_size()[0]
+        alphabet_frame_row_number = alphabet_frame.grid_size()[1]
+        self.set_equal_grid_segments_size(alphabet_frame, alphabet_frame_column_number, alphabet_frame_row_number)
+
+        generator_window = PanedWindow(alphabet_window, orient='vertical')
+        alphabet_window.add(generator_window)
+
+        main_frame = ctk.CTkFrame(generator_window)
+        generator_window.add(main_frame)
 
         self.password_description_label = ctk.CTkLabel(
             main_frame,
@@ -412,6 +480,7 @@ class MainPage(BasePage):
 
         def save_page_state():
             controller.current_mode = 'simple'
+            controller.geometry('900x600')
             controller.show_frame(SimplePage)
 
         self.simple_mode_btn = ctk.CTkButton(
@@ -420,10 +489,14 @@ class MainPage(BasePage):
             command=save_page_state,
         )
 
+        def show_table():
+            controller.show_frame(TablePage)
+            controller.geometry('900x600')
+
         self.move_to_table_btn = ctk.CTkButton(
             main_frame,
             text=self.language_options['EN']['buttons']['move_to_table_btn'],
-            command=lambda: controller.show_frame(TablePage),
+            command=lambda: show_table(),
         )
 
         self.quit_btn = ctk.CTkButton(
@@ -486,8 +559,6 @@ class MainPage(BasePage):
             radiobutton_frame, radiobutton_frame_column_number, radiobutton_frame_row_number
         )
         self.set_equal_grid_segments_size(main_frame, main_frame_column_number, main_frame_row_number)
-
-        main_frame.pack(side=TOP, pady=20, padx=20, expand=True, fill='both')
 
 
 class SimplePage(BasePage):
@@ -560,6 +631,7 @@ class SimplePage(BasePage):
 
         def save_page_state():
             controller.current_mode = 'hard'
+            controller.geometry('1100x600')
             controller.show_frame(MainPage)
 
         self.hard_mode_btn = ctk.CTkButton(
@@ -602,10 +674,9 @@ class SimplePage(BasePage):
 
         main_frame_column_number = main_frame.grid_size()[0]
         main_frame_row_number = main_frame.grid_size()[1]
-
         self.set_equal_grid_segments_size(main_frame, main_frame_column_number, main_frame_row_number)
 
-        main_frame.pack(side=TOP, pady=20, padx=20, expand=True, fill='both')
+        main_frame.pack(side='top', pady=20, padx=20, expand=True, fill='both')
 
 
 class TablePage(BasePage):
@@ -628,7 +699,12 @@ class TablePage(BasePage):
         bottom_frame = ctk.CTkFrame(full_frame, fg_color='transparent')
 
         def back_to_parent_page():
-            controller.show_frame(MainPage) if controller.current_mode == 'hard' else controller.show_frame(SimplePage)
+            if controller.current_mode == 'hard':
+                controller.show_frame(MainPage)
+                controller.geometry('1100x600')
+            else:
+                controller.show_frame(SimplePage)
+                controller.geometry('900x600')
 
         self.return_to_main_btn = ctk.CTkButton(
             bottom_frame,
@@ -691,7 +767,7 @@ class TablePage(BasePage):
         self.quit_btn.pack(side='left', fill='both', expand=True, padx=(2, 0))
         bottom_frame.pack(fill='both')
 
-        full_frame.pack(side=TOP, pady=20, padx=20, expand=True, fill='both')
+        full_frame.pack(side='top', pady=20, padx=20, expand=True, fill='both')
 
     def shortcut_search(self, event):
         current_lang = self.controller.current_language

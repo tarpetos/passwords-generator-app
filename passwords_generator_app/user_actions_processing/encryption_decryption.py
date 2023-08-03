@@ -5,8 +5,9 @@ import cryptography.fernet
 from cryptography.fernet import Fernet
 import base64
 
+from ..database_connections.local_db_connector import ROOT_PATH
 
-KEY_FILE = os.path.expanduser('~/.passwords/.password_generator_key')
+KEY_FILE = os.path.expanduser(f'{ROOT_PATH}.password_generator_key')
 
 
 def generate_key(comment: str = None):

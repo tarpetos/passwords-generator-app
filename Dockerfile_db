@@ -1,0 +1,3 @@
+FROM keinos/sqlite3
+WORKDIR /passwords
+COPY data.db passwords/

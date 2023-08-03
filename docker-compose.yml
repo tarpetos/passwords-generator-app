@@ -1,0 +1,17 @@
+version: '3'
+services:
+  database:
+    build:
+      context: .
+      dockerfile: Dockerfile_db
+    volumes:
+      - .:/passwords
+
+  password_generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/password_generator
+    environment:
+      - DATABASE_PATH=passwords/data.db

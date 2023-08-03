@@ -1,6 +1,4 @@
-import pandas as pd
-
-from typing import Iterator, Tuple, List, Any
+from typing import Tuple, List, Any
 
 from .local_db_connector import LocalDatabaseConnector
 
@@ -288,28 +286,45 @@ class PasswordStore(LocalDatabaseConnector):
 
         self.history_delete(desc_and_pass[0], desc_and_pass[1])
 
-    def select_search_data_by_desc(self, search_query: str) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        main_data_list = pd.read_sql_query(
+    def select_search_data_by_desc(self, search_query: str) -> List[Tuple[int | str]]:
+        self.cur.execute(
             '''
             SELECT id, description, password FROM passwords
             WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
             ORDER BY id
-            ''', self.con, params=[search_query, ]
+            ''', (search_query,)
         )
+        main_data_list = self.cur.fetchall()
+        # print(main_data_list)
+
+        # main_data_list = pd.read_sql_query(
+        #     '''
+        #     SELECT id, description, password FROM passwords
+        #     WHERE LOWER(description) LIKE '%' || LOWER(?) || '%'
+        #     ORDER BY id
+        #     ''', self.con, params=[search_query, ]
+        # )
+        # # print(main_data_list)
 
         self.con.commit()
 
         return main_data_list
 
-    def select_full_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        password_data_list = pd.read_sql_query('SELECT * FROM passwords', self.con)
+    def select_full_table(self) -> List[Tuple[int | str]]:
+        # password_data_list = pd.read_sql_query('SELECT * FROM passwords', self.con)
+
+        self.cur.execute('SELECT * FROM passwords')
+        password_data_list = self.cur.fetchall()
 
         self.con.commit()
 
         return password_data_list
 
-    def select_full_history_table(self) -> Iterator[pd.DataFrame] | pd.DataFrame:
-        password_data_list = pd.read_sql_query('SELECT * FROM generation_history ORDER BY description', self.con)
+    def select_full_history_table(self) -> List[Tuple[int | str]]:
+        # password_data_list = pd.read_sql_query('SELECT * FROM generation_history ORDER BY description', self.con)
+
+        self.cur.execute('SELECT * FROM generation_history ORDER BY description')
+        password_data_list = self.cur.fetchall()
 
         self.con.commit()
 

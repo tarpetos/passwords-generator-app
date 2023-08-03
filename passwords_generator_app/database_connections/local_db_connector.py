@@ -1,6 +1,13 @@
+import os
 import sqlite3
+from typing import AnyStr
 
-from ..app_translation.load_data_for_localization import ROOT_PATH
+
+def docker_check_path() -> AnyStr:
+    return os.path.expanduser('~/.passwords/') if os.path.exists('/home/') else os.path.expanduser('passwords/')
+
+
+ROOT_PATH = docker_check_path()
 
 
 class LocalDatabaseConnector:
