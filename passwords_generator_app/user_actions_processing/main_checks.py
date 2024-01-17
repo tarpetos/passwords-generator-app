@@ -1,7 +1,7 @@
 from random import choices, sample
 from typing import Tuple
 
-from ..app_translation.load_data_for_localization import json_localization_data
+from ..app_translation.load_data_for_localization import LOCALIZATION_DATA
 from ..app_translation.messagebox_with_lang_change import (
     invalid_password_description_message,
     empty_result_input_message,
@@ -12,21 +12,29 @@ MAX_PASSWORD_DESCRIPTION_LENGTH = 500
 
 
 def check_for_repeatable_characters(
-        lang_state: str,
-        password_alphabet: str,
-        password_length: int,
-        check_if_repeatable_allowed: str,
+    lang_state: str,
+    password_alphabet: str,
+    password_length: int,
+    check_if_repeatable_allowed: str,
 ) -> str:
-    repeatable_allowed_check_value = json_localization_data[lang_state]['repeatable_segment_btn'][0]
-    repeatable_not_allowed_check_value = json_localization_data[lang_state]['repeatable_segment_btn'][1]
-    print('alphabet:', password_alphabet)
-    print('alphabet_len:', len(password_alphabet))
-    print('length:', password_length)
+    repeatable_allowed_check_value = LOCALIZATION_DATA[lang_state][
+        "repeatable_segment_btn"
+    ][0]
+    repeatable_not_allowed_check_value = LOCALIZATION_DATA[lang_state][
+        "repeatable_segment_btn"
+    ][1]
+    print("alphabet:", password_alphabet)
+    print("alphabet_len:", len(password_alphabet))
+    print("length:", password_length)
 
     if check_if_repeatable_allowed == repeatable_allowed_check_value:
-        return ''.join(choices(password_alphabet, k=password_length)) if len(password_alphabet) >= 1 else ''
+        return (
+            "".join(choices(password_alphabet, k=password_length))
+            if len(password_alphabet) >= 1
+            else ""
+        )
     elif check_if_repeatable_allowed == repeatable_not_allowed_check_value:
-        return ''.join(sample(password_alphabet, k=password_length))
+        return "".join(sample(password_alphabet, k=password_length))
 
 
 def check_if_repeatable_characters_is_present(result_password: str) -> bool:
@@ -46,13 +54,15 @@ def check_password_description_input(lang_state: str, user_input: str) -> bool:
 
 
 def check_password_result_input(lang_state: str, result_password: str) -> bool:
-    if result_password == '':
+    if result_password == "":
         empty_result_input_message(lang_state)
         return False
     return True
 
 
-def check_if_description_existing(store_of_user_passwords, password_description: Tuple[str]) -> bool:
+def check_if_description_existing(
+    store_of_user_passwords, password_description: Tuple[str]
+) -> bool:
     list_of_descriptions = store_of_user_passwords.select_descriptions()
 
     return password_description in list_of_descriptions

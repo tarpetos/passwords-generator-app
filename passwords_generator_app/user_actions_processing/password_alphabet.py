@@ -37,7 +37,11 @@ class PasswordAlphabet:
             6: self.custom_digits + self.custom_punctuation,
         }
 
-        return alphabet_options[option_value] if option_value in alphabet_options else alphabet_options[1]
+        return (
+            alphabet_options[option_value]
+            if option_value in alphabet_options
+            else alphabet_options[1]
+        )
 
     def get_full_alphabet(self) -> str:
         self.check_custom_alphabet_for_existence()

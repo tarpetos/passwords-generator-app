@@ -1,7 +1,9 @@
-from passwords_generator_app.application_graphical_interface.main_app_gui import PasswordGeneratorApp
+from passwords_generator_app.application_graphical_interface.main_app_gui import (
+    PasswordGeneratorApp,
+)
 from passwords_generator_app.application_graphical_interface.toplevel_windows_gui import (
     password_strength_screen,
-    generator_history_screen
+    generator_history_screen,
 )
 
 app = PasswordGeneratorApp()
@@ -18,15 +20,15 @@ def shortcut_history(event):
 
 
 def main():
-    app.title('Password Generator')
-    app.geometry('900x600')
+    app.title("Password Generator")
+    app.geometry("900x600")
     app.minsize(280, 40)
-    app.bind('<Control-s>', shortcut_strength)
-    app.bind('<Control-S>', shortcut_strength)
-    app.bind('<Control-h>', shortcut_history)
-    app.bind('<Control-H>', shortcut_history)
+    app.bind("<Control-s>", shortcut_strength)
+    app.bind("<Control-S>", shortcut_strength)
+    app.bind("<Control-h>", shortcut_history)
+    app.bind("<Control-H>", shortcut_history)
     app.mainloop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

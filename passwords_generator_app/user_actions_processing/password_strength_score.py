@@ -1,6 +1,8 @@
 import math
 
-from passwords_generator_app.app_translation.load_data_for_localization import json_localization_data
+from passwords_generator_app.app_translation.load_data_for_localization import (
+    LOCALIZATION_DATA,
+)
 
 
 def password_strength_chat_gpt(password: str) -> int:
@@ -51,16 +53,18 @@ def password_strength(password: str) -> int:
 
 def strength_rating(lang_state: str, password_score: int) -> str:
     password_score_options = {
-        range(0, 5): json_localization_data[lang_state]['symbols_option_menu'][0],
-        range(5, 20): json_localization_data[lang_state]['symbols_option_menu'][1],
-        range(20, 40): json_localization_data[lang_state]['symbols_option_menu'][2],
-        range(40, 60): json_localization_data[lang_state]['symbols_option_menu'][3],
-        range(60, 80): json_localization_data[lang_state]['symbols_option_menu'][4],
-        range(80, 95): json_localization_data[lang_state]['symbols_option_menu'][5],
-        range(95, 100): json_localization_data[lang_state]['symbols_option_menu'][6],
-        100: json_localization_data[lang_state]['symbols_option_menu'][7],
+        range(0, 5): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][0],
+        range(5, 20): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][1],
+        range(20, 40): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][2],
+        range(40, 60): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][3],
+        range(60, 80): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][4],
+        range(80, 95): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][5],
+        range(95, 100): LOCALIZATION_DATA[lang_state]["symbols_option_menu"][6],
+        100: LOCALIZATION_DATA[lang_state]["symbols_option_menu"][7],
     }
 
     for key in password_score_options:
-        if (isinstance(key, int) and key == password_score) or (isinstance(key, range) and password_score in key):
+        if (isinstance(key, int) and key == password_score) or (
+            isinstance(key, range) and password_score in key
+        ):
             return password_score_options[key]

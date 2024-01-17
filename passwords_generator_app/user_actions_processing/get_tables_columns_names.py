@@ -1,22 +1,20 @@
 from typing import Dict, List, Tuple
 
 from ..database_connections.password_store import PasswordStore
-from ..app_translation.load_data_for_localization import json_localization_data
+from ..app_translation.load_data_for_localization import LOCALIZATION_DATA
 
 
 database_user_data = PasswordStore()
 
 
 def table_column_names(lang_state: str) -> List[str]:
-    get_table_column_names = json_localization_data[lang_state]['table_column_names']
+    get_table_column_names = LOCALIZATION_DATA[lang_state]["table_column_names"]
 
     return get_table_column_names
 
 
 def retrieve_data_for_build_table_interface(
-        lang_state: str,
-        column_number: int = 5,
-        user_query: str = None
+    lang_state: str, column_number: int = 5, user_query: str = None
 ) -> Dict[str, List[Tuple[int | str]]]:
     column_names_localized = table_column_names(lang_state)
 
@@ -30,4 +28,4 @@ def retrieve_data_for_build_table_interface(
         column_names_localized = column_names_localized[:3] + column_names_localized[5:]
         full_list_of_data = database_user_data.select_full_history_table()
 
-    return {'localized_columns': column_names_localized, 'data': full_list_of_data}
+    return {"localized_columns": column_names_localized, "data": full_list_of_data}
